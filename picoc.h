@@ -33,6 +33,16 @@ extern int PicocExitBuf[];
 #define PicocPlatformSetExitPoint(pc) setjmp((pc)->PicocExitBuf)
 #endif
 
+#ifdef ARDUINO_HOST
+#define PicocPlatformSetExitPoint(pc) /* empty */
+
+typedef char *(*TReadFileFunc)(const char *f);
+void PicocSetReadFile(TReadFileFunc f);
+char *PicocGetCharBuffer(Picoc *pc, int size);
+void PicocFreeCharBuffer(Picoc *pc, char *buf);
+
+#endif
+
 /* parse.c */
 void PicocParse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int RunIt, int CleanupNow, int CleanupSource, int EnableDebugger);
 void PicocParseInteractive(Picoc *pc);

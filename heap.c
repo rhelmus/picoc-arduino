@@ -37,9 +37,9 @@ void HeapInit(Picoc *pc, int StackOrHeapSize)
     pc->HeapStackTop = (void *)C_HEAPSTART;                   /* the top of the stack */
     pc->HeapMemStart = (void *)C_HEAPSTART;
 # else
-    pc->HeapBottom = &HeapMemory[HEAP_SIZE];   /* the bottom of the (downward-growing) heap */
-    pc->StackFrame = &HeapMemory[0];           /* the current stack frame */
-    pc->HeapStackTop = &HeapMemory[0];                /* the top of the stack */
+    pc->HeapBottom = &pc->HeapMemory[HEAP_SIZE];   /* the bottom of the (downward-growing) heap */
+    pc->StackFrame = &pc->HeapMemory[0];           /* the current stack frame */
+    pc->HeapStackTop = &pc->HeapMemory[0];                /* the top of the stack */
 # endif
 #endif
 
@@ -131,9 +131,13 @@ int HeapPopStackFrame(Picoc *pc)
         return FALSE;
 }
 
+int memused = 0;
+
 /* allocate some dynamically allocated memory. memory is cleared. can return NULL if out of memory */
 void *HeapAllocMem(Picoc *pc, int Size)
 {
+    memused += Size;
+
 #ifdef USE_MALLOC_HEAP
     return calloc(Size, 1);
 #else
@@ -239,6 +243,8 @@ void HeapFreeMem(Picoc *pc, void *Mem)
     if (Mem == NULL)
         return;
     
+    memused -= MemNode->Size;
+
     if ((void *)MemNode == pc->HeapBottom)
     { 
         /* pop it off the bottom of the heap, reducing the heap size */
@@ -268,7 +274,7 @@ void HeapFreeMem(Picoc *pc, void *Mem)
 #endif
         assert(pc->FreeListBig == NULL || ((unsigned long)pc->FreeListBig >= (unsigned long)&(pc->HeapMemory)[0] && (unsigned char *)pc->FreeListBig - &(pc->HeapMemory)[0] < HEAP_SIZE));
         MemNode->NextFree = pc->FreeListBig;
-        FreeListBig = MemNode;
+        pc->FreeListBig = MemNode;
 #ifdef DEBUG_HEAP
         ShowBigList(pc);
 #endif

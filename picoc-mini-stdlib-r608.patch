@@ -1,0 +1,120 @@
+Index: clibrary.c
+===================================================================
+--- clibrary.c	(revision 608)
++++ clibrary.c	(working copy)
+@@ -95,7 +95,7 @@
+ void BasicIOInit(Picoc *pc)
+ {
+     pc->CStdOutBase.Putch = &PlatformPutc;
+-    pc->CStdOut = &CStdOutBase;
++    pc->CStdOut = &pc->CStdOutBase;
+ }
+ 
+ /* initialise the C library */
+@@ -102,9 +102,9 @@
+ void CLibraryInit(Picoc *pc)
+ {
+     /* define some constants */
+-    VariableDefinePlatformVar(pc, NULL, "NULL", &IntType, (union AnyValue *)&ZeroValue, FALSE);
+-    VariableDefinePlatformVar(pc, NULL, "TRUE", &IntType, (union AnyValue *)&TRUEValue, FALSE);
+-    VariableDefinePlatformVar(pc, NULL, "FALSE", &IntType, (union AnyValue *)&ZeroValue, FALSE);
++    VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, (union AnyValue *)&ZeroValue, FALSE);
++    VariableDefinePlatformVar(pc, NULL, "TRUE", &pc->IntType, (union AnyValue *)&TRUEValue, FALSE);
++    VariableDefinePlatformVar(pc, NULL, "FALSE", &pc->IntType, (union AnyValue *)&ZeroValue, FALSE);
+ }
+ 
+ /* stream for writing into strings */
+@@ -128,7 +128,7 @@
+ }
+ 
+ /* print a single character a given number of times */
+-void PrintRepeatedChar(Picoc *pc, char ShowChar, int Length, struct OutputStream *Stream)
++void PrintRepeatedChar(char ShowChar, int Length, struct OutputStream *Stream)
+ {
+     while (Length-- > 0)
+         PrintCh(ShowChar, Stream);
+@@ -234,6 +234,7 @@
+     int ZeroPad = FALSE;
+     int FieldWidth = 0;
+     char *Format = Param[0]->Val->Pointer;
++    Picoc *pc = Parser->pc;
+     
+     for (FPos = Format; *FPos != '\0'; FPos++)
+     {
+@@ -262,10 +263,10 @@
+             /* now check the format type */
+             switch (*FPos)
+             {
+-                case 's': FormatType = CharPtrType; break;
+-                case 'd': case 'u': case 'x': case 'b': case 'c': FormatType = &IntType; break;
++                case 's': FormatType = pc->CharPtrType; break;
++                case 'd': case 'u': case 'x': case 'b': case 'c': FormatType = &pc->IntType; break;
+ #ifndef NO_FP
+-                case 'f': FormatType = &FPType; break;
++                case 'f': FormatType = &pc->FPType; break;
+ #endif
+                 case '%': PrintCh('%', Stream); FormatType = NULL; break;
+                 case '\0': FPos--; FormatType = NULL; break;
+@@ -281,8 +282,8 @@
+                 {
+                     NextArg = (struct Value *)((char *)NextArg + MEM_ALIGN(sizeof(struct Value) + TypeStackSizeValue(NextArg)));
+                     if (NextArg->Typ != FormatType && 
+-                            !((FormatType == &IntType || *FPos == 'f') && IS_NUMERIC_COERCIBLE(NextArg)) &&
+-                            !(FormatType == CharPtrType && (NextArg->Typ->Base == TypePointer || 
++                            !((FormatType == &pc->IntType || *FPos == 'f') && IS_NUMERIC_COERCIBLE(NextArg)) &&
++                            !(FormatType == pc->CharPtrType && (NextArg->Typ->Base == TypePointer || 
+                                                              (NextArg->Typ->Base == TypeArray && NextArg->Typ->FromType->Base == TypeChar) ) ) )
+                         PrintStr("XXX", Stream);   /* bad type for format */
+                     else
+@@ -366,7 +367,7 @@
+ 
+ void LibExit(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+ {
+-    PlatformExit(Param[0]->Val->Integer);
++    PlatformExit(Parser->pc, Param[0]->Val->Integer);
+ }
+ 
+ #ifdef PICOC_LIBRARY
+Index: cstdlib/stdio.c
+===================================================================
+--- cstdlib/stdio.c	(revision 608)
++++ cstdlib/stdio.c	(working copy)
+@@ -1,8 +1,9 @@
+ /* stdio.h library for large systems - small embedded systems use clibrary.c instead */
++#include "../interpreter.h"
++
+ #ifndef BUILTIN_MINI_STDLIB
+ 
+ #include <errno.h>
+-#include "../interpreter.h"
+ 
+ #define MAX_FORMAT 80
+ #define MAX_SCANF_ARGS 10
+Index: interpreter.h
+===================================================================
+--- interpreter.h	(revision 608)
++++ interpreter.h	(working copy)
+@@ -578,6 +578,10 @@
+ void PrintType(struct ValueType *Typ, IOFILE *Stream);
+ void LibPrintf(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs);
+ 
++#ifdef BUILTIN_MINI_STDLIB
++extern struct LibraryFunction CLibrary[];
++#endif
++
+ /* platform.c */
+ /* the following are defined in picoc.h:
+  * void PicocCallMain(int argc, char **argv);
+Index: platform.c
+===================================================================
+--- platform.c	(revision 608)
++++ platform.c	(working copy)
+@@ -21,7 +21,7 @@
+ #endif
+     LibraryInit(pc);
+ #ifdef BUILTIN_MINI_STDLIB
+-    LibraryAdd(pc, &GlobalTable, "c library", &CLibrary[0]);
++    LibraryAdd(pc, &pc->GlobalTable, "c library", &CLibrary[0]);
+     CLibraryInit(pc);
+ #endif
+     PlatformLibraryInit(pc);

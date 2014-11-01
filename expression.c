@@ -51,7 +51,7 @@ struct OpPrecedence
 };
 
 /* NOTE: the order of this array must correspond exactly to the order of these tokens in enum LexToken */
-static struct OpPrecedence OperatorPrecedence[] =
+const static struct OpPrecedence OperatorPrecedence[] =
 {
     /* TokenNone, */ { 0, 0, 0, "none" },
     /* TokenComma, */ { 0, 0, 0, "," },

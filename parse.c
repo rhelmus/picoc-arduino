@@ -939,9 +939,9 @@ void PicocParse(Picoc *pc, const char *FileName, const char *Source, int SourceL
     enum ParseResult Ok;
     struct CleanupTokenNode *NewCleanupNode;
     char *RegFileName = TableStrRegister(pc, FileName);
-    
+
     void *Tokens = LexAnalyse(pc, RegFileName, Source, SourceLen, NULL);
-    
+
     /* allocate a cleanup node so we can clean up the tokens later */
     if (!CleanupNow)
     {

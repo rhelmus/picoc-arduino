@@ -2,6 +2,8 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+#define ARDUINO_HOST
+
 /* configurable options */
 /* select your host type (or do it in the Makefile):
  * #define  UNIX_HOST
@@ -143,5 +145,24 @@ extern int ExitBuf[];
 
 # endif
 #endif
+
+#ifdef ARDUINO_HOST
+# define HEAP_SIZE (7*1024)               /* space for the heap and the stack */
+# define NO_FP
+/*# define NO_PRINTF*/
+# define NO_DEBUGGER
+# include <stdlib.h>
+# include <ctype.h>
+# include <stdint.h>
+# include <string.h>
+# include <stdarg.h>
+# include <setjmp.h>
+# include <math.h>
+# define assert(x)
+# define BUILTIN_MINI_STDLIB  /* UNDONE: use avr libc? */
+# undef BIG_ENDIAN
+
+#endif
+
 
 #endif /* PLATFORM_H */

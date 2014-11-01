@@ -578,6 +578,10 @@ void PrintFP(double Num, IOFILE *Stream);
 void PrintType(struct ValueType *Typ, IOFILE *Stream);
 void LibPrintf(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs);
 
+#ifdef BUILTIN_MINI_STDLIB
+extern const struct LibraryFunction CLibrary[];
+#endif
+
 /* platform.c */
 /* the following are defined in picoc.h:
  * void PicocCallMain(int argc, char **argv);

@@ -34,7 +34,7 @@ struct ReservedWord
     enum LexToken Token;
 };
 
-static struct ReservedWord ReservedWords[] =
+const static struct ReservedWord ReservedWords[] =
 {
     { "#define", TokenHashDefine },
     { "#else", TokenHashElse },

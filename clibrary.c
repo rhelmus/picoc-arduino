@@ -95,16 +95,16 @@ static int ZeroValue = 0;
 void BasicIOInit(Picoc *pc)
 {
     pc->CStdOutBase.Putch = &PlatformPutc;
-    pc->CStdOut = &CStdOutBase;
+    pc->CStdOut = &pc->CStdOutBase;
 }
 
 /* initialise the C library */
 void CLibraryInit(Picoc *pc)
 {
     /* define some constants */
-    VariableDefinePlatformVar(pc, NULL, "NULL", &IntType, (union AnyValue *)&ZeroValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "TRUE", &IntType, (union AnyValue *)&TRUEValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "FALSE", &IntType, (union AnyValue *)&ZeroValue, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, (union AnyValue *)&ZeroValue, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "TRUE", &pc->IntType, (union AnyValue *)&TRUEValue, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "FALSE", &pc->IntType, (union AnyValue *)&ZeroValue, FALSE);
 }
 
 /* stream for writing into strings */
@@ -128,7 +128,7 @@ void PrintStr(const char *Str, struct OutputStream *Stream)
 }
 
 /* print a single character a given number of times */
-void PrintRepeatedChar(Picoc *pc, char ShowChar, int Length, struct OutputStream *Stream)
+void PrintRepeatedChar(char ShowChar, int Length, struct OutputStream *Stream)
 {
     while (Length-- > 0)
         PrintCh(ShowChar, Stream);
@@ -234,6 +234,7 @@ void GenericPrintf(struct ParseState *Parser, struct Value *ReturnValue, struct 
     int ZeroPad = FALSE;
     int FieldWidth = 0;
     char *Format = Param[0]->Val->Pointer;
+    Picoc *pc = Parser->pc;
     
     for (FPos = Format; *FPos != '\0'; FPos++)
     {
@@ -262,10 +263,10 @@ void GenericPrintf(struct ParseState *Parser, struct Value *ReturnValue, struct 
             /* now check the format type */
             switch (*FPos)
             {
-                case 's': FormatType = CharPtrType; break;
-                case 'd': case 'u': case 'x': case 'b': case 'c': FormatType = &IntType; break;
+                case 's': FormatType = pc->CharPtrType; break;
+                case 'd': case 'u': case 'x': case 'b': case 'c': FormatType = &pc->IntType; break;
 #ifndef NO_FP
-                case 'f': FormatType = &FPType; break;
+                case 'f': FormatType = &pc->FPType; break;
 #endif
                 case '%': PrintCh('%', Stream); FormatType = NULL; break;
                 case '\0': FPos--; FormatType = NULL; break;
@@ -281,8 +282,8 @@ void GenericPrintf(struct ParseState *Parser, struct Value *ReturnValue, struct 
                 {
                     NextArg = (struct Value *)((char *)NextArg + MEM_ALIGN(sizeof(struct Value) + TypeStackSizeValue(NextArg)));
                     if (NextArg->Typ != FormatType && 
-                            !((FormatType == &IntType || *FPos == 'f') && IS_NUMERIC_COERCIBLE(NextArg)) &&
-                            !(FormatType == CharPtrType && (NextArg->Typ->Base == TypePointer || 
+                            !((FormatType == &pc->IntType || *FPos == 'f') && IS_NUMERIC_COERCIBLE(NextArg)) &&
+                            !(FormatType == pc->CharPtrType && (NextArg->Typ->Base == TypePointer || 
                                                              (NextArg->Typ->Base == TypeArray && NextArg->Typ->FromType->Base == TypeChar) ) ) )
                         PrintStr("XXX", Stream);   /* bad type for format */
                     else
@@ -366,7 +367,7 @@ void LibGetc(struct ParseState *Parser, struct Value *ReturnValue, struct Value 
 
 void LibExit(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
-    PlatformExit(Param[0]->Val->Integer);
+    PlatformExit(Parser->pc, Param[0]->Val->Integer);
 }
 
 #ifdef PICOC_LIBRARY
@@ -622,10 +623,12 @@ void LibMemcmp(struct ParseState *Parser, struct Value *ReturnValue, struct Valu
 #endif
 
 /* list of all library functions and their prototypes */
-struct LibraryFunction CLibrary[] =
+const struct LibraryFunction CLibrary[] =
 {
+#ifndef NO_PRINTF
     { LibPrintf,        "void printf(char *, ...);" },
     { LibSPrintf,       "char *sprintf(char *, char *, ...);" },
+#endif
     { LibGets,          "char *gets(char *);" },
     { LibGetc,          "int getchar();" },
     { LibExit,          "void exit(int);" },
