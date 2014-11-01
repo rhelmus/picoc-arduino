@@ -1,1 +1,7 @@
 *.creator.user
+*/*.o
+*.o
+picoc
+tests/*.output
+tests/fred.txt
+tests/csmith/*.output
