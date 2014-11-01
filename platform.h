@@ -2,7 +2,8 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#define ARDUINO_HOST
+/*#define ARDUINO_HOST*/
+#define UNIX_HOST
 
 /* configurable options */
 /* select your host type (or do it in the Makefile):

@@ -115,6 +115,108 @@ void LexCleanup(Picoc *pc)
         TableDelete(pc, &pc->ReservedWordTable, TableStrRegister(pc, ReservedWords[Count].Word));
 }
 
+/* used in interactive mode / line by line mode to get more source text from user/file input */
+int LexGetMoreSource(struct ParseState *Parser, char *LineBuffer, int Size)
+{
+#if 0
+    if (pc->LineFilePointer)
+    {
+        if (PlatformGetLineFromFile(LineBuffer, Size, pc->LineFilePointer) == NULL)
+            return FALSE;
+    }
+    else
+    {
+        char *Prompt;
+
+        /* get interactive input */
+        if (pc->LexUseStatementPrompt)
+        {
+            Prompt = INTERACTIVE_PROMPT_STATEMENT;
+            pc->LexUseStatementPrompt = FALSE;
+        }
+        else
+            Prompt = INTERACTIVE_PROMPT_LINE;
+
+        if (PlatformGetLine(LineBuffer, Size, Prompt) == NULL)
+            return FALSE;
+    }
+
+    return TRUE;
+#else
+
+    /* Initially one line of source input is fetched. If this line contains unfinished
+       string/comment blocks, more text is loaded is it fits in the buffer */
+
+    int start = 0;
+    int QuoteStart = -1, CommentStart = -1;
+    do
+    {
+        int len, i, end;
+
+        if (Parser->LineFilePointer)
+        {
+            if (PlatformGetLineFromFile(&LineBuffer[start], (Size-start), Parser->LineFilePointer) == NULL)
+            {
+                if (start == 0)
+                    return FALSE;
+                break;
+            }
+        }
+        else
+        {
+            char *Prompt;
+
+            /* get interactive input */
+            if (Parser->pc->LexUseStatementPrompt)
+            {
+                Prompt = INTERACTIVE_PROMPT_STATEMENT;
+                Parser->pc->LexUseStatementPrompt = FALSE;
+            }
+            else
+                Prompt = INTERACTIVE_PROMPT_LINE;
+
+            if (PlatformGetLine(&LineBuffer[start], (Size-start), Prompt) == NULL)
+            {
+                if (start == 0)
+                    return FALSE;
+                break;
+            }
+        }
+
+        len = strlen(&LineBuffer[start]);
+        end = start + len;
+
+        for (i=start; i!=end; ++i)
+        {
+            if (LineBuffer[i] == '"' && (i == start || LineBuffer[i-1] != '\''))
+                QuoteStart = (QuoteStart != -1) ? -1 : i;
+            else if ((i+1) != end)
+            {
+                if (LineBuffer[i] == '/' && LineBuffer[i+1] == '*')
+                    CommentStart = i;
+                else if (LineBuffer[i] == '*' && LineBuffer[i+1] == '/')
+                    CommentStart = -1;
+            }
+        }
+
+        /* Are we in an unfinished comment block (and is there room to get more text)? */
+        if (CommentStart != -1 && (CommentStart+3) < end)
+        {
+            /* Skip all comment rubbish, replace by newline to keep line counting OK */
+            LineBuffer[CommentStart + 2] = '\n';
+            start = CommentStart + 3;
+        }
+        else
+            start = end;
+    }
+    while ((QuoteStart != -1 || CommentStart != -1) && start < Size);
+
+    /*printf("GetMoreSource: %s\n", LineBuffer);*/
+
+    return TRUE;
+#endif
+}
+
 /* check if a word is a reserved word - used while scanning */
 enum LexToken LexCheckReservedWord(Picoc *pc, const char *Word)
 {
@@ -331,7 +433,7 @@ enum LexToken LexGetStringConstant(Picoc *pc, struct LexState *Lexer, struct Val
     char *EscBufPos;
     char *RegString;
     struct Value *ArrayValue;
-    
+
     while (Lexer->Pos != Lexer->End && (*Lexer->Pos != EndChar || Escape))
     { 
         /* find the end */
@@ -607,12 +709,13 @@ void *LexAnalyse(Picoc *pc, const char *FileName, const char *Source, int Source
 }
 
 /* prepare to parse a pre-tokenised buffer */
-void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, void *TokenSource, char *FileName, int RunIt, int EnableDebugger)
+void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, void *TokenSource, char *FileName, void *FilePointer, int RunIt, int EnableDebugger)
 {
     Parser->pc = pc;
     Parser->Pos = TokenSource;
     Parser->Line = 1;
     Parser->FileName = FileName;
+    Parser->LineFilePointer = FilePointer;
     Parser->Mode = RunIt ? RunModeRun : RunModeSkip;
     Parser->SearchLabel = 0;
     Parser->HashIfLevel = 0;
@@ -627,7 +730,6 @@ enum LexToken LexGetRawToken(struct ParseState *Parser, struct Value **Value, in
 {
     enum LexToken Token = TokenNone;
     int ValueSize;
-    char *Prompt = NULL;
     Picoc *pc = Parser->pc;
     
     do
@@ -636,7 +738,7 @@ enum LexToken LexGetRawToken(struct ParseState *Parser, struct Value **Value, in
         if (Parser->Pos == NULL && pc->InteractiveHead != NULL)
             Parser->Pos = pc->InteractiveHead->Tokens;
         
-        if (Parser->FileName != pc->StrEmpty || pc->InteractiveHead != NULL)
+        if ((Parser->FileName != pc->StrEmpty && !Parser->LineFilePointer) || pc->InteractiveHead != NULL)
         { 
             /* skip leading newlines */
             while ((Token = (enum LexToken)*(unsigned char *)Parser->Pos) == TokenEndOfLine)
@@ -645,27 +747,17 @@ enum LexToken LexGetRawToken(struct ParseState *Parser, struct Value **Value, in
                 Parser->Pos += TOKEN_DATA_OFFSET;
             }
         }
-    
-        if (Parser->FileName == pc->StrEmpty && (pc->InteractiveHead == NULL || Token == TokenEOF))
-        { 
-            /* we're at the end of an interactive input token list */
-            char LineBuffer[LINEBUFFER_MAX];
-            void *LineTokens;
-            int LineBytes;
-            struct TokenLine *LineNode;
-            
+
+        if ((Parser->LineFilePointer || Parser->FileName == pc->StrEmpty) && (pc->InteractiveHead == NULL || Token == TokenEOF))
+        {
             if (pc->InteractiveHead == NULL || (unsigned char *)Parser->Pos == &pc->InteractiveTail->Tokens[pc->InteractiveTail->NumBytes-TOKEN_DATA_OFFSET])
-            { 
-                /* get interactive input */
-                if (pc->LexUseStatementPrompt)
-                {
-                    Prompt = INTERACTIVE_PROMPT_STATEMENT;
-                    pc->LexUseStatementPrompt = FALSE;
-                }
-                else
-                    Prompt = INTERACTIVE_PROMPT_LINE;
-                    
-                if (PlatformGetLine(&LineBuffer[0], LINEBUFFER_MAX, Prompt) == NULL)
+            {
+                char LineBuffer[LINEBUFFER_MAX];
+                void *LineTokens;
+                int LineBytes;
+                struct TokenLine *LineNode;
+
+                if (!LexGetMoreSource(Parser, LineBuffer, LINEBUFFER_MAX))
                     return TokenEOF;
 
                 /* put the new line at the end of the linked list of interactive lines */        
@@ -705,7 +797,7 @@ enum LexToken LexGetRawToken(struct ParseState *Parser, struct Value **Value, in
 
             Token = (enum LexToken)*(unsigned char *)Parser->Pos;
         }
-    } while ((Parser->FileName == pc->StrEmpty && Token == TokenEOF) || Token == TokenEndOfLine);
+    } while (((Parser->LineFilePointer || Parser->FileName == pc->StrEmpty) && Token == TokenEOF) || Token == TokenEndOfLine);
 
     Parser->CharacterPos = *((unsigned char *)Parser->Pos + 1);
     ValueSize = LexTokenSize(Token);

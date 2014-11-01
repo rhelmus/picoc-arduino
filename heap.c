@@ -136,8 +136,6 @@ int memused = 0;
 /* allocate some dynamically allocated memory. memory is cleared. can return NULL if out of memory */
 void *HeapAllocMem(Picoc *pc, int Size)
 {
-    memused += Size;
-
 #ifdef USE_MALLOC_HEAP
     return calloc(Size, 1);
 #else
@@ -151,7 +149,9 @@ void *HeapAllocMem(Picoc *pc, int Size)
         return NULL;
     
     assert(Size > 0);
-    
+
+    memused += Size;
+
     /* make sure we have enough space for an AllocNode */
     if (AllocSize < sizeof(struct AllocNode))
         AllocSize = sizeof(struct AllocNode);
@@ -262,7 +262,7 @@ void HeapFreeMem(Picoc *pc, void *Mem)
 #ifdef DEBUG_HEAP
         printf("freeing %d to bucket\n", MemNode->Size);
 #endif
-        assert(pc->FreeListBucket[Bucket] == NULL || ((unsigned long)pc->FreeListBucket[Bucket] >= (unsigned long)&(pc->HeapMemory)[0] && (unsigned char *)FreeListBucket[Bucket] - &HeapMemory[0] < HEAP_SIZE));
+        assert(pc->FreeListBucket[Bucket] == NULL || ((unsigned long)pc->FreeListBucket[Bucket] >= (unsigned long)&(pc->HeapMemory)[0] && (unsigned char *)pc->FreeListBucket[Bucket] - &pc->HeapMemory[0] < HEAP_SIZE));
         *(struct AllocNode **)MemNode = pc->FreeListBucket[Bucket];
         pc->FreeListBucket[Bucket] = (struct AllocNode *)MemNode;
     }

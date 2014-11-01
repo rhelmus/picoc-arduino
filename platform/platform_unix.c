@@ -65,6 +65,12 @@ char *PlatformGetLine(char *Buf, int MaxLen, const char *Prompt)
     return fgets(Buf, MaxLen, stdin);
 }
 
+/* get a line from a file */
+char *PlatformGetLineFromFile(char *Buf, int MaxLen, void *FilePointer)
+{
+    return fgets(Buf, MaxLen, (FILE *)FilePointer);
+}
+
 /* get a character of interactive input */
 int PlatformGetCharacter()
 {
@@ -129,6 +135,28 @@ void PicocPlatformScanFile(Picoc *pc, const char *FileName)
     }
 
     PicocParse(pc, FileName, SourceStr, strlen(SourceStr), TRUE, FALSE, TRUE, TRUE);
+}
+
+/* read and scan a file for definitions */
+void PicocPlatformScanFileByLine(Picoc *pc, const char *FileName)
+{
+    FILE *InFile = fopen(FileName, "r");
+
+    if (!InFile)
+        ProgramFailNoParser(pc, "can't read file %s\n", FileName);
+
+#if 0 /* support this? */
+    /* ignore "#!/path/to/picoc" .. by replacing the "#!" with "//" */
+    if (SourceStr != NULL && SourceStr[0] == '#' && SourceStr[1] == '!')
+    {
+        SourceStr[0] = '/';
+        SourceStr[1] = '/';
+    }
+#endif
+
+    PicocParseLineByLine(pc, FileName, InFile, TRUE);
+
+    fclose(InFile);
 }
 
 /* exit the program */

@@ -178,9 +178,9 @@ int VariableScopeBegin(struct ParseState * Parser, int* OldScopeID)
 
     /* XXX dumb hash, let's hope for no collisions... */
     *OldScopeID = Parser->ScopeID;
-    Parser->ScopeID = (int)(intptr_t)(Parser->SourceText) * ((int)(intptr_t)(Parser->Pos) / sizeof(char*));
+    /*Parser->ScopeID = (int)(intptr_t)(Parser->SourceText) * ((int)(intptr_t)(Parser->Pos) / sizeof(char*));*/
     /* or maybe a more human-readable hash for debugging? */
-    /* Parser->ScopeID = Parser->Line * 0x10000 + Parser->CharacterPos; */
+    Parser->ScopeID = Parser->Line * 0x10000 + Parser->CharacterPos;
     
     for (Count = 0; Count < HashTable->Size; Count++)
     {

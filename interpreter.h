@@ -118,6 +118,7 @@ struct ParseState
     Picoc *pc;                  /* the picoc instance this parser is a part of */
     const unsigned char *Pos;   /* the character position in the source text */
     char *FileName;             /* what file we're executing (registered string) */
+    void *LineFilePointer;      /* Pointer to file data for line by line parsing (Similar to Interactive mode) */
     short int Line;             /* line number we're executing */
     short int CharacterPos;     /* character/column in the line we're executing */
     enum RunMode Mode;          /* whether to skip or run code */
@@ -483,7 +484,7 @@ void TableStrFree(Picoc *pc);
 void LexInit(Picoc *pc);
 void LexCleanup(Picoc *pc);
 void *LexAnalyse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int *TokenLen);
-void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, void *TokenSource, char *FileName, int RunIt, int SetDebugMode);
+void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, void *TokenSource, char *FileName, void *FilePointer, int RunIt, int SetDebugMode);
 enum LexToken LexGetToken(struct ParseState *Parser, struct Value **Value, int IncPos);
 enum LexToken LexRawPeekToken(struct ParseState *Parser);
 void LexToEndOfLine(struct ParseState *Parser);
@@ -579,7 +580,7 @@ void PrintType(struct ValueType *Typ, IOFILE *Stream);
 void LibPrintf(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs);
 
 #ifdef BUILTIN_MINI_STDLIB
-extern const struct LibraryFunction CLibrary[];
+const extern struct LibraryFunction CLibrary[];
 #endif
 
 /* platform.c */
@@ -597,6 +598,7 @@ void LexFail(Picoc *pc, struct LexState *Lexer, const char *Message, ...);
 void PlatformInit(Picoc *pc);
 void PlatformCleanup(Picoc *pc);
 char *PlatformGetLine(char *Buf, int MaxLen, const char *Prompt);
+char *PlatformGetLineFromFile(char *Buf, int MaxLen, void *FilePointer);
 int PlatformGetCharacter();
 void PlatformPutc(unsigned char OutCh, union OutputStreamInfo *);
 void PlatformPrintf(IOFILE *Stream, const char *Format, ...);
@@ -609,7 +611,7 @@ void PlatformLibraryInit(Picoc *pc);
 void IncludeInit(Picoc *pc);
 void IncludeCleanup(Picoc *pc);
 void IncludeRegister(Picoc *pc, const char *IncludeName, void (*SetupFunction)(Picoc *pc), struct LibraryFunction *FuncList, const char *SetupCSource);
-void IncludeFile(Picoc *pc, char *Filename);
+void IncludeFile(Picoc *pc, char *Filename, int LineByLine);
 /* the following is defined in picoc.h:
  * void PicocIncludeAllSystemHeaders(); */
  

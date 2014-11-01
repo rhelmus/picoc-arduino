@@ -46,12 +46,14 @@ void PicocFreeCharBuffer(Picoc *pc, char *buf);
 /* parse.c */
 void PicocParse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int RunIt, int CleanupNow, int CleanupSource, int EnableDebugger);
 void PicocParseInteractive(Picoc *pc);
+void PicocParseLineByLine(Picoc *pc, const char *FileName, void *FilePointer, int EnableDebugger);
 
 /* platform.c */
 void PicocCallMain(Picoc *pc, int argc, char **argv);
 void PicocInitialise(Picoc *pc, int StackSize);
 void PicocCleanup(Picoc *pc);
 void PicocPlatformScanFile(Picoc *pc, const char *FileName);
+void PicocPlatformScanFileByLine(Picoc *pc, const char *FileName);
 
 /* include.c */
 void PicocIncludeAllSystemHeaders(Picoc *pc);

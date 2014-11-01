@@ -213,3 +213,5 @@ platform.h
 table.c
 type.c
 variable.c
+Makefile
+tests/Makefile

@@ -782,7 +782,7 @@ enum ParseResult ParseStatement(struct ParseState *Parser, int CheckTrailingSemi
             if (LexGetToken(Parser, &LexerValue, TRUE) != TokenStringConstant)
                 ProgramFail(Parser, "\"filename.h\" expected");
             
-            IncludeFile(Parser->pc, (char *)LexerValue->Val->Pointer);
+            IncludeFile(Parser->pc, (char *)LexerValue->Val->Pointer, (Parser->LineFilePointer || Parser->FileName == Parser->pc->StrEmpty));
             CheckTrailingSemicolon = FALSE;
             break;
 #endif
@@ -960,7 +960,7 @@ void PicocParse(Picoc *pc, const char *FileName, const char *Source, int SourceL
     }
     
     /* do the parsing */
-    LexInitParser(&Parser, pc, Source, Tokens, RegFileName, RunIt, EnableDebugger);
+    LexInitParser(&Parser, pc, Source, Tokens, RegFileName, NULL, RunIt, EnableDebugger);
 
     do {
         Ok = ParseStatement(&Parser, TRUE);
@@ -980,7 +980,7 @@ void PicocParseInteractiveNoStartPrompt(Picoc *pc, int EnableDebugger)
     struct ParseState Parser;
     enum ParseResult Ok;
     
-    LexInitParser(&Parser, pc, NULL, NULL, pc->StrEmpty, TRUE, EnableDebugger);
+    LexInitParser(&Parser, pc, NULL, NULL, pc->StrEmpty, NULL, TRUE, EnableDebugger);
     PicocPlatformSetExitPoint(pc);
     LexInteractiveClear(pc, &Parser);
 
@@ -1003,4 +1003,25 @@ void PicocParseInteractive(Picoc *pc)
 {
     PlatformPrintf(pc->CStdOut, INTERACTIVE_PROMPT_START);
     PicocParseInteractiveNoStartPrompt(pc, TRUE);
+}
+
+void PicocParseLineByLine(Picoc *pc, const char *FileName, void *FilePointer, int EnableDebugger)
+{
+    struct ParseState Parser;
+    enum ParseResult Ok;
+    char *RegFileName = TableStrRegister(pc, FileName);
+
+    LexInitParser(&Parser, pc, NULL, NULL, RegFileName, FilePointer, TRUE, EnableDebugger);
+    /*PicocPlatformSetExitPoint(pc);*/
+    LexInteractiveClear(pc, &Parser);
+
+    do
+    {
+        Ok = ParseStatement(&Parser, TRUE);
+        LexInteractiveCompleted(pc, &Parser);
+
+    } while (Ok == ParseResultOk);
+
+    if (Ok == ParseResultError)
+        ProgramFail(&Parser, "parse error");
 }

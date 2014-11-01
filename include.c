@@ -61,11 +61,11 @@ void PicocIncludeAllSystemHeaders(Picoc *pc)
     struct IncludeLibrary *ThisInclude = pc->IncludeLibList;
     
     for (; ThisInclude != NULL; ThisInclude = ThisInclude->NextLib)
-        IncludeFile(pc, ThisInclude->IncludeName);
+        IncludeFile(pc, ThisInclude->IncludeName, FALSE); /* NOTE: LineByLine arg doesn't affect system libs */
 }
 
 /* include one of a number of predefined libraries, or perhaps an actual file */
-void IncludeFile(Picoc *pc, char *FileName)
+void IncludeFile(Picoc *pc, char *FileName, int LineByLine)
 {
     struct IncludeLibrary *LInclude;
     
@@ -97,7 +97,10 @@ void IncludeFile(Picoc *pc, char *FileName)
     }
     
     /* not a predefined file, read a real file */
-    PicocPlatformScanFile(pc, FileName);
+    if (LineByLine)
+        PicocPlatformScanFileByLine(pc, FileName);
+    else
+        PicocPlatformScanFile(pc, FileName);
 }
 
 #endif /* NO_HASH_INCLUDE */

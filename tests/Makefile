@@ -1,3 +1,6 @@
+#	63_typedef.test \
+#	61_initializers.test \
+
 TESTS=	00_assignment.test \
 	01_comment.test \
 	02_printf.test \
@@ -55,9 +58,7 @@ TESTS=	00_assignment.test \
 	58_return_outside.test \
 	59_break_before_loop.test \
 	60_local_vars.test \
-	61_initializers.test \
 	62_float.test \
-	63_typedef.test \
 	64_double_prefix_op.test \
 	66_printf_undefined.test \
 	67_macro_crash.test \
@@ -70,9 +71,9 @@ include csmith/Makefile
 	@echo Test: $*...
 	@if [ "x`echo $* | grep args`" != "x" ]; \
 	then \
-		../picoc $*.c - arg1 arg2 arg3 arg4 2>&1 >$*.output; \
+                ../picoc -l $*.c - arg1 arg2 arg3 arg4 2>&1 >$*.output; \
 	else \
-		../picoc $*.c 2>&1 >$*.output; \
+                ../picoc -l $*.c 2>&1 >$*.output; \
 	fi
 	@if [ "x`diff -qbu $*.expect $*.output`" != "x" ]; \
 	then \
