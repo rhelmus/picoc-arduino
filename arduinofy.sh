@@ -3,7 +3,7 @@
 COPY="cp -v"
 
 if [ "$1" = "-s" ]; then
-    COPY="ln -vs" shift
+    COPY="ln -fvs" shift
 fi
 
 DEST="$1"
@@ -11,22 +11,22 @@ echo "destination: $DEST"
 
 mkdir -p "${DEST}"
 
-$COPY clibrary.c "${DEST}/"
-$COPY debug.c "${DEST}/"
-$COPY expression.c "${DEST}/"
-$COPY heap.c "${DEST}/"
-$COPY include.c "${DEST}/"
-$COPY interpreter.h "${DEST}/"
-$COPY lex.c "${DEST}/"
-$COPY parse.c "${DEST}/"
-$COPY picoc.h "${DEST}/"
-$COPY platform.c "${DEST}/"
-$COPY platform.h "${DEST}/"
-$COPY table.c "${DEST}/"
-$COPY type.c "${DEST}/"
-$COPY variable.c "${DEST}/"
-$COPY README "${DEST}/"
+$COPY "${PWD}"/clibrary.c "${DEST}/"
+$COPY "${PWD}"/debug.c "${DEST}/"
+$COPY "${PWD}"/expression.c "${DEST}/"
+$COPY "${PWD}"/heap.c "${DEST}/"
+$COPY "${PWD}"/include.c "${DEST}/"
+$COPY "${PWD}"/interpreter.h "${DEST}/"
+$COPY "${PWD}"/lex.c "${DEST}/"
+$COPY "${PWD}"/parse.c "${DEST}/"
+$COPY "${PWD}"/picoc.h "${DEST}/"
+$COPY "${PWD}"/platform.c "${DEST}/"
+$COPY "${PWD}"/platform.h "${DEST}/"
+$COPY "${PWD}"/table.c "${DEST}/"
+$COPY "${PWD}"/type.c "${DEST}/"
+$COPY "${PWD}"/variable.c "${DEST}/"
+$COPY "${PWD}"/README "${DEST}/"
 
 mkdir -p "${DEST}/utility"
-$COPY platform/library_arduino.c "${DEST}/utility"
-$COPY platform/platform_arduino.cpp "${DEST}/utility"
+$COPY "${PWD}"/platform/library_arduino.cpp "${DEST}/utility"
+$COPY "${PWD}"/platform/platform_arduino.cpp "${DEST}/utility"

@@ -7,13 +7,31 @@ extern "C" {
 
 namespace {
 
-TReadFileFunc readFileFunc;
+ReadCompleteFileFunc ReadFileFunction;
+OpenFileFunc OpenFileFunction;
+CloseFileFunc CloseFileFunction;
+ReadFileLineFunc ReadFileLineFunction;
 
 }
 
-void PicocSetReadFile(TReadFileFunc f)
+void PicocSetReadCompleteFileFunc(ReadCompleteFileFunc f)
 {
-    readFileFunc = f;
+    ReadFileFunction = f;
+}
+
+void PicocSetOpenFileFunc(OpenFileFunc f)
+{
+    OpenFileFunction = f;
+}
+
+void PicocSetCloseFileFunc(CloseFileFunc f)
+{
+    CloseFileFunction = f;
+}
+
+void PicocSetReadFileLineFunc(ReadFileLineFunc f)
+{
+    ReadFileLineFunction = f;
 }
 
 char *PicocGetCharBuffer(Picoc *pc, int size)
@@ -49,6 +67,14 @@ char *PlatformGetLine(char *Buf, int MaxLen, const char *Prompt)
     return 0;
 }
 
+/* get a line from a file */
+char *PlatformGetLineFromFile(char *Buf, int MaxLen, void *FilePointer)
+{
+    if (ReadFileLineFunction)
+        return ReadFileLineFunction(Buf, MaxLen, FilePointer);
+    return NULL;
+}
+
 /* get a character of interactive input */
 int PlatformGetCharacter()
 {
@@ -61,21 +87,31 @@ void PlatformPutc(unsigned char OutCh, union OutputStreamInfo *Stream)
     Serial.write(OutCh);
 }
 
-/* read a file into memory */
-char *PlatformReadFile(Picoc *pc, const char *FileName)
-{
-    if (readFileFunc)
-        return readFileFunc(FileName);
-
-    return 0;
-}
-
 /* read and scan a file for definitions */
 void PicocPlatformScanFile(Picoc *pc, const char *FileName)
 {
-    char *SourceStr = PlatformReadFile(pc, FileName);
+    if (ReadFileFunction)
+    {
+        char *SourceStr = ReadFileFunction(FileName);
+        if (SourceStr)
+            PicocParse(pc, FileName, SourceStr, strlen(SourceStr), TRUE, FALSE, TRUE, TRUE); /* UNDONE: always clean? */
+    }
+}
 
-    PicocParse(pc, FileName, SourceStr, strlen(SourceStr), TRUE, FALSE, TRUE, TRUE);
+/* read and scan a file for definitions */
+void PicocPlatformScanFileByLine(Picoc *pc, const char *FileName)
+{
+    if (!OpenFileFunction)
+        return;
+
+    void *fp = OpenFileFunction(FileName);
+
+    if (fp)
+    {
+        PicocParseLineByLine(pc, FileName, fp, TRUE);
+        if (CloseFileFunction)
+            CloseFileFunction(fp);
+    }
 }
 
 /* exit the program */

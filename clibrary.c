@@ -223,6 +223,7 @@ void PrintFP(double Num, struct OutputStream *Stream)
 }
 #endif
 
+#ifndef NO_PRINTF
 /* intrinsic functions made available to the language */
 void GenericPrintf(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs, struct OutputStream *Stream)
 {
@@ -241,7 +242,7 @@ void GenericPrintf(struct ParseState *Parser, struct Value *ReturnValue, struct 
         if (*FPos == '%')
         {
             FPos++;
-	    FieldWidth = 0;
+            FieldWidth = 0;
             if (*FPos == '-')
             {
                 /* a leading '-' means left justify */
@@ -347,6 +348,7 @@ void LibSPrintf(struct ParseState *Parser, struct Value *ReturnValue, struct Val
     PrintCh(0, &StrStream);
     ReturnValue->Val->Pointer = *Param;
 }
+#endif
 
 /* get a line of input. protected from buffer overrun */
 void LibGets(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
@@ -652,15 +654,17 @@ const struct LibraryFunction CLibrary[] =
     { LibCeil,          "float ceil(float);" },
     { LibFloor,         "float floor(float);" },
 #endif
+#ifndef NO_STRING_FUNCTIONS
     { LibMalloc,        "void *malloc(int);" },
+#endif
 #ifndef NO_CALLOC
     { LibCalloc,        "void *calloc(int,int);" },
 #endif
 #ifndef NO_REALLOC
     { LibRealloc,       "void *realloc(void *,int);" },
 #endif
-    { LibFree,          "void free(void *);" },
 #ifndef NO_STRING_FUNCTIONS
+    { LibFree,          "void free(void *);" },
     { LibStrcpy,        "void strcpy(char *,char *);" },
     { LibStrncpy,       "void strncpy(char *,char *,int);" },
     { LibStrcmp,        "int strcmp(char *,char *);" },

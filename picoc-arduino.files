@@ -7,7 +7,6 @@ cstdlib/stdlib.c
 cstdlib/string.c
 cstdlib/time.c
 cstdlib/unistd.c
-platform/library_arduino.c
 platform/library_ffox.c
 platform/library_msvc.c
 platform/library_srv1.c
@@ -215,3 +214,5 @@ type.c
 variable.c
 Makefile
 tests/Makefile
+arduinofy.sh
+platform/library_arduino.cpp

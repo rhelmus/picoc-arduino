@@ -64,11 +64,16 @@ void VariableCleanup(Picoc *pc)
     VariableTableCleanup(pc, &pc->StringLiteralTable);
 }
 
+int varmemused = 0;
+
 /* allocate some memory, either on the heap or the stack and check if we've run out */
 void *VariableAlloc(Picoc *pc, struct ParseState *Parser, int Size, int OnHeap)
 {
     void *NewValue;
-    
+
+    if (OnHeap)
+        varmemused += Size;
+
     if (OnHeap)
         NewValue = HeapAllocMem(pc, Size);
     else

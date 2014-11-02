@@ -36,8 +36,14 @@ extern int PicocExitBuf[];
 #ifdef ARDUINO_HOST
 #define PicocPlatformSetExitPoint(pc) /* empty */
 
-typedef char *(*TReadFileFunc)(const char *f);
-void PicocSetReadFile(TReadFileFunc f);
+typedef char *(*ReadCompleteFileFunc)(const char *);
+typedef void *(*OpenFileFunc)(const char *);
+typedef void (*CloseFileFunc)(void *);
+typedef char *(*ReadFileLineFunc)(char *, int, void *);
+void PicocSetReadCompleteFileFunc(ReadCompleteFileFunc f);
+void PicocSetOpenFileFunc(OpenFileFunc f);
+void PicocSetCloseFileFunc(CloseFileFunc f);
+void PicocSetReadFileLineFunc(ReadFileLineFunc f);
 char *PicocGetCharBuffer(Picoc *pc, int size);
 void PicocFreeCharBuffer(Picoc *pc, char *buf);
 

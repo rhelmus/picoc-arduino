@@ -757,6 +757,9 @@ enum LexToken LexGetRawToken(struct ParseState *Parser, struct Value **Value, in
                 int LineBytes;
                 struct TokenLine *LineNode;
 
+                extern int memused, varmemused;
+                printf("memused: %d/%d\n", memused, varmemused);
+
                 if (!LexGetMoreSource(Parser, LineBuffer, LINEBUFFER_MAX))
                     return TokenEOF;
 
