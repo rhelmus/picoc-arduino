@@ -36,7 +36,8 @@ void LibraryAdd(Picoc *pc, struct Table *GlobalTable, const char *LibraryName, s
     struct ValueType *ReturnType;
     struct Value *NewValue;
     void *Tokens;
-    char *IntrinsicName = TableStrRegister(pc, "c library");
+    char *IntrinsicName = TableStrRegister(pc, "c library"); /* UNDONE: Shouldn't this be LibraryName? */
+    /*char *IntrinsicName = TableStrRegister(pc, LibraryName);*/
     
     /* read all the library definitions */
     for (Count = 0; FuncList[Count].Prototype != NULL; Count++)
