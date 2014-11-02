@@ -97,11 +97,8 @@ void LexInit(Picoc *pc)
     
     pc->LexValue.Typ = NULL;
     pc->LexValue.Val = &pc->LexAnyValue;
-    pc->LexValue.LValueFrom = FALSE;
-    pc->LexValue.ValOnHeap = FALSE;
-    pc->LexValue.ValOnStack = FALSE;
-    pc->LexValue.AnyValOnHeap = FALSE;
-    pc->LexValue.IsLValue = FALSE;
+    pc->LexValue.LValueFrom = NULL;
+    pc->LexValue.Flags = 0;
 }
 
 /* deallocate */
@@ -759,7 +756,7 @@ enum LexToken LexGetRawToken(struct ParseState *Parser, struct Value **Value, in
 
 #ifdef UNIX_HOST
                 extern int memused, varmemused;
-                printf("memused: %d/%d\n", memused, varmemused);
+                /*printf("memused: %d/%d\n", memused, varmemused);*/
 #endif
 
                 if (!LexGetMoreSource(Parser, LineBuffer, LINEBUFFER_MAX))
@@ -824,9 +821,7 @@ enum LexToken LexGetRawToken(struct ParseState *Parser, struct Value **Value, in
             }
             
             memcpy((void *)pc->LexValue.Val, (void *)((char *)Parser->Pos + TOKEN_DATA_OFFSET), ValueSize);
-            pc->LexValue.ValOnHeap = FALSE;
-            pc->LexValue.ValOnStack = FALSE;
-            pc->LexValue.IsLValue = FALSE;
+            pc->LexValue.Flags &= ~(FlagValOnHeap | FlagOnStack | FlagIsLValue);
             pc->LexValue.LValueFrom = NULL;
             *Value = &pc->LexValue;
         }

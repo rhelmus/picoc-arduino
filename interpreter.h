@@ -93,6 +93,22 @@ enum LexToken
     /* 0x5c */ TokenEOF, TokenEndOfLine, TokenEndOfFunction
 };
 
+/* some enums to replace boolean flags and save some bytes */
+enum ValueTypeFlags
+{
+    FlagOnHeap = (1<<0),             /* true if allocated on the heap */
+    FlagStaticQualifier = (1<<1)     /* true if it's a static */
+};
+
+enum ValueFlags
+{
+    FlagValOnHeap = (1<<0),        /* this Value is on the heap */
+    FlagOnStack = (1<<1),       /* the AnyValue is on the stack along with this Value */
+    FlagAnyValOnHeap = (1<<2),  /* the AnyValue is separately allocated from the Value on the heap */
+    FlagIsLValue = (1<<3),      /* is modifiable and is allocated somewhere we can usefully modify it */
+    FlagOutOfScope = (1<<4)
+};
+
 /* used in dynamic memory allocation */
 struct AllocNode
 {
@@ -169,16 +185,15 @@ struct ValueType
     struct ValueType *DerivedTypeList;  /* first in a list of types derived from this one */
     struct ValueType *Next;         /* next item in the derived type list */
     struct Table *Members;          /* members of a struct or union */
-    int OnHeap;                     /* true if allocated on the heap */
-    int StaticQualifier;            /* true if it's a static */
+    enum ValueTypeFlags Flags;
 };
 
 /* function definition */
 struct FuncDef
 {
     struct ValueType *ReturnType;   /* the return value type */
-    int NumParams;                  /* the number of parameters */
-    int VarArgs;                    /* has a variable number of arguments after the explicitly specified ones */
+    int8_t NumParams;                  /* the number of parameters */
+    int8_t VarArgs;                    /* has a variable number of arguments after the explicitly specified ones */
     struct ValueType **ParamType;   /* array of parameter types */
     char **ParamName;               /* array of parameter names */
     void (*Intrinsic)();            /* intrinsic call address or NULL */
@@ -188,7 +203,7 @@ struct FuncDef
 /* macro definition */
 struct MacroDef
 {
-    int NumParams;                  /* the number of parameters */
+    int8_t NumParams;                  /* the number of parameters */
     char **ParamName;               /* array of parameter names */
     struct ParseState Body;         /* lexical tokens of the function body if not intrinsic */
 };
@@ -220,12 +235,8 @@ struct Value
     struct ValueType *Typ;          /* the type of this value */
     union AnyValue *Val;            /* pointer to the AnyValue which holds the actual content */
     struct Value *LValueFrom;       /* if an LValue, this is a Value our LValue is contained within (or NULL) */
-    char ValOnHeap;                 /* this Value is on the heap */
-    char ValOnStack;                /* the AnyValue is on the stack along with this Value */
-    char AnyValOnHeap;              /* the AnyValue is separately allocated from the Value on the heap */
-    char IsLValue;                  /* is modifiable and is allocated somewhere we can usefully modify it */
+    enum ValueFlags Flags;
     int ScopeID;                    /* to know when it goes out of scope */
-    char OutOfScope;
 };
 
 /* hash table data structure */

@@ -20,7 +20,7 @@ struct ValueType *TypeAdd(Picoc *pc, struct ParseState *Parser, struct ValueType
     NewType->Members = NULL;
     NewType->FromType = ParentType;
     NewType->DerivedTypeList = NULL;
-    NewType->OnHeap = TRUE;
+    NewType->Flags |= FlagOnHeap;
     NewType->Next = ParentType->DerivedTypeList;
     ParentType->DerivedTypeList = NewType;
     
@@ -59,7 +59,7 @@ struct ValueType *TypeGetMatching(Picoc *pc, struct ParseState *Parser, struct V
 /* stack space used by a value */
 int TypeStackSizeValue(struct Value *Val)
 {
-    if (Val != NULL && Val->ValOnStack)
+    if (Val != NULL && Val->Flags & FlagOnStack)
         return TypeSizeValue(Val, FALSE);
     else
         return 0;
@@ -98,7 +98,7 @@ void TypeAddBaseType(Picoc *pc, struct ValueType *TypeNode, enum BaseType Base, 
     TypeNode->Members = NULL;
     TypeNode->FromType = NULL;
     TypeNode->DerivedTypeList = NULL;
-    TypeNode->OnHeap = FALSE;
+    TypeNode->Flags &= ~FlagOnHeap;
     TypeNode->Next = pc->UberType.DerivedTypeList;
     pc->UberType.DerivedTypeList = TypeNode;
 }
@@ -154,7 +154,7 @@ void TypeCleanupNode(Picoc *pc, struct ValueType *Typ)
     {
         NextSubType = SubType->Next;
         TypeCleanupNode(pc, SubType);
-        if (SubType->OnHeap)
+        if (SubType->Flags & FlagOnHeap)
         {
             /* if it's a struct or union deallocate all the member values */
             if (SubType->Members != NULL)

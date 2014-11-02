@@ -244,7 +244,7 @@ long ExpressionAssignInt(struct ParseState *Parser, struct Value *DestValue, lon
 {
     long Result;
     
-    if (!DestValue->IsLValue) 
+    if (!(DestValue->Flags & FlagIsLValue))
         ProgramFail(Parser, "can't assign to this"); 
     
     if (After)
@@ -271,7 +271,7 @@ long ExpressionAssignInt(struct ParseState *Parser, struct Value *DestValue, lon
 /* assign a floating point value */
 double ExpressionAssignFP(struct ParseState *Parser, struct Value *DestValue, double FromFP)
 {
-    if (!DestValue->IsLValue) 
+    if (!(DestValue->Flags & FlagIsLValue))
         ProgramFail(Parser, "can't assign to this"); 
     
     DestValue->Val->FP = FromFP;
@@ -390,7 +390,7 @@ void ExpressionAssignToPointer(struct ParseState *Parser, struct Value *ToValue,
 /* assign any kind of value */
 void ExpressionAssign(struct ParseState *Parser, struct Value *DestValue, struct Value *SourceValue, int Force, const char *FuncName, int ParamNo, int AllowPointerCoercion)
 {
-    if (!DestValue->IsLValue && !Force) 
+    if ((!(DestValue->Flags & FlagIsLValue)) && !Force)
         AssignFail(Parser, "not an lvalue", NULL, NULL, 0, 0, FuncName, ParamNo); 
 
     if (IS_NUMERIC_COERCIBLE(DestValue) && !IS_NUMERIC_COERCIBLE_PLUS_POINTERS(SourceValue, AllowPointerCoercion))
@@ -430,7 +430,10 @@ void ExpressionAssign(struct ParseState *Parser, struct Value *DestValue, struct
                 {
                     /* copy the resized value back to the LValue */
                     DestValue->LValueFrom->Val = DestValue->Val;
-                    DestValue->LValueFrom->AnyValOnHeap = DestValue->AnyValOnHeap;
+                    if (DestValue->Flags & FlagAnyValOnHeap)
+                        DestValue->LValueFrom->Flags |= FlagAnyValOnHeap;
+                    else
+                        DestValue->LValueFrom->Flags &= ~FlagAnyValOnHeap;
                 }
             }
 
@@ -523,7 +526,7 @@ void ExpressionPrefixOperator(struct ParseState *Parser, struct ExpressionStack 
     switch (Op)
     {
         case TokenAmpersand:
-            if (!TopValue->IsLValue)
+            if (!(TopValue->Flags & FlagIsLValue))
                 ProgramFail(Parser, "can't get the address of this");
 
 	    ValPtr = TopValue->Val;
@@ -594,7 +597,7 @@ void ExpressionPrefixOperator(struct ParseState *Parser, struct ExpressionStack 
                 if (TopValue->Val->Pointer == NULL)
                     ProgramFail(Parser, "invalid use of a NULL pointer");
                 
-                if (!TopValue->IsLValue) 
+                if (!(TopValue->Flags & FlagIsLValue))
                     ProgramFail(Parser, "can't assign to this"); 
                     
                 switch (Op)
@@ -660,7 +663,7 @@ void ExpressionPostfixOperator(struct ParseState *Parser, struct ExpressionStack
         if (TopValue->Val->Pointer == NULL)
             ProgramFail(Parser, "invalid use of a NULL pointer");
             
-        if (!TopValue->IsLValue) 
+        if (!(TopValue->Flags & FlagIsLValue))
             ProgramFail(Parser, "can't assign to this"); 
         
         switch (Op)
@@ -702,8 +705,8 @@ void ExpressionInfixOperator(struct ParseState *Parser, struct ExpressionStack *
         /* make the array element result */
         switch (BottomValue->Typ->Base)
         {
-            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (union AnyValue *)(&BottomValue->Val->ArrayMem[0] + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), BottomValue->IsLValue, BottomValue->LValueFrom); break;
-            case TypePointer: Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (union AnyValue *)((char *)BottomValue->Val->Pointer + TypeSize(BottomValue->Typ->FromType, 0, TRUE) * ArrayIndex), BottomValue->IsLValue, BottomValue->LValueFrom); break;
+            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (union AnyValue *)(&BottomValue->Val->ArrayMem[0] + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
+            case TypePointer: Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (union AnyValue *)((char *)BottomValue->Val->Pointer + TypeSize(BottomValue->Typ->FromType, 0, TRUE) * ArrayIndex), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
             default:          ProgramFail(Parser, "this %t is not an array", BottomValue->Typ);
         }
         

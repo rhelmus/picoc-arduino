@@ -42,7 +42,7 @@
 #ifdef UNIX_HOST
 # undef USE_MALLOC_STACK                   /* stack is allocated using malloc() */
 # undef USE_MALLOC_HEAP                    /* heap is allocated using malloc() */
-# define HEAP_SIZE (256*1024)
+# define HEAP_SIZE (512*1024)
 # include <stdio.h>
 # include <stdlib.h>
 # include <ctype.h>
