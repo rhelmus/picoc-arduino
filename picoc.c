@@ -11,14 +11,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#define PICOC_STACK_SIZE (128*1024)              /* space for the the stack */
-
 int main(int argc, char **argv)
 {
     int ParamCount = 1;
     int DontRunMain = FALSE;
     int LineByLine = FALSE;
-    int StackSize = getenv("STACKSIZE") ? atoi(getenv("STACKSIZE")) : PICOC_STACK_SIZE;
+    int StackSize = getenv("STACKSIZE") ? atoi(getenv("STACKSIZE")) : HEAP_SIZE;
     Picoc pc;
     
     if (argc < 2)

@@ -182,7 +182,7 @@ struct FuncDef
     struct ValueType **ParamType;   /* array of parameter types */
     char **ParamName;               /* array of parameter names */
     void (*Intrinsic)();            /* intrinsic call address or NULL */
-    struct ParseState Body;         /* lexical tokens of the function body if not intrinsic */
+    struct ParseState *Body;        /* lexical tokens of the function body if not intrinsic (otherwise NULL) */
 };
 
 /* macro definition */

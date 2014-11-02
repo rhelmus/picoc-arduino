@@ -64,7 +64,7 @@ struct Value *ParseFunctionDefinition(struct ParseState *Parser, struct ValueTyp
     struct ParseState ParamParser;
     struct Value *FuncValue;
     struct Value *OldFuncValue;
-    struct ParseState FuncBody;
+    struct ParseState *FuncBody;
     int ParamCount = 0;
     Picoc *pc = Parser->pc;
 
@@ -84,6 +84,7 @@ struct Value *ParseFunctionDefinition(struct ParseState *Parser, struct ValueTyp
     FuncValue->Val->FuncDef.VarArgs = FALSE;
     FuncValue->Val->FuncDef.ParamType = (struct ValueType **)((char *)FuncValue->Val + sizeof(struct FuncDef));
     FuncValue->Val->FuncDef.ParamName = (char **)((char *)FuncValue->Val->FuncDef.ParamType + sizeof(struct ValueType *) * ParamCount);
+    FuncValue->Val->FuncDef.Body = NULL;
    
     for (ParamCount = 0; ParamCount < FuncValue->Val->FuncDef.NumParams; ParamCount++)
     { 
@@ -142,17 +143,18 @@ struct Value *ParseFunctionDefinition(struct ParseState *Parser, struct ValueTyp
         if (Token != TokenLeftBrace)
             ProgramFail(Parser, "bad function definition");
         
-        ParserCopy(&FuncBody, Parser);
+        FuncBody = HeapAllocMem(pc, sizeof(struct ParseState));
+        ParserCopy(FuncBody, Parser);
         if (ParseStatementMaybeRun(Parser, FALSE, TRUE) != ParseResultOk)
             ProgramFail(Parser, "function definition expected");
 
         FuncValue->Val->FuncDef.Body = FuncBody;
-        FuncValue->Val->FuncDef.Body.Pos = LexCopyTokens(&FuncBody, Parser);
+        FuncValue->Val->FuncDef.Body->Pos = LexCopyTokens(FuncBody, Parser);
 
         /* is this function already in the global table? */
         if (TableGet(&pc->GlobalTable, Identifier, &OldFuncValue, NULL, NULL, NULL))
         {
-            if (OldFuncValue->Val->FuncDef.Body.Pos == NULL)
+            if (OldFuncValue->Val->FuncDef.Body == NULL)
             {
                 /* override an old function prototype */
                 VariableFree(pc, TableDelete(pc, &pc->GlobalTable, Identifier));

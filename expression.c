@@ -1526,10 +1526,10 @@ void ExpressionParseFunctionCall(struct ParseState *Parser, struct ExpressionSta
             int Count;
             int OldScopeID = Parser->ScopeID;
             
-            if (FuncValue->Val->FuncDef.Body.Pos == NULL)
+            if (FuncValue->Val->FuncDef.Body == NULL)
                 ProgramFail(Parser, "'%s' is undefined", FuncName);
             
-            ParserCopy(&FuncParser, &FuncValue->Val->FuncDef.Body);
+            ParserCopy(&FuncParser, FuncValue->Val->FuncDef.Body);
             VariableStackFrameAdd(Parser, FuncName, FuncValue->Val->FuncDef.Intrinsic ? FuncValue->Val->FuncDef.NumParams : 0);
             Parser->pc->TopStackFrame->NumParams = ArgCount;
             Parser->pc->TopStackFrame->ReturnValue = ReturnValue;

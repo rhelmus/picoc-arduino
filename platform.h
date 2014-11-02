@@ -2,8 +2,11 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-/*#define ARDUINO_HOST*/
+#ifdef ARDUINO
+#define ARDUINO_HOST
+#else
 #define UNIX_HOST
+#endif
 
 /* configurable options */
 /* select your host type (or do it in the Makefile):
@@ -37,8 +40,9 @@
 
 /* host platform includes */
 #ifdef UNIX_HOST
-# define USE_MALLOC_STACK                   /* stack is allocated using malloc() */
-# define USE_MALLOC_HEAP                    /* heap is allocated using malloc() */
+# undef USE_MALLOC_STACK                   /* stack is allocated using malloc() */
+# undef USE_MALLOC_HEAP                    /* heap is allocated using malloc() */
+# define HEAP_SIZE (256*1024)
 # include <stdio.h>
 # include <stdlib.h>
 # include <ctype.h>
@@ -149,13 +153,13 @@ extern int ExitBuf[];
 #endif
 
 #ifdef ARDUINO_HOST
-# define HEAP_SIZE 7680 /*(7*1024)*/               /* space for the heap and the stack */
+# define HEAP_SIZE (7*1024)               /* space for the heap and the stack */
 # define NO_FP
 /*# define NO_PRINTF*/
 # define NO_DEBUGGER
 # define NO_CALLOC
 # define NO_REALLOC
-# define NO_STRING_FUNCTIONS
+/*# define NO_STRING_FUNCTIONS */
 # include <stdlib.h>
 # include <ctype.h>
 # include <stdint.h>
