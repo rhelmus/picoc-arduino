@@ -177,9 +177,9 @@ enum BaseType
 struct ValueType
 {
     enum BaseType Base;             /* what kind of type this is */
-    int ArraySize;                  /* the size of an array type */
-    int Sizeof;                     /* the storage required */
-    int AlignBytes;                 /* the alignment boundary of this type */
+    uint16_t ArraySize;                  /* the size of an array type */
+    uint16_t Sizeof;                     /* the storage required */
+    uint8_t AlignBytes;                 /* the alignment boundary of this type */
     const char *Identifier;         /* the name of a struct or union */
     struct ValueType *FromType;     /* the type we're derived from (or NULL) */
     struct ValueType *DerivedTypeList;  /* first in a list of types derived from this one */
@@ -281,7 +281,7 @@ struct StackFrame
     const char *FuncName;                   /* the name of the function we're in */
     struct Value *ReturnValue;              /* copy the return value here */
     struct Value **Parameter;               /* array of parameter values */
-    int NumParams;                          /* the number of parameters */
+    int8_t NumParams;                          /* the number of parameters */
     struct Table LocalTable;                /* the local variables and parameters */
     struct TableEntry *LocalHashTable[LOCAL_TABLE_SIZE];
     struct StackFrame *PreviousStackFrame;  /* the next lower stack frame */

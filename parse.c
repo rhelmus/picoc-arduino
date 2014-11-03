@@ -991,7 +991,10 @@ void PicocParseInteractiveNoStartPrompt(Picoc *pc, int EnableDebugger)
         LexInteractiveStatementPrompt(pc);
         Ok = ParseStatement(&Parser, TRUE);
         LexInteractiveCompleted(pc, &Parser);
-        
+#ifdef UNIX_HOST
+        extern int memused, varmemused;
+        printf("memused: %d/%d\n", memused, varmemused);
+#endif
     } while (Ok == ParseResultOk);
     
     if (Ok == ParseResultError)

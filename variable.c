@@ -90,7 +90,11 @@ void *VariableAlloc(Picoc *pc, struct ParseState *Parser, int Size, int OnHeap)
     if (!OnHeap)
         printf("pushing %d at 0x%lx\n", Size, (unsigned long)NewValue);
 #endif
-        
+
+#ifdef UNIX_HOST
+    printf("VariableAlloc: %d\n", Size);
+#endif
+
     return NewValue;
 }
 
