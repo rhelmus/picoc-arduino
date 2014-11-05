@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -pedantic -g -DVER=\"`git rev-parse --short HEAD`\" -m32
+CFLAGS=-Wall -pedantic -g -DVER=\"`git rev-parse --short HEAD`\" -m32 -fshort-enums
 LIBS=-lm -lreadline
 
 TARGET	= picoc

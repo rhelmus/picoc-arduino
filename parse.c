@@ -144,6 +144,10 @@ struct Value *ParseFunctionDefinition(struct ParseState *Parser, struct ValueTyp
             ProgramFail(Parser, "bad function definition");
         
         FuncBody = HeapAllocMem(pc, sizeof(struct ParseState));
+
+        if (!FuncBody)
+            ProgramFail(Parser, "out of memory");
+
         ParserCopy(FuncBody, Parser);
         if (ParseStatementMaybeRun(Parser, FALSE, TRUE) != ParseResultOk)
             ProgramFail(Parser, "function definition expected");
@@ -991,10 +995,8 @@ void PicocParseInteractiveNoStartPrompt(Picoc *pc, int EnableDebugger)
         LexInteractiveStatementPrompt(pc);
         Ok = ParseStatement(&Parser, TRUE);
         LexInteractiveCompleted(pc, &Parser);
-#ifdef UNIX_HOST
         extern int memused, varmemused;
-        printf("memused: %d/%d\n", memused, varmemused);
-#endif
+        debugline("memused: %d/%d\n", memused, varmemused);
     } while (Ok == ParseResultOk);
     
     if (Ok == ParseResultError)

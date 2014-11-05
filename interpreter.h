@@ -144,7 +144,7 @@ struct ParseState
     short int HashIfLevel;      /* how many "if"s we're nested down */
     short int HashIfEvaluateToLevel;    /* if we're not evaluating an if branch, what the last evaluated level was */
     char DebugMode;             /* debugging mode */
-    int ScopeID;                /* for keeping track of local variables (free them after they go out of scope) */
+    int16_t ScopeID;                /* for keeping track of local variables (free them after they go out of scope) */
 };
 
 /* values */
@@ -236,16 +236,21 @@ struct Value
     union AnyValue *Val;            /* pointer to the AnyValue which holds the actual content */
     struct Value *LValueFrom;       /* if an LValue, this is a Value our LValue is contained within (or NULL) */
     enum ValueFlags Flags;
-    int ScopeID;                    /* to know when it goes out of scope */
+    int16_t ScopeID;                    /* to know when it goes out of scope */
 };
+
+/* Used to disable usage of DeclFileName, DeclLine and DeclColumn from TableEntry (doesn't seem to be necessary) */
+#define DISABLE_TABLEENTRY_DECL
 
 /* hash table data structure */
 struct TableEntry
 {
     struct TableEntry *Next;        /* next item in this hash chain */
+#ifndef DISABLE_TABLEENTRY_DECL
     const char *DeclFileName;       /* where the variable was declared */
     unsigned short DeclLine;
     unsigned short DeclColumn;
+#endif
 
     union TableEntryPayload
     {
@@ -574,8 +579,8 @@ void VariableStackFramePop(struct ParseState *Parser);
 struct Value *VariableStringLiteralGet(Picoc *pc, char *Ident);
 void VariableStringLiteralDefine(Picoc *pc, char *Ident, struct Value *Val);
 void *VariableDereferencePointer(struct ParseState *Parser, struct Value *PointerValue, struct Value **DerefVal, int *DerefOffset, struct ValueType **DerefType, int *DerefIsLValue);
-int VariableScopeBegin(struct ParseState * Parser, int* PrevScopeID);
-void VariableScopeEnd(struct ParseState * Parser, int ScopeID, int PrevScopeID);
+int VariableScopeBegin(struct ParseState * Parser, int16_t *PrevScopeID);
+void VariableScopeEnd(struct ParseState * Parser, int ScopeID, int16_t PrevScopeID);
 
 /* clibrary.c */
 void BasicIOInit(Picoc *pc);

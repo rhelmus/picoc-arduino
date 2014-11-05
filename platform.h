@@ -42,7 +42,9 @@
 #ifdef UNIX_HOST
 # undef USE_MALLOC_STACK                   /* stack is allocated using malloc() */
 # undef USE_MALLOC_HEAP                    /* heap is allocated using malloc() */
-# define HEAP_SIZE (512*1024)
+# define HEAP_SIZE (4096*1024)
+# define BUILTIN_MINI_STDLIB
+# define debugline printf
 # include <stdio.h>
 # include <stdlib.h>
 # include <ctype.h>
@@ -169,6 +171,7 @@ extern int ExitBuf[];
 # include <math.h>
 # define assert(x)
 # define BUILTIN_MINI_STDLIB  /* UNDONE: use avr libc? */
+# define debugf
 # undef BIG_ENDIAN
 
 #endif

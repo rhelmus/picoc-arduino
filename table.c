@@ -63,13 +63,16 @@ int TableSet(Picoc *pc, struct Table *Tbl, char *Key, struct Value *Val, const c
     if (FoundEntry == NULL)
     {   /* add it to the table */
         struct TableEntry *NewEntry = VariableAlloc(pc, NULL, sizeof(struct TableEntry), Tbl->OnHeap);
+#ifndef DISABLE_TABLEENTRY_DECL
         NewEntry->DeclFileName = DeclFileName;
         NewEntry->DeclLine = DeclLine;
         NewEntry->DeclColumn = DeclColumn;
+#endif
         NewEntry->p.v.Key = Key;
         NewEntry->p.v.Val = Val;
         NewEntry->Next = Tbl->HashTable[AddAt];
         Tbl->HashTable[AddAt] = NewEntry;
+        debugline("TableSet: %d: %s\n", sizeof(struct TableEntry), Key);
         return TRUE;
     }
 
@@ -89,9 +92,11 @@ int TableGet(struct Table *Tbl, const char *Key, struct Value **Val, const char 
     
     if (DeclFileName != NULL)
     {
+#ifndef DISABLE_TABLEENTRY_DECL
         *DeclFileName = FoundEntry->DeclFileName;
         *DeclLine = FoundEntry->DeclLine;
         *DeclColumn = FoundEntry->DeclColumn;
+#endif
     }
     
     return TRUE;

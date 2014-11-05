@@ -1527,7 +1527,7 @@ void ExpressionParseFunctionCall(struct ParseState *Parser, struct ExpressionSta
             /* run a user-defined function */
             struct ParseState FuncParser;
             int Count;
-            int OldScopeID = Parser->ScopeID;
+            int16_t OldScopeID = Parser->ScopeID;
             
             if (FuncValue->Val->FuncDef.Body == NULL)
                 ProgramFail(Parser, "'%s' is undefined", FuncName);

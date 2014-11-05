@@ -6,6 +6,40 @@
 /* maximum size of a value to temporarily copy while we create a variable */
 #define MAX_TMP_COPY_BUF 256
 
+/* Stolen from http://websvn.hylands.org/filedetails.php?repname=Projects&path=%2Fcommon%2FCrc8.c&sc=1
+ * Copyright (c) 2006 Dave Hylands     <dhylands@gmail.com> */
+uint8_t Crc8(unsigned char Crc, unsigned char Data)
+{
+    uint8_t i;
+    uint8_t ret;
+
+    ret = Crc ^ Data;
+
+    for (i=0; i<8; ++i)
+    {
+        if ((ret & 0x80) != 0)
+        {
+            ret <<= 1;
+            ret ^= 0x07;
+        }
+        else
+            ret <<= 1;
+    }
+
+    return ret;
+}
+
+uint8_t StrHash(const char *Str)
+{
+    uint8_t ret = 0;
+    const char *p = Str;
+    while (p && *p)
+    {
+        ret = Crc8(ret, *p);
+        ++p;
+    }
+    return ret;
+}
 
 /* initialise the variable system */
 void VariableInit(Picoc *pc)
@@ -91,9 +125,7 @@ void *VariableAlloc(Picoc *pc, struct ParseState *Parser, int Size, int OnHeap)
         printf("pushing %d at 0x%lx\n", Size, (unsigned long)NewValue);
 #endif
 
-#ifdef UNIX_HOST
-    printf("VariableAlloc: %d\n", Size);
-#endif
+    debugline("VariableAlloc: %d\n", Size);
 
     return NewValue;
 }
@@ -113,6 +145,11 @@ struct Value *VariableAllocValueAndData(Picoc *pc, struct ParseState *Parser, in
     NewValue->LValueFrom = LValueFrom;
     if (Parser) 
         NewValue->ScopeID = Parser->ScopeID;
+
+    debugline("sizes: %d/%d/%d\n", sizeof(struct Value), MEM_ALIGN(sizeof(struct Value)), sizeof(NewValue->Flags));
+
+    if (Parser)
+        debugline("VariableAllocValueAndData: %d+%d: %s:%d:%d\n", MEM_ALIGN(sizeof(struct Value)), DataSize, Parser->FileName, Parser->Line, Parser->CharacterPos);
 
     return NewValue;
 }
@@ -175,7 +212,7 @@ void VariableRealloc(struct ParseState *Parser, struct Value *FromValue, int New
     FromValue->Flags |= FlagAnyValOnHeap;
 }
 
-int VariableScopeBegin(struct ParseState * Parser, int* OldScopeID)
+int VariableScopeBegin(struct ParseState * Parser, int16_t* OldScopeID)
 {
     struct TableEntry *Entry;
     struct TableEntry *NextEntry;
@@ -193,7 +230,8 @@ int VariableScopeBegin(struct ParseState * Parser, int* OldScopeID)
     *OldScopeID = Parser->ScopeID;
     /*Parser->ScopeID = (int)(intptr_t)(Parser->SourceText) * ((int)(intptr_t)(Parser->Pos) / sizeof(char*));*/
     /* or maybe a more human-readable hash for debugging? */
-    Parser->ScopeID = Parser->Line * 0x10000 + Parser->CharacterPos;
+    /*Parser->ScopeID = Parser->Line * 0x10000 + Parser->CharacterPos;*/
+    Parser->ScopeID = (Parser->SourceText) ? StrHash(Parser->SourceText) : 0 + Parser->Line * 0x100 + Parser->CharacterPos;
     
     for (Count = 0; Count < HashTable->Size; Count++)
     {
@@ -216,7 +254,7 @@ int VariableScopeBegin(struct ParseState * Parser, int* OldScopeID)
     return Parser->ScopeID;
 }
 
-void VariableScopeEnd(struct ParseState * Parser, int ScopeID, int PrevScopeID)
+void VariableScopeEnd(struct ParseState * Parser, int ScopeID, int16_t PrevScopeID)
 {
     struct TableEntry *Entry;
     struct TableEntry *NextEntry;
@@ -274,7 +312,7 @@ struct Value *VariableDefine(Picoc *pc, struct ParseState *Parser, char *Ident, 
     struct Value * AssignValue;
     struct Table * currentTable = (pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable;
     
-    int ScopeID = Parser ? Parser->ScopeID : -1;
+    int16_t ScopeID = Parser ? Parser->ScopeID : -1;
 #ifdef VAR_SCOPE_DEBUG
     if (Parser) fprintf(stderr, "def %s %x (%s:%d:%d)\n", Ident, ScopeID, Parser->FileName, Parser->Line, Parser->CharacterPos);
 #endif
@@ -350,11 +388,25 @@ struct Value *VariableDefineButIgnoreIdentical(struct ParseState *Parser, char *
     }
     else
     {
+        if (Parser->Line != 0 && TableGet((pc->TopStackFrame == NULL) ? &pc->GlobalTable : &pc->TopStackFrame->LocalTable, Ident, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn))
+        {
+#ifndef DISABLE_TABLEENTRY_DECL
+            if (DeclFileName == Parser->FileName && DeclLine == Parser->Line && DeclColumn == Parser->CharacterPos)
+                return ExistingValue;
+            debugline("-------- Mismatch!! --------\n");
+#else
+            return ExistingValue;
+#endif
+        }
+
+        return VariableDefine(Parser->pc, Parser, Ident, NULL, Typ, TRUE);
+#if 0
         if (Parser->Line != 0 && TableGet((pc->TopStackFrame == NULL) ? &pc->GlobalTable : &pc->TopStackFrame->LocalTable, Ident, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn)
                 && DeclFileName == Parser->FileName && DeclLine == Parser->Line && DeclColumn == Parser->CharacterPos)
             return ExistingValue;
         else
             return VariableDefine(Parser->pc, Parser, Ident, NULL, Typ, TRUE);
+#endif
     }
 }
 
