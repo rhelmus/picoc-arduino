@@ -458,7 +458,7 @@ void ParseFor(struct ParseState *Parser)
     
     enum RunMode OldMode = Parser->Mode;
     
-    int PrevScopeID = 0, ScopeID = VariableScopeBegin(Parser, &PrevScopeID);
+    int16_t PrevScopeID = 0, ScopeID = VariableScopeBegin(Parser, &PrevScopeID);
 
     if (LexGetToken(Parser, NULL, TRUE) != TokenOpenBracket)
         ProgramFail(Parser, "'(' expected");
@@ -522,7 +522,7 @@ void ParseFor(struct ParseState *Parser)
 /* parse a block of code and return what mode it returned in */
 enum RunMode ParseBlock(struct ParseState *Parser, int AbsorbOpenBrace, int Condition)
 {
-    int PrevScopeID = 0, ScopeID = VariableScopeBegin(Parser, &PrevScopeID);
+    int16_t PrevScopeID = 0, ScopeID = VariableScopeBegin(Parser, &PrevScopeID);
 
     if (AbsorbOpenBrace && LexGetToken(Parser, NULL, TRUE) != TokenLeftBrace)
         ProgramFail(Parser, "'{' expected");

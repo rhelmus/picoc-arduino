@@ -12,19 +12,20 @@ uint8_t INPUTValue = INPUT;
 uint8_t OUTPUTValue = OUTPUT;
 uint8_t INPUT_PULLUPValue = INPUT_PULLUP;
 
-/*const char ArduinoDefs[] = "\
+const char ArduinoDefs[] = "\
 typedef unsigned char uint8_t; \
 typedef signed char int8_t;\
 typedef unsigned short uint16_t;\
 typedef signed short int16_t;\
 typedef unsigned long uin32_t;\
 typedef signed long int32_t;\
-";*/
+";
+/*
 const char ArduinoDefs[] = "\
 typedef unsigned char uint8_t; \
 typedef signed char int8_t;\
 typedef unsigned short uint16_t;\
-";
+";*/
 
 }
 

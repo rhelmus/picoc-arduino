@@ -150,12 +150,12 @@ void *HeapAllocMem(Picoc *pc, int Size)
     
     assert(Size > 0);
 
-    memused += Size;
-
     /* make sure we have enough space for an AllocNode */
     if (AllocSize < sizeof(struct AllocNode))
         AllocSize = sizeof(struct AllocNode);
-    
+
+    memused += AllocSize;
+
     Bucket = AllocSize >> 2;
     if (Bucket < FREELIST_BUCKETS && pc->FreeListBucket[Bucket] != NULL)
     { 
