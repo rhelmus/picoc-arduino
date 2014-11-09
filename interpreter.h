@@ -144,7 +144,7 @@ struct ParseState
     short int HashIfLevel;      /* how many "if"s we're nested down */
     short int HashIfEvaluateToLevel;    /* if we're not evaluating an if branch, what the last evaluated level was */
     char DebugMode;             /* debugging mode */
-    int16_t ScopeID;                /* for keeping track of local variables (free them after they go out of scope) */
+    int16_t ScopeID;            /* for keeping track of local variables (free them after they go out of scope) */
 };
 
 /* values */

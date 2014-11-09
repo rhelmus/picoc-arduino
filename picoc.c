@@ -19,6 +19,8 @@ int main(int argc, char **argv)
     int StackSize = getenv("STACKSIZE") ? atoi(getenv("STACKSIZE")) : HEAP_SIZE;
     Picoc pc;
     
+    printf("size: %d\n", sizeof(pc));
+
     if (argc < 2)
     {
         printf("Format: picoc <csource1.c>... [- <arg1>...]    : run a program (calls main() to start it)\n"

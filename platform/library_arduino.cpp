@@ -20,19 +20,13 @@ typedef signed short int16_t;\
 typedef unsigned long uin32_t;\
 typedef signed long int32_t;\
 ";
-/*
-const char ArduinoDefs[] = "\
-typedef unsigned char uint8_t; \
-typedef signed char int8_t;\
-typedef unsigned short uint16_t;\
-";*/
 
 }
 
 void ArduinoSetupFunc(Picoc *pc)
 {
     VariableDefinePlatformVar(pc, NULL, "HIGH", &pc->CharType, (union AnyValue *)&HIGHValue, FALSE);
-    /*VariableDefinePlatformVar(pc, NULL, "LOW", &pc->CharType, (union AnyValue *)&LOWValue, FALSE);*/
+    VariableDefinePlatformVar(pc, NULL, "LOW", &pc->CharType, (union AnyValue *)&LOWValue, FALSE);
     VariableDefinePlatformVar(pc, NULL, "INPUT", &pc->CharType, (union AnyValue *)&INPUTValue, FALSE);
     VariableDefinePlatformVar(pc, NULL, "OUTPUT", &pc->CharType, (union AnyValue *)&OUTPUTValue, FALSE);
     VariableDefinePlatformVar(pc, NULL, "INPUT_PULLUP", &pc->CharType, (union AnyValue *)&INPUT_PULLUPValue, FALSE);
