@@ -86,7 +86,7 @@ const static struct ReservedWord ReservedWords[] =
 /* initialise the lexer */
 void LexInit(Picoc *pc)
 {
-    int Count;
+    unsigned int Count;
     
     TableInitTable(&pc->ReservedWordTable, &pc->ReservedWordHashTable[0], sizeof(ReservedWords) / sizeof(struct ReservedWord) * 2, TRUE);
 
@@ -98,13 +98,13 @@ void LexInit(Picoc *pc)
     pc->LexValue.Typ = NULL;
     pc->LexValue.Val = &pc->LexAnyValue;
     pc->LexValue.LValueFrom = NULL;
-    pc->LexValue.Flags = 0;
+    pc->LexValue.Flags = FlagValNone;
 }
 
 /* deallocate */
 void LexCleanup(Picoc *pc)
 {
-    int Count;
+    unsigned int Count;
 
     LexInteractiveClear(pc, NULL);
 
@@ -161,7 +161,7 @@ int LexGetMoreSource(struct ParseState *Parser, char *LineBuffer, int Size)
         }
         else
         {
-            char *Prompt;
+            const char *Prompt;
 
             /* get interactive input */
             if (Parser->pc->LexUseStatementPrompt)
@@ -456,7 +456,7 @@ enum LexToken LexGetStringConstant(Picoc *pc, struct LexState *Lexer, struct Val
     }
     EndPos = Lexer->Pos;
     
-    EscBuf = HeapAllocStack(pc, EndPos - StartPos);
+    EscBuf = (char *)HeapAllocStack(pc, EndPos - StartPos);
     if (EscBuf == NULL)
         LexFail(pc, Lexer, "out of memory");
     
@@ -622,10 +622,10 @@ int LexTokenSize(enum LexToken Token)
 }
 
 /* produce tokens from the lexer and return a heap buffer with the result - used for scanning */
-void *LexTokenise(Picoc *pc, struct LexState *Lexer, int *TokenLen)
+unsigned char *LexTokenise(Picoc *pc, struct LexState *Lexer, int *TokenLen)
 {
     enum LexToken Token;
-    void *HeapMem;
+    unsigned char *HeapMem;
     struct Value *GotValue;
     int MemUsed = 0;
     int ValueSize;
@@ -666,7 +666,7 @@ void *LexTokenise(Picoc *pc, struct LexState *Lexer, int *TokenLen)
                     
     } while (Token != TokenEOF);
     
-    HeapMem = HeapAllocMem(pc, MemUsed);
+    HeapMem = (unsigned char *)HeapAllocMem(pc, MemUsed);
     if (HeapMem == NULL)
         LexFail(pc, Lexer, "out of memory");
         
@@ -689,7 +689,7 @@ void *LexTokenise(Picoc *pc, struct LexState *Lexer, int *TokenLen)
 }
 
 /* lexically analyse some source text */
-void *LexAnalyse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int *TokenLen)
+unsigned char *LexAnalyse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int *TokenLen)
 {
     struct LexState Lexer;
     
@@ -706,7 +706,7 @@ void *LexAnalyse(Picoc *pc, const char *FileName, const char *Source, int Source
 }
 
 /* prepare to parse a pre-tokenised buffer */
-void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, void *TokenSource, char *FileName, void *FilePointer, int RunIt, int EnableDebugger)
+void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, unsigned char *TokenSource, char *FileName, void *FilePointer, int RunIt, int EnableDebugger)
 {
     Parser->pc = pc;
     Parser->Pos = TokenSource;
@@ -750,7 +750,7 @@ enum LexToken LexGetRawToken(struct ParseState *Parser, struct Value **Value, in
             if (pc->InteractiveHead == NULL || (unsigned char *)Parser->Pos == &pc->InteractiveTail->Tokens[pc->InteractiveTail->NumBytes-TOKEN_DATA_OFFSET])
             {
                 char LineBuffer[LINEBUFFER_MAX];
-                void *LineTokens;
+                unsigned char *LineTokens;
                 int LineBytes;
                 struct TokenLine *LineNode;
 
@@ -759,7 +759,7 @@ enum LexToken LexGetRawToken(struct ParseState *Parser, struct Value **Value, in
 
                 /* put the new line at the end of the linked list of interactive lines */        
                 LineTokens = LexAnalyse(pc, pc->StrEmpty, &LineBuffer[0], strlen(LineBuffer), &LineBytes);
-                LineNode = VariableAlloc(pc, Parser, sizeof(struct TokenLine), TRUE);
+                LineNode = (struct TokenLine *)VariableAlloc(pc, Parser, sizeof(struct TokenLine), TRUE);
                 LineNode->Tokens = LineTokens;
                 LineNode->NumBytes = LineBytes;
                 if (pc->InteractiveHead == NULL)
@@ -1018,7 +1018,7 @@ void LexToEndOfLine(struct ParseState *Parser)
 }
 
 /* copy the tokens from StartParser to EndParser into new memory, removing TokenEOFs and terminate with a TokenEndOfFunction */
-void *LexCopyTokens(struct ParseState *StartParser, struct ParseState *EndParser)
+unsigned char *LexCopyTokens(struct ParseState *StartParser, struct ParseState *EndParser)
 {
     int MemSize = 0;
     int CopySize;
@@ -1032,7 +1032,7 @@ void *LexCopyTokens(struct ParseState *StartParser, struct ParseState *EndParser
     { 
         /* non-interactive mode - copy the tokens */
         MemSize = EndParser->Pos - StartParser->Pos;
-        NewTokens = VariableAlloc(pc, StartParser, MemSize + TOKEN_DATA_OFFSET, TRUE);
+        NewTokens = (unsigned char *)VariableAlloc(pc, StartParser, MemSize + TOKEN_DATA_OFFSET, TRUE);
         memcpy(NewTokens, (void *)StartParser->Pos, MemSize);
     }
     else
@@ -1045,7 +1045,7 @@ void *LexCopyTokens(struct ParseState *StartParser, struct ParseState *EndParser
         { 
             /* all on a single line */
             MemSize = EndParser->Pos - StartParser->Pos;
-            NewTokens = VariableAlloc(pc, StartParser, MemSize + TOKEN_DATA_OFFSET, TRUE);
+            NewTokens = (unsigned char *)VariableAlloc(pc, StartParser, MemSize + TOKEN_DATA_OFFSET, TRUE);
             memcpy(NewTokens, (void *)StartParser->Pos, MemSize);
         }
         else
@@ -1058,7 +1058,7 @@ void *LexCopyTokens(struct ParseState *StartParser, struct ParseState *EndParser
             
             assert(ILine != NULL);
             MemSize += EndParser->Pos - &ILine->Tokens[0];
-            NewTokens = VariableAlloc(pc, StartParser, MemSize + TOKEN_DATA_OFFSET, TRUE);
+            NewTokens = (unsigned char *)VariableAlloc(pc, StartParser, MemSize + TOKEN_DATA_OFFSET, TRUE);
             
             CopySize = &pc->InteractiveCurrentLine->Tokens[pc->InteractiveCurrentLine->NumBytes-TOKEN_DATA_OFFSET] - Pos;
             memcpy(NewTokens, Pos, CopySize);

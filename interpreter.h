@@ -96,12 +96,14 @@ enum LexToken
 /* some enums to replace boolean flags and save some bytes */
 enum ValueTypeFlags
 {
+    FlagValTypeNone = 0,
     FlagOnHeap = (1<<0),             /* true if allocated on the heap */
     FlagStaticQualifier = (1<<1)     /* true if it's a static */
 };
 
 enum ValueFlags
 {
+    FlagValNone = 0,
     FlagValOnHeap = (1<<0),        /* this Value is on the heap */
     FlagOnStack = (1<<1),       /* the AnyValue is on the stack along with this Value */
     FlagAnyValOnHeap = (1<<2),  /* the AnyValue is separately allocated from the Value on the heap */
@@ -185,7 +187,7 @@ struct ValueType
     struct ValueType *DerivedTypeList;  /* first in a list of types derived from this one */
     struct ValueType *Next;         /* next item in the derived type list */
     struct Table *Members;          /* members of a struct or union */
-    enum ValueTypeFlags Flags;
+    uint8_t Flags;
 };
 
 /* function definition */
@@ -196,7 +198,7 @@ struct FuncDef
     int8_t VarArgs;                    /* has a variable number of arguments after the explicitly specified ones */
     struct ValueType **ParamType;   /* array of parameter types */
     char **ParamName;               /* array of parameter names */
-    void (*Intrinsic)();            /* intrinsic call address or NULL */
+    void (*Intrinsic)(struct ParseState *, struct Value *, struct Value **, int); /* intrinsic call address or NULL */
     struct ParseState *Body;        /* lexical tokens of the function body if not intrinsic (otherwise NULL) */
 };
 
@@ -235,7 +237,7 @@ struct Value
     struct ValueType *Typ;          /* the type of this value */
     union AnyValue *Val;            /* pointer to the AnyValue which holds the actual content */
     struct Value *LValueFrom;       /* if an LValue, this is a Value our LValue is contained within (or NULL) */
-    enum ValueFlags Flags;
+    uint8_t Flags;
     int16_t ScopeID;                    /* to know when it goes out of scope */
 };
 
@@ -499,12 +501,12 @@ void TableStrFree(Picoc *pc);
 /* lex.c */
 void LexInit(Picoc *pc);
 void LexCleanup(Picoc *pc);
-void *LexAnalyse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int *TokenLen);
-void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, void *TokenSource, char *FileName, void *FilePointer, int RunIt, int SetDebugMode);
+unsigned char *LexAnalyse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int *TokenLen);
+void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, unsigned char *TokenSource, char *FileName, void *FilePointer, int RunIt, int SetDebugMode);
 enum LexToken LexGetToken(struct ParseState *Parser, struct Value **Value, int IncPos);
 enum LexToken LexRawPeekToken(struct ParseState *Parser);
 void LexToEndOfLine(struct ParseState *Parser);
-void *LexCopyTokens(struct ParseState *StartParser, struct ParseState *EndParser);
+unsigned char *LexCopyTokens(struct ParseState *StartParser, struct ParseState *EndParser);
 void LexInteractiveClear(Picoc *pc, struct ParseState *Parser);
 void LexInteractiveCompleted(Picoc *pc, struct ParseState *Parser);
 void LexInteractiveStatementPrompt(Picoc *pc);
@@ -573,7 +575,7 @@ int VariableDefined(Picoc *pc, const char *Ident);
 int VariableDefinedAndOutOfScope(Picoc *pc, const char *Ident);
 void VariableRealloc(struct ParseState *Parser, struct Value *FromValue, int NewSize);
 void VariableGet(Picoc *pc, struct ParseState *Parser, const char *Ident, struct Value **LVal);
-void VariableDefinePlatformVar(Picoc *pc, struct ParseState *Parser, char *Ident, struct ValueType *Typ, union AnyValue *FromValue, int IsWritable);
+void VariableDefinePlatformVar(Picoc *pc, struct ParseState *Parser, const char *Ident, struct ValueType *Typ, union AnyValue *FromValue, int IsWritable);
 void VariableStackFrameAdd(struct ParseState *Parser, const char *FuncName, int NumParams);
 void VariableStackFramePop(struct ParseState *Parser);
 struct Value *VariableStringLiteralGet(Picoc *pc, char *Ident);
@@ -585,7 +587,7 @@ void VariableScopeEnd(struct ParseState * Parser, int ScopeID, int16_t PrevScope
 /* clibrary.c */
 void BasicIOInit(Picoc *pc);
 void LibraryInit(Picoc *pc);
-void LibraryAdd(Picoc *pc, struct Table *GlobalTable, const char *LibraryName, struct LibraryFunction *FuncList);
+void LibraryAdd(Picoc *pc, struct Table *GlobalTable, const char *LibraryName, const struct LibraryFunction *FuncList);
 void CLibraryInit(Picoc *pc);
 void PrintCh(char OutCh, IOFILE *Stream);
 void PrintSimpleInt(long Num, IOFILE *Stream);
@@ -632,8 +634,8 @@ void IncludeFile(Picoc *pc, char *Filename, int LineByLine);
  * void PicocIncludeAllSystemHeaders(); */
  
 /* debug.c */
-void DebugInit();
-void DebugCleanup();
+void DebugInit(Picoc *pc);
+void DebugCleanup(Picoc *pc);
 void DebugCheckStatement(struct ParseState *Parser);
 
 

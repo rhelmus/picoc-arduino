@@ -66,7 +66,7 @@ void HeapCleanup(Picoc *pc)
  * clears memory. can return NULL if out of stack space */
 void *HeapAllocStack(Picoc *pc, int Size)
 {
-    char *NewMem = pc->HeapStackTop;
+    char *NewMem = (char *)pc->HeapStackTop;
     char *NewTop = (char *)pc->HeapStackTop + MEM_ALIGN(Size);
 #ifdef DEBUG_HEAP
     printf("HeapAllocStack(%ld) at 0x%lx\n", (unsigned long)MEM_ALIGN(Size), (unsigned long)pc->HeapStackTop);
@@ -141,7 +141,7 @@ void *HeapAllocMem(Picoc *pc, int Size)
 #else
     struct AllocNode *NewMem = NULL;
     struct AllocNode **FreeNode;
-    int AllocSize = MEM_ALIGN(Size) + MEM_ALIGN(sizeof(NewMem->Size));
+    unsigned int AllocSize = MEM_ALIGN(Size) + MEM_ALIGN(sizeof(NewMem->Size));
     int Bucket;
     void *ReturnMem;
     
@@ -195,7 +195,7 @@ void *HeapAllocMem(Picoc *pc, int Size)
 #ifdef DEBUG_HEAP
                 printf("allocating %d(%d) from freelist, split chunk (%d)", Size, AllocSize, (*FreeNode)->Size);
 #endif
-                NewMem = (void *)((char *)*FreeNode + (*FreeNode)->Size - AllocSize);
+                NewMem = (struct AllocNode *)((char *)*FreeNode + (*FreeNode)->Size - AllocSize);
                 assert((unsigned long)NewMem >= (unsigned long)&(pc->HeapMemory)[0] && (unsigned char *)NewMem - &(pc->HeapMemory)[0] < HEAP_SIZE);
                 (*FreeNode)->Size -= AllocSize;
                 NewMem->Size = AllocSize;
@@ -213,7 +213,7 @@ void *HeapAllocMem(Picoc *pc, int Size)
             return NULL;
         
         pc->HeapBottom = (void *)((char *)pc->HeapBottom - AllocSize);
-        NewMem = pc->HeapBottom;
+        NewMem = (struct AllocNode *)pc->HeapBottom;
         NewMem->Size = AllocSize;
     }
     

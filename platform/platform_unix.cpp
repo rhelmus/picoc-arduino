@@ -96,7 +96,7 @@ char *PlatformReadFile(Picoc *pc, const char *FileName)
     if (stat(FileName, &FileInfo))
         ProgramFailNoParser(pc, "can't read file %s\n", FileName);
     
-    ReadText = malloc(FileInfo.st_size + 1);
+    ReadText = (char *)malloc(FileInfo.st_size + 1);
     if (ReadText == NULL)
         ProgramFailNoParser(pc, "out of memory\n");
         

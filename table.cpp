@@ -19,8 +19,8 @@ static unsigned int TableHash(const char *Key, int Len)
     
     for (Count = 0, Offset = 8; Count < Len; Count++, Offset+=7)
     {
-        if (Offset > sizeof(unsigned int) * 8 - 7)
-            Offset -= sizeof(unsigned int) * 8 - 6;
+        if (Offset > (int)sizeof(unsigned int) * 8 - 7)
+            Offset -= (int)sizeof(unsigned int) * 8 - 6;
             
         Hash ^= *Key++ << Offset;
     }
@@ -62,7 +62,7 @@ int TableSet(Picoc *pc, struct Table *Tbl, char *Key, struct Value *Val, const c
     
     if (FoundEntry == NULL)
     {   /* add it to the table */
-        struct TableEntry *NewEntry = VariableAlloc(pc, NULL, sizeof(struct TableEntry), Tbl->OnHeap);
+        struct TableEntry *NewEntry = (struct TableEntry *)VariableAlloc(pc, NULL, sizeof(struct TableEntry), Tbl->OnHeap);
 #ifndef DISABLE_TABLEENTRY_DECL
         NewEntry->DeclFileName = DeclFileName;
         NewEntry->DeclLine = DeclLine;
@@ -150,7 +150,7 @@ char *TableSetIdentifier(Picoc *pc, struct Table *Tbl, const char *Ident, int Id
         return &FoundEntry->p.Key[0];
     else
     {   /* add it to the table - we economise by not allocating the whole structure here */
-        struct TableEntry *NewEntry = HeapAllocMem(pc, sizeof(struct TableEntry) - sizeof(union TableEntryPayload) + IdentLen + 1);
+        struct TableEntry *NewEntry = (struct TableEntry *)HeapAllocMem(pc, sizeof(struct TableEntry) - sizeof(union TableEntry::TableEntryPayload) + IdentLen + 1);
         if (NewEntry == NULL)
             ProgramFailNoParser(pc, "out of memory");
             

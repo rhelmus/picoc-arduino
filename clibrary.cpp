@@ -28,14 +28,14 @@ void LibraryInit(Picoc *pc)
 }
 
 /* add a library */
-void LibraryAdd(Picoc *pc, struct Table *GlobalTable, const char *LibraryName, struct LibraryFunction *FuncList)
+void LibraryAdd(Picoc *pc, struct Table *GlobalTable, const char *LibraryName, const struct LibraryFunction *FuncList)
 {
     struct ParseState Parser;
     int Count;
     char *Identifier;
     struct ValueType *ReturnType;
     struct Value *NewValue;
-    void *Tokens;
+    unsigned char *Tokens;
     char *IntrinsicName = TableStrRegister(pc, "c library"); /* UNDONE: Shouldn't this be LibraryName? */
     /*char *IntrinsicName = TableStrRegister(pc, LibraryName);*/
     
@@ -112,7 +112,7 @@ void CLibraryInit(Picoc *pc)
 /* stream for writing into strings */
 void SPutc(unsigned char Ch, union OutputStreamInfo *Stream)
 {
-    struct StringOutputStream *Out = &Stream->Str;
+    struct OutputStreamInfo::StringOutputStream *Out = &Stream->Str;
     *Out->WritePos++ = Ch;
 }
 
@@ -236,7 +236,7 @@ void GenericPrintf(struct ParseState *Parser, struct Value *ReturnValue, struct 
     int LeftJustify = FALSE;
     int ZeroPad = FALSE;
     int FieldWidth = 0;
-    char *Format = Param[0]->Val->Pointer;
+    char *Format = (char *)Param[0]->Val->Pointer;
     Picoc *pc = Parser->pc;
     
     for (FPos = Format; *FPos != '\0'; FPos++)
@@ -298,7 +298,7 @@ void GenericPrintf(struct ParseState *Parser, struct Value *ReturnValue, struct 
                                 char *Str;
                                 
                                 if (NextArg->Typ->Base == TypePointer)
-                                    Str = NextArg->Val->Pointer;
+                                    Str = (char *)NextArg->Val->Pointer;
                                 else
                                     Str = &NextArg->Val->ArrayMem[0];
                                     
@@ -344,7 +344,7 @@ void LibSPrintf(struct ParseState *Parser, struct Value *ReturnValue, struct Val
     
     StrStream.Putch = &SPutc;
     StrStream.i.Str.Parser = Parser;
-    StrStream.i.Str.WritePos = Param[0]->Val->Pointer;
+    StrStream.i.Str.WritePos = (char *)Param[0]->Val->Pointer;
 
     GenericPrintf(Parser, ReturnValue, Param+1, NumArgs-1, &StrStream);
     PrintCh(0, &StrStream);
@@ -355,10 +355,10 @@ void LibSPrintf(struct ParseState *Parser, struct Value *ReturnValue, struct Val
 /* get a line of input. protected from buffer overrun */
 void LibGets(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
-    ReturnValue->Val->Pointer = PlatformGetLine(Param[0]->Val->Pointer, GETS_BUF_MAX, NULL);
+    ReturnValue->Val->Pointer = PlatformGetLine((char *)Param[0]->Val->Pointer, GETS_BUF_MAX, NULL);
     if (ReturnValue->Val->Pointer != NULL)
     {
-        char *EOLPos = strchr(Param[0]->Val->Pointer, '\n');
+        char *EOLPos = strchr((char *)Param[0]->Val->Pointer, '\n');
         if (EOLPos != NULL)
             *EOLPos = '\0';
     }

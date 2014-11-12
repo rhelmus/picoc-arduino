@@ -25,7 +25,7 @@ enum ParseResult ParseStatementMaybeRun(struct ParseState *Parser, int Condition
     if (Parser->Mode != RunModeSkip && !Condition)
     {
         enum RunMode OldMode = Parser->Mode;
-        int Result;
+        enum ParseResult Result;
         Parser->Mode = RunModeSkip;
         Result = ParseStatement(Parser, CheckTrailingSemicolon);
         Parser->Mode = OldMode;
@@ -143,7 +143,7 @@ struct Value *ParseFunctionDefinition(struct ParseState *Parser, struct ValueTyp
         if (Token != TokenLeftBrace)
             ProgramFail(Parser, "bad function definition");
         
-        FuncBody = HeapAllocMem(pc, sizeof(struct ParseState));
+        FuncBody = (struct ParseState *)HeapAllocMem(pc, sizeof(struct ParseState));
 
         if (!FuncBody)
             ProgramFail(Parser, "out of memory");
@@ -946,12 +946,12 @@ void PicocParse(Picoc *pc, const char *FileName, const char *Source, int SourceL
     struct CleanupTokenNode *NewCleanupNode;
     char *RegFileName = TableStrRegister(pc, FileName);
 
-    void *Tokens = LexAnalyse(pc, RegFileName, Source, SourceLen, NULL);
+    unsigned char *Tokens = LexAnalyse(pc, RegFileName, Source, SourceLen, NULL);
 
     /* allocate a cleanup node so we can clean up the tokens later */
     if (!CleanupNow)
     {
-        NewCleanupNode = HeapAllocMem(pc, sizeof(struct CleanupTokenNode));
+        NewCleanupNode = (struct CleanupTokenNode *)HeapAllocMem(pc, sizeof(struct CleanupTokenNode));
         if (NewCleanupNode == NULL)
             ProgramFailNoParser(pc, "out of memory");
         
