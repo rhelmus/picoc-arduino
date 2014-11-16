@@ -51,7 +51,7 @@
 # undef USE_MALLOC_HEAP                    /* heap is allocated using malloc() */
 # define HEAP_SIZE (4096*1024)
 //# define BUILTIN_MINI_STDLIB
-# define debugline /*printf*/
+# define debugline printf
 # include <stdio.h>
 # include <stdlib.h>
 # include <ctype.h>

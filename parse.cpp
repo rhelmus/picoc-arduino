@@ -8,13 +8,13 @@ void ParseCleanup(Picoc *pc)
 {
     while (pc->CleanupTokenList != NULL)
     {
-        struct CleanupTokenNode *Next = pc->CleanupTokenList->Next;
+        CPtrWrapper<struct CleanupTokenNode> Next = pc->CleanupTokenList->Next;
         
         HeapFreeMem(pc, pc->CleanupTokenList->Tokens);
         if (pc->CleanupTokenList->SourceText != NULL)
             HeapFreeMem(pc, (void *)pc->CleanupTokenList->SourceText);
             
-        HeapFreeMem(pc, pc->CleanupTokenList);
+        pc->CleanupTokenList.free(pc, pc->CleanupTokenList);
         pc->CleanupTokenList = Next;
     }
 }
@@ -943,7 +943,7 @@ void PicocParse(Picoc *pc, const char *FileName, const char *Source, int SourceL
 {
     struct ParseState Parser;
     enum ParseResult Ok;
-    struct CleanupTokenNode *NewCleanupNode;
+    CPtrWrapper<CleanupTokenNode> NewCleanupNode;
     char *RegFileName = TableStrRegister(pc, FileName);
 
     unsigned char *Tokens = LexAnalyse(pc, RegFileName, Source, SourceLen, NULL);
@@ -951,7 +951,7 @@ void PicocParse(Picoc *pc, const char *FileName, const char *Source, int SourceL
     /* allocate a cleanup node so we can clean up the tokens later */
     if (!CleanupNow)
     {
-        NewCleanupNode = (struct CleanupTokenNode *)HeapAllocMem(pc, sizeof(struct CleanupTokenNode));
+        NewCleanupNode = NewCleanupNode.alloc(pc, sizeof(CleanupTokenNode));
         if (NewCleanupNode == NULL)
             ProgramFailNoParser(pc, "out of memory");
         

@@ -6,7 +6,7 @@
 #define INTERPRETER_H
 
 #include "platform.h"
-
+#include "util.hpp"
 
 /* handy definitions */
 #ifndef TRUE
@@ -351,7 +351,7 @@ struct CleanupTokenNode
 {
     void *Tokens;
     const char *SourceText;
-    struct CleanupTokenNode *Next;
+    CPtrWrapper<struct CleanupTokenNode> Next;
 };
 
 /* linked list of lexical tokens used in interactive mode */
@@ -377,13 +377,12 @@ struct IncludeLibrary
 #define SPLIT_MEM_THRESHOLD 16                      /* don't split memory which is close in size */
 #define BREAKPOINT_TABLE_SIZE 21
 
-
 /* the entire state of the picoc system */
 struct Picoc_Struct
 {
     /* parser global data */
     struct Table GlobalTable;
-    struct CleanupTokenNode *CleanupTokenList;
+    CPtrWrapper<CleanupTokenNode> CleanupTokenList;
     struct TableEntry *GlobalHashTable[GLOBAL_TABLE_SIZE];
     
     /* lexer global data */

@@ -17,6 +17,7 @@
 #endif
 
 #include "interpreter.h"
+#include "util.hpp"
 
 
 #if defined(UNIX_HOST) || defined(WIN32)
