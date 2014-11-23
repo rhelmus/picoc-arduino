@@ -58,13 +58,13 @@ void VariableFree(Picoc *pc, struct Value *Val)
         if (Val->Typ == &pc->FunctionType && Val->Val->FuncDef.Intrinsic == NULL && Val->Val->FuncDef.Body != NULL)
         {
             if (Val->Val->FuncDef.Body->Pos)
-                HeapFreeMem(pc, (void *)Val->Val->FuncDef.Body->Pos);
+                deallocMem(Val->Val->FuncDef.Body->Pos);
             HeapFreeMem(pc, (void *)Val->Val->FuncDef.Body);
         }
 
         /* free macro bodies */
         if (Val->Typ == &pc->MacroType)
-            HeapFreeMem(pc, (void *)Val->Val->MacroDef.Body.Pos);
+            deallocMem(Val->Val->MacroDef.Body.Pos);
 
         /* free the AnyValue */
         if (Val->Flags & FlagAnyValOnHeap)

@@ -8,13 +8,13 @@ void ParseCleanup(Picoc *pc)
 {
     while (pc->CleanupTokenList != NULL)
     {
-        CPtrWrapper<struct CleanupTokenNode> Next = pc->CleanupTokenList->Next;
+        TCleanupNode Next = pc->CleanupTokenList->Next;
         
-        HeapFreeMem(pc, pc->CleanupTokenList->Tokens);
+        deallocMem(pc->CleanupTokenList->Tokens);
         if (pc->CleanupTokenList->SourceText != NULL)
             HeapFreeMem(pc, (void *)pc->CleanupTokenList->SourceText);
             
-        pc->CleanupTokenList.free(pc, pc->CleanupTokenList);
+        deallocMem(pc->CleanupTokenList);
         pc->CleanupTokenList = Next;
     }
 }
@@ -943,15 +943,15 @@ void PicocParse(Picoc *pc, const char *FileName, const char *Source, int SourceL
 {
     struct ParseState Parser;
     enum ParseResult Ok;
-    CPtrWrapper<CleanupTokenNode> NewCleanupNode;
+    TCleanupNode NewCleanupNode;
     char *RegFileName = TableStrRegister(pc, FileName);
 
-    unsigned char *Tokens = LexAnalyse(pc, RegFileName, Source, SourceLen, NULL);
+    TLexBuf Tokens = LexAnalyse(pc, RegFileName, Source, SourceLen, NULL);
 
     /* allocate a cleanup node so we can clean up the tokens later */
     if (!CleanupNow)
     {
-        NewCleanupNode = NewCleanupNode.alloc(pc, sizeof(CleanupTokenNode));
+        NewCleanupNode.alloc(sizeof(CleanupTokenNode));
         if (NewCleanupNode == NULL)
             ProgramFailNoParser(pc, "out of memory");
         
@@ -977,7 +977,7 @@ void PicocParse(Picoc *pc, const char *FileName, const char *Source, int SourceL
     
     /* clean up */
     if (CleanupNow)
-        HeapFreeMem(pc, Tokens);
+        deallocMem(Tokens);
 }
 
 /* parse interactively */
@@ -986,7 +986,7 @@ void PicocParseInteractiveNoStartPrompt(Picoc *pc, int EnableDebugger)
     struct ParseState Parser;
     enum ParseResult Ok;
     
-    LexInitParser(&Parser, pc, NULL, NULL, pc->StrEmpty, NULL, TRUE, EnableDebugger);
+    LexInitParser(&Parser, pc, NULL, NILL, pc->StrEmpty, NULL, TRUE, EnableDebugger);
     PicocPlatformSetExitPoint(pc);
     LexInteractiveClear(pc, &Parser);
 
@@ -1018,7 +1018,7 @@ void PicocParseLineByLine(Picoc *pc, const char *FileName, void *FilePointer, in
     enum ParseResult Ok;
     char *RegFileName = TableStrRegister(pc, FileName);
 
-    LexInitParser(&Parser, pc, NULL, NULL, RegFileName, FilePointer, TRUE, EnableDebugger);
+    LexInitParser(&Parser, pc, NULL, NILL, RegFileName, FilePointer, TRUE, EnableDebugger);
     /*PicocPlatformSetExitPoint(pc);*/
     LexInteractiveClear(pc, &Parser);
 

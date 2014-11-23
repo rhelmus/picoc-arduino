@@ -4,11 +4,11 @@
 #include "picoc.h"
 #include "interpreter.h"
 
-
 /* initialise everything */
 void PicocInitialise(Picoc *pc, int StackSize)
 {
     memset(pc, '\0', sizeof(*pc));
+    CPtrWrapperBase::setPicoc(pc); /* UNDONE: this effectively limits one Picoc struct per program, is this a problem? */
     PlatformInit(pc);
     BasicIOInit(pc);
     HeapInit(pc, StackSize);

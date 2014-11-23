@@ -35,7 +35,7 @@ void LibraryAdd(Picoc *pc, struct Table *GlobalTable, const char *LibraryName, c
     char *Identifier;
     struct ValueType *ReturnType;
     struct Value *NewValue;
-    unsigned char *Tokens;
+    TLexBuf Tokens;
     char *IntrinsicName = TableStrRegister(pc, "c library"); /* UNDONE: Shouldn't this be LibraryName? */
     /*char *IntrinsicName = TableStrRegister(pc, LibraryName);*/
     
@@ -48,7 +48,7 @@ void LibraryAdd(Picoc *pc, struct Table *GlobalTable, const char *LibraryName, c
         NewValue = ParseFunctionDefinition(&Parser, ReturnType, Identifier);
         NewValue->Val->FuncDef.Intrinsic = FuncList[Count].Func;
         NewValue->Val->FuncDef.Body = NULL;
-        HeapFreeMem(pc, Tokens);
+        deallocMem(Tokens);
     }
 }
 

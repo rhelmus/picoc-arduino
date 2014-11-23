@@ -134,7 +134,7 @@ enum RunMode
 struct ParseState
 {
     Picoc *pc;                  /* the picoc instance this parser is a part of */
-    const unsigned char *Pos;   /* the character position in the source text */
+    TLexBuf Pos;                /* the character position in the source text */
     char *FileName;             /* what file we're executing (registered string) */
     void *LineFilePointer;      /* Pointer to file data for line by line parsing (Similar to Interactive mode) */
     short int Line;             /* line number we're executing */
@@ -349,7 +349,7 @@ enum ParseResult { ParseResultEOF, ParseResultError, ParseResultOk };
 /* a chunk of heap-allocated tokens we'll cleanup when we're done */
 struct CleanupTokenNode
 {
-    void *Tokens;
+    TLexBuf Tokens;
     const char *SourceText;
     CPtrWrapper<struct CleanupTokenNode> Next;
 };
@@ -358,7 +358,7 @@ struct CleanupTokenNode
 struct TokenLine
 {
     struct TokenLine *Next;
-    unsigned char *Tokens;
+    TLexBuf Tokens;
     int NumBytes;
 };
 
@@ -382,7 +382,7 @@ struct Picoc_Struct
 {
     /* parser global data */
     struct Table GlobalTable;
-    CPtrWrapper<CleanupTokenNode> CleanupTokenList;
+    TCleanupNode CleanupTokenList;
     struct TableEntry *GlobalHashTable[GLOBAL_TABLE_SIZE];
     
     /* lexer global data */
@@ -500,12 +500,12 @@ void TableStrFree(Picoc *pc);
 /* lex.c */
 void LexInit(Picoc *pc);
 void LexCleanup(Picoc *pc);
-unsigned char *LexAnalyse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int *TokenLen);
-void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, unsigned char *TokenSource, char *FileName, void *FilePointer, int RunIt, int SetDebugMode);
+TLexBuf LexAnalyse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int *TokenLen);
+void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, TLexBuf TokenSource, char *FileName, void *FilePointer, int RunIt, int SetDebugMode);
 enum LexToken LexGetToken(struct ParseState *Parser, struct Value **Value, int IncPos);
 enum LexToken LexRawPeekToken(struct ParseState *Parser);
 void LexToEndOfLine(struct ParseState *Parser);
-unsigned char *LexCopyTokens(struct ParseState *StartParser, struct ParseState *EndParser);
+TLexBuf LexCopyTokens(struct ParseState *StartParser, struct ParseState *EndParser);
 void LexInteractiveClear(Picoc *pc, struct ParseState *Parser);
 void LexInteractiveCompleted(Picoc *pc, struct ParseState *Parser);
 void LexInteractiveStatementPrompt(Picoc *pc);

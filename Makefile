@@ -5,7 +5,7 @@ LIBS=-lm -lreadline
 
 TARGET	= picoc
 SRCS	= picoc.cpp table.cpp lex.cpp parse.cpp expression.cpp heap.cpp type.cpp \
-        variable.cpp clibrary.cpp platform.cpp include.cpp debug.cpp \
+        variable.cpp clibrary.cpp platform.cpp include.cpp debug.cpp util.cpp \
         platform/platform_unix.cpp platform/library_unix.cpp \
         cstdlib/stdio.cpp cstdlib/math.cpp cstdlib/string.cpp cstdlib/stdlib.cpp \
         cstdlib/time.cpp cstdlib/errno.cpp cstdlib/ctype.cpp cstdlib/stdbool.cpp \
