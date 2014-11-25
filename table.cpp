@@ -55,7 +55,7 @@ static struct TableEntry *TableSearch(struct Table *Tbl, const char *Key, int *A
 
 /* set an identifier to a value. returns FALSE if it already exists. 
  * Key must be a shared string from TableStrRegister() */
-int TableSet(Picoc *pc, struct Table *Tbl, char *Key, struct Value *Val, const char *DeclFileName, int DeclLine, int DeclColumn)
+int TableSet(Picoc *pc, struct Table *Tbl, char *Key, TValuePtr Val, const char *DeclFileName, int DeclLine, int DeclColumn)
 {
     int AddAt;
     struct TableEntry *FoundEntry = TableSearch(Tbl, Key, &AddAt);
@@ -72,7 +72,7 @@ int TableSet(Picoc *pc, struct Table *Tbl, char *Key, struct Value *Val, const c
         NewEntry->p.v.Val = Val;
         NewEntry->Next = Tbl->HashTable[AddAt];
         Tbl->HashTable[AddAt] = NewEntry;
-        debugline("TableSet: %d: %s\n", sizeof(struct TableEntry), Key);
+        debugline("TableSet: %d: %s, %p\n", sizeof(struct TableEntry), Key, NewEntry->Next);
         return TRUE;
     }
 
@@ -81,7 +81,7 @@ int TableSet(Picoc *pc, struct Table *Tbl, char *Key, struct Value *Val, const c
 
 /* find a value in a table. returns FALSE if not found. 
  * Key must be a shared string from TableStrRegister() */
-int TableGet(struct Table *Tbl, const char *Key, struct Value **Val, const char **DeclFileName, int *DeclLine, int *DeclColumn)
+int TableGet(struct Table *Tbl, const char *Key, TValuePtrPtr Val, const char **DeclFileName, int *DeclLine, int *DeclColumn)
 {
     int AddAt;
     struct TableEntry *FoundEntry = TableSearch(Tbl, Key, &AddAt);
@@ -103,7 +103,7 @@ int TableGet(struct Table *Tbl, const char *Key, struct Value **Val, const char 
 }
 
 /* remove an entry from the table */
-struct Value *TableDelete(Picoc *pc, struct Table *Tbl, const char *Key)
+TValuePtr TableDelete(Picoc *pc, struct Table *Tbl, const char *Key)
 {
     struct TableEntry **EntryPtr;
     int HashValue = ((unsigned long)Key) % Tbl->Size;   /* shared strings have unique addresses so we don't need to hash them */
@@ -113,7 +113,7 @@ struct Value *TableDelete(Picoc *pc, struct Table *Tbl, const char *Key)
         if ((*EntryPtr)->p.v.Key == Key)
         {
             struct TableEntry *DeleteEntry = *EntryPtr;
-            struct Value *Val = DeleteEntry->p.v.Val;
+            TValuePtr Val = DeleteEntry->p.v.Val;
             *EntryPtr = DeleteEntry->Next;
             HeapFreeMem(pc, DeleteEntry);
 
@@ -121,7 +121,7 @@ struct Value *TableDelete(Picoc *pc, struct Table *Tbl, const char *Key)
         }
     }
 
-    return NULL;
+    return NILL;
 }
 
 /* check a hash table entry for an identifier */

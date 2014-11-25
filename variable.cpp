@@ -50,7 +50,7 @@ void VariableInit(Picoc *pc)
 }
 
 /* deallocate the contents of a variable */
-void VariableFree(Picoc *pc, struct Value *Val)
+void VariableFree(Picoc *pc, TValuePtr Val)
 {
     if (Val->Flags & (FlagValOnHeap | FlagAnyValOnHeap))
     {
@@ -73,7 +73,7 @@ void VariableFree(Picoc *pc, struct Value *Val)
 
     /* free the value */
     if (Val->Flags & FlagValOnHeap)
-        HeapFreeMem(pc, Val);
+        deallocMem(Val);
 }
 
 /* deallocate the global table and the string literal table */
@@ -131,10 +131,10 @@ void *VariableAlloc(Picoc *pc, struct ParseState *Parser, int Size, int OnHeap)
 }
 
 /* allocate a value either on the heap or the stack using space dependent on what type we want */
-struct Value *VariableAllocValueAndData(Picoc *pc, struct ParseState *Parser, int DataSize, int IsLValue, struct Value *LValueFrom, int OnHeap)
+TValuePtr VariableAllocValueAndData(Picoc *pc, struct ParseState *Parser, int DataSize, int IsLValue, TValuePtr LValueFrom, int OnHeap)
 {
-    struct Value *NewValue = (struct Value *)VariableAlloc(pc, Parser, MEM_ALIGN(sizeof(struct Value)) + DataSize, OnHeap);
-    NewValue->Val = (union AnyValue *)((char *)NewValue + MEM_ALIGN(sizeof(struct Value)));
+    TValuePtr NewValue = allocMemVariable<Value>(Parser, !OnHeap, MEM_ALIGN(sizeof(struct Value)) + DataSize);
+    NewValue->Val = (union AnyValue *)CPtrWrapperBase::getPtr(pointerCast<char>(NewValue) + MEM_ALIGN(sizeof(struct Value)));
     NewValue->Flags = 0;
     if (OnHeap)
         NewValue->Flags |= FlagValOnHeap;
@@ -155,10 +155,10 @@ struct Value *VariableAllocValueAndData(Picoc *pc, struct ParseState *Parser, in
 }
 
 /* allocate a value given its type */
-struct Value *VariableAllocValueFromType(Picoc *pc, struct ParseState *Parser, struct ValueType *Typ, int IsLValue, struct Value *LValueFrom, int OnHeap)
+TValuePtr VariableAllocValueFromType(Picoc *pc, struct ParseState *Parser, struct ValueType *Typ, int IsLValue, TValuePtr LValueFrom, int OnHeap)
 {
     int Size = TypeSize(Typ, Typ->ArraySize, FALSE);
-    struct Value *NewValue = VariableAllocValueAndData(pc, Parser, Size, IsLValue, LValueFrom, OnHeap);
+    TValuePtr NewValue = VariableAllocValueAndData(pc, Parser, Size, IsLValue, LValueFrom, OnHeap);
     assert(Size >= 0 || Typ == &pc->VoidType);
     NewValue->Typ = Typ;
     
@@ -166,10 +166,10 @@ struct Value *VariableAllocValueFromType(Picoc *pc, struct ParseState *Parser, s
 }
 
 /* allocate a value either on the heap or the stack and copy its value. handles overlapping data */
-struct Value *VariableAllocValueAndCopy(Picoc *pc, struct ParseState *Parser, struct Value *FromValue, int OnHeap)
+TValuePtr VariableAllocValueAndCopy(Picoc *pc, struct ParseState *Parser, TValuePtr FromValue, int OnHeap)
 {
     struct ValueType *DType = FromValue->Typ;
-    struct Value *NewValue;
+    TValuePtr NewValue;
     char TmpBuf[MAX_TMP_COPY_BUF];
     int CopySize = TypeSizeValue(FromValue, TRUE);
 
@@ -183,9 +183,9 @@ struct Value *VariableAllocValueAndCopy(Picoc *pc, struct ParseState *Parser, st
 }
 
 /* allocate a value either on the heap or the stack from an existing AnyValue and type */
-struct Value *VariableAllocValueFromExistingData(struct ParseState *Parser, struct ValueType *Typ, union AnyValue *FromValue, int IsLValue, struct Value *LValueFrom)
+TValuePtr VariableAllocValueFromExistingData(struct ParseState *Parser, struct ValueType *Typ, union AnyValue *FromValue, int IsLValue, TValuePtr LValueFrom)
 {
-    struct Value *NewValue = (struct Value *)VariableAlloc(Parser->pc, Parser, sizeof(struct Value), FALSE);
+    TValuePtr NewValue = allocMemVariable<struct Value>(Parser, TRUE, sizeof(struct Value));
     NewValue->Typ = Typ;
     NewValue->Val = FromValue;
     NewValue->Flags = 0;
@@ -197,13 +197,13 @@ struct Value *VariableAllocValueFromExistingData(struct ParseState *Parser, stru
 }
 
 /* allocate a value either on the heap or the stack from an existing Value, sharing the value */
-struct Value *VariableAllocValueShared(struct ParseState *Parser, struct Value *FromValue)
+TValuePtr VariableAllocValueShared(struct ParseState *Parser, TValuePtr FromValue)
 {
-    return VariableAllocValueFromExistingData(Parser, FromValue->Typ, FromValue->Val, (FromValue->Flags & FlagIsLValue), (FromValue->Flags & FlagIsLValue) ? FromValue : NULL);
+    return VariableAllocValueFromExistingData(Parser, FromValue->Typ, FromValue->Val, (FromValue->Flags & FlagIsLValue), (FromValue->Flags & FlagIsLValue) ? FromValue : NILL);
 }
 
 /* reallocate a variable so its data has a new size */
-void VariableRealloc(struct ParseState *Parser, struct Value *FromValue, int NewSize)
+void VariableRealloc(struct ParseState *Parser, TValuePtr FromValue, int NewSize)
 {
     if (FromValue->Flags & FlagAnyValOnHeap)
         HeapFreeMem(Parser->pc, FromValue->Val);
@@ -307,21 +307,21 @@ int VariableDefinedAndOutOfScope(Picoc * pc, const char* Ident)
 }
 
 /* define a variable. Ident must be registered */
-struct Value *VariableDefine(Picoc *pc, struct ParseState *Parser, char *Ident, struct Value *InitValue, struct ValueType *Typ, int MakeWritable)
+TValuePtr VariableDefine(Picoc *pc, struct ParseState *Parser, char *Ident, TValuePtr InitValue, struct ValueType *Typ, int MakeWritable)
 {
-    struct Value * AssignValue;
+    TValuePtr AssignValue;
     struct Table * currentTable = (pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable;
     
     int16_t ScopeID = Parser ? Parser->ScopeID : -1;
 #ifdef VAR_SCOPE_DEBUG
     if (Parser) fprintf(stderr, "def %s %x (%s:%d:%d)\n", Ident, ScopeID, Parser->FileName, Parser->Line, Parser->CharacterPos);
 #endif
-    
+
     if (InitValue != NULL)
         AssignValue = VariableAllocValueAndCopy(pc, Parser, InitValue, pc->TopStackFrame == NULL);
     else
-        AssignValue = VariableAllocValueFromType(pc, Parser, Typ, MakeWritable, NULL, pc->TopStackFrame == NULL);
-    
+        AssignValue = VariableAllocValueFromType(pc, Parser, Typ, MakeWritable, NILL, pc->TopStackFrame == NULL);
+
     if (MakeWritable)
         AssignValue->Flags |= FlagIsLValue;
     else
@@ -336,10 +336,10 @@ struct Value *VariableDefine(Picoc *pc, struct ParseState *Parser, char *Ident, 
 }
 
 /* define a variable. Ident must be registered. If it's a redefinition from the same declaration don't throw an error */
-struct Value *VariableDefineButIgnoreIdentical(struct ParseState *Parser, char *Ident, struct ValueType *Typ, int IsStatic, int *FirstVisit)
+TValuePtr VariableDefineButIgnoreIdentical(struct ParseState *Parser, char *Ident, struct ValueType *Typ, int IsStatic, int *FirstVisit)
 {
     Picoc *pc = Parser->pc;
-    struct Value *ExistingValue;
+    TValuePtr ExistingValue;
     const char *DeclFileName;
     int DeclLine;
     int DeclColumn;
@@ -377,7 +377,7 @@ struct Value *VariableDefineButIgnoreIdentical(struct ParseState *Parser, char *
         if (!TableGet(&pc->GlobalTable, RegisteredMangledName, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn))
         {
             /* define the mangled-named static variable store in the global scope */
-            ExistingValue = VariableAllocValueFromType(Parser->pc, Parser, Typ, TRUE, NULL, TRUE);
+            ExistingValue = VariableAllocValueFromType(Parser->pc, Parser, Typ, TRUE, NILL, TRUE);
             TableSet(pc, &pc->GlobalTable, (char *)RegisteredMangledName, ExistingValue, (char *)Parser->FileName, Parser->Line, Parser->CharacterPos);
             *FirstVisit = TRUE;
         }
@@ -399,7 +399,7 @@ struct Value *VariableDefineButIgnoreIdentical(struct ParseState *Parser, char *
 #endif
         }
 
-        return VariableDefine(Parser->pc, Parser, Ident, NULL, Typ, TRUE);
+        return VariableDefine(Parser->pc, Parser, Ident, NILL, Typ, TRUE);
 #if 0
         if (Parser->Line != 0 && TableGet((pc->TopStackFrame == NULL) ? &pc->GlobalTable : &pc->TopStackFrame->LocalTable, Ident, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn)
                 && DeclFileName == Parser->FileName && DeclLine == Parser->Line && DeclColumn == Parser->CharacterPos)
@@ -413,7 +413,7 @@ struct Value *VariableDefineButIgnoreIdentical(struct ParseState *Parser, char *
 /* check if a variable with a given name is defined. Ident must be registered */
 int VariableDefined(Picoc *pc, const char *Ident)
 {
-    struct Value *FoundValue;
+    TValuePtr FoundValue;
     
     if (pc->TopStackFrame == NULL || !TableGet(&pc->TopStackFrame->LocalTable, Ident, &FoundValue, NULL, NULL, NULL))
     {
@@ -425,7 +425,7 @@ int VariableDefined(Picoc *pc, const char *Ident)
 }
 
 /* get the value of a variable. must be defined. Ident must be registered */
-void VariableGet(Picoc *pc, struct ParseState *Parser, const char *Ident, struct Value **LVal)
+void VariableGet(Picoc *pc, struct ParseState *Parser, const char *Ident, TValuePtrPtr LVal)
 {
     if (pc->TopStackFrame == NULL || !TableGet(&pc->TopStackFrame->LocalTable, Ident, LVal, NULL, NULL, NULL))
     {
@@ -442,7 +442,7 @@ void VariableGet(Picoc *pc, struct ParseState *Parser, const char *Ident, struct
 /* define a global variable shared with a platform global. Ident will be registered */
 void VariableDefinePlatformVar(Picoc *pc, struct ParseState *Parser, const char *Ident, struct ValueType *Typ, union AnyValue *FromValue, int IsWritable)
 {
-    struct Value *SomeValue = VariableAllocValueAndData(pc, NULL, 0, IsWritable, NULL, TRUE);
+    TValuePtr SomeValue = VariableAllocValueAndData(pc, NULL, 0, IsWritable, NILL, TRUE);
     SomeValue->Typ = Typ;
     SomeValue->Val = FromValue;
     
@@ -451,7 +451,7 @@ void VariableDefinePlatformVar(Picoc *pc, struct ParseState *Parser, const char 
 }
 
 /* free and/or pop the top value off the stack. Var must be the top value on the stack! */
-void VariableStackPop(struct ParseState *Parser, struct Value *Var)
+void VariableStackPop(struct ParseState *Parser, TValuePtr Var)
 {
     int Success;
     
@@ -465,13 +465,13 @@ void VariableStackPop(struct ParseState *Parser, struct Value *Var)
         if (Var->Val != NULL)
             HeapFreeMem(Parser->pc, Var->Val);
             
-        Success = HeapPopStack(Parser->pc, Var, sizeof(struct Value));                       /* free from heap */
+        Success = popStack(Var, sizeof(struct Value));                       /* free from heap */
     }
     else if (Var->Flags & FlagOnStack)
-        Success = HeapPopStack(Parser->pc, Var, sizeof(struct Value) + TypeSizeValue(Var, FALSE));  /* free from stack */
+        Success = popStack(Var, sizeof(struct Value) + TypeSizeValue(Var, FALSE));  /* free from stack */
     else
-        Success = HeapPopStack(Parser->pc, Var, sizeof(struct Value));                       /* value isn't our problem */
-        
+        Success = popStack(Var, sizeof(struct Value));                       /* value isn't our problem */
+
     if (!Success)
         ProgramFail(Parser, "stack underrun");
 }
@@ -482,13 +482,13 @@ void VariableStackFrameAdd(struct ParseState *Parser, const char *FuncName, int 
     struct StackFrame *NewFrame;
     
     HeapPushStackFrame(Parser->pc);
-    NewFrame = (struct StackFrame *)HeapAllocStack(Parser->pc, sizeof(struct StackFrame) + sizeof(struct Value *) * NumParams);
+    NewFrame = (struct StackFrame *)HeapAllocStack(Parser->pc, sizeof(struct StackFrame) + sizeof(TValuePtr) * NumParams);
     if (NewFrame == NULL)
         ProgramFail(Parser, "out of memory");
         
     ParserCopy(&NewFrame->ReturnParser, Parser);
     NewFrame->FuncName = FuncName;
-    NewFrame->Parameter = (NumParams > 0) ? ((struct Value **)((char *)NewFrame + sizeof(struct StackFrame))) : NULL;
+    NewFrame->Parameter = (NumParams > 0) ? /*((TValuePtrPtr)((char *)NewFrame + sizeof(struct StackFrame))) UNDONE*/ CPtrWrapperBase::wrap((char *)NewFrame + sizeof(struct StackFrame)) : NILL;
     TableInitTable(&NewFrame->LocalTable, &NewFrame->LocalHashTable[0], LOCAL_TABLE_SIZE, FALSE);
     NewFrame->PreviousStackFrame = Parser->pc->TopStackFrame;
     Parser->pc->TopStackFrame = NewFrame;
@@ -506,27 +506,27 @@ void VariableStackFramePop(struct ParseState *Parser)
 }
 
 /* get a string literal. assumes that Ident is already registered. NULL if not found */
-struct Value *VariableStringLiteralGet(Picoc *pc, char *Ident)
+TValuePtr VariableStringLiteralGet(Picoc *pc, char *Ident)
 {
-    struct Value *LVal = NULL;
+    TValuePtr LVal = NILL;
 
     if (TableGet(&pc->StringLiteralTable, Ident, &LVal, NULL, NULL, NULL))
         return LVal;
     else
-        return NULL;
+        return NILL;
 }
 
 /* define a string literal. assumes that Ident is already registered */
-void VariableStringLiteralDefine(Picoc *pc, char *Ident, struct Value *Val)
+void VariableStringLiteralDefine(Picoc *pc, char *Ident, TValuePtr Val)
 {
     TableSet(pc, &pc->StringLiteralTable, Ident, Val, NULL, 0, 0);
 }
 
 /* check a pointer for validity and dereference it for use */
-void *VariableDereferencePointer(struct ParseState *Parser, struct Value *PointerValue, struct Value **DerefVal, int *DerefOffset, struct ValueType **DerefType, int *DerefIsLValue)
+void *VariableDereferencePointer(struct ParseState *Parser, TValuePtr PointerValue, TValuePtrPtr DerefVal, int *DerefOffset, struct ValueType **DerefType, int *DerefIsLValue)
 {
     if (DerefVal != NULL)
-        *DerefVal = NULL;
+        *DerefVal = NILL;
         
     if (DerefType != NULL)
         *DerefType = PointerValue->Typ->FromType;

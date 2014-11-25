@@ -1,6 +1,6 @@
 CC=gcc
 CXX=g++
-CXXFLAGS=-Wall -pedantic -g -DVER=\"`git rev-parse --short HEAD`\" -m32 -fshort-enums
+CXXFLAGS=-Wall -pedantic -g3 -DVER=\"`git rev-parse --short HEAD`\"
 LIBS=-lm -lreadline
 
 TARGET	= picoc

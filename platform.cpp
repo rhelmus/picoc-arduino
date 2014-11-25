@@ -55,7 +55,7 @@ void PicocCleanup(Picoc *pc)
 void PicocCallMain(Picoc *pc, int argc, char **argv)
 {
     /* check if the program wants arguments */
-    struct Value *FuncValue = NULL;
+    TValuePtr FuncValue = NILL;
 
     if (!VariableDefined(pc, TableStrRegister(pc, "main")))
         ProgramFailNoParser(pc, "main() is not defined");
@@ -161,7 +161,7 @@ void AssignFail(struct ParseState *Parser, const char *Format, struct ValueType 
     IOFILE *Stream = Parser->pc->CStdOut;
     
     PrintSourceTextErrorLine(Parser->pc->CStdOut, Parser->FileName, Parser->SourceText, Parser->Line, Parser->CharacterPos);
-    PlatformPrintf(Stream, "can't %s ", (FuncName == NULL) ? "assign" : "set");   
+    PlatformPrintf(Stream, "can't %s ", (FuncName == NULL) ? "assign" : "set");
         
     if (Type1 != NULL)
         PlatformPrintf(Stream, Format, Type1, Type2);

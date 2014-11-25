@@ -33,7 +33,7 @@ void SRV1SetupFunc()
     VariableDefinePlatformVar(NULL, "gpsutc", &IntType, (union AnyValue *)&GPSutc, FALSE);
 }
 
-void Csignal(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // check for kbhit, return t or nil
+void Csignal(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // check for kbhit, return t or nil
 {
     if (getsignal())
         ReturnValue->Val->Integer = 1;
@@ -41,12 +41,12 @@ void Csignal(struct ParseState *Parser, struct Value *ReturnValue, struct Value 
         ReturnValue->Val->Integer = 0;
 }
 
-void Cinput(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // return 0-9 from console input
+void Cinput(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // return 0-9 from console input
 {
     ReturnValue->Val->Integer = getch();
 }
 
-void Cdelay(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cdelay(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     int del;
     
@@ -56,17 +56,17 @@ void Cdelay(struct ParseState *Parser, struct Value *ReturnValue, struct Value *
     delayMS(del);
 }
 
-void Crand(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Crand(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = (int)rand() % (unsigned int)(Param[0]->Val->Integer + 1);
 }
 
-void Ctime(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Ctime(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = (int)readRTC();
 }
 
-void Ciodir(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Ciodir(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     int dir;
     
@@ -75,17 +75,17 @@ void Ciodir(struct ParseState *Parser, struct Value *ReturnValue, struct Value *
     *pPORTHIO_INEN = (((~dir) << 10) & 0xFC00) + (*pPORTHIO_INEN & 0x03FF); // invert dir bits to enable inputs
 }
 
-void Cioread(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cioread(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = (*pPORTHIO >> 10) & 0x003F;
 }
 
-void Ciowrite(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Ciowrite(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     *pPORTHIO = ((Param[0]->Val->Integer << 10) & 0xFC00) + (*pPORTHIO & 0x03FF);
 }
 
-void Cpeek(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cpeek(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     int size, ptr;
     unsigned char *cp;
@@ -115,7 +115,7 @@ void Cpeek(struct ParseState *Parser, struct Value *ReturnValue, struct Value **
     }
 }
 
-void Cpoke(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cpoke(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     int size, ptr, val;
     unsigned char *cp;
@@ -145,7 +145,7 @@ void Cpoke(struct ParseState *Parser, struct Value *ReturnValue, struct Value **
     }
 }
 
-void Cencoders(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cencoders(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
    unsigned int ix;
    
@@ -154,7 +154,7 @@ void Cencoders(struct ParseState *Parser, struct Value *ReturnValue, struct Valu
    Ercount = ix & 0x0000FFFF; 
 }
 
-void Cmotors(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cmotors(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     lspeed = Param[0]->Val->Integer;
     if ((lspeed < -100) || (lspeed > 100))
@@ -171,7 +171,7 @@ void Cmotors(struct ParseState *Parser, struct Value *ReturnValue, struct Value 
     setPWM(lspeed, rspeed);
 }
 
-void Cmotors2(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cmotors2(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     lspeed2 = Param[0]->Val->Integer;
     if ((lspeed2 < -100) || (lspeed2 > 100))
@@ -188,7 +188,7 @@ void Cmotors2(struct ParseState *Parser, struct Value *ReturnValue, struct Value
     setPWM2(lspeed2, rspeed2);
 }
 
-void Cservos(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cservos(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     int lspeed, rspeed;
     
@@ -206,7 +206,7 @@ void Cservos(struct ParseState *Parser, struct Value *ReturnValue, struct Value 
     setPPM1(lspeed, rspeed);
 }
 
-void Cservos2(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cservos2(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     int lspeed, rspeed;
     
@@ -224,7 +224,7 @@ void Cservos2(struct ParseState *Parser, struct Value *ReturnValue, struct Value
     setPPM2(lspeed, rspeed);
 }
 
-void Claser(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)    // laser(1) turns them on, laser(0) turns them off
+void Claser(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)    // laser(1) turns them on, laser(0) turns them off
 {
     *pPORTHIO &= 0xFD7F;  // turn off both lasers
     switch (Param[0]->Val->Integer) {
@@ -240,7 +240,7 @@ void Claser(struct ParseState *Parser, struct Value *ReturnValue, struct Value *
     }
 }
 
-void Csonar(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) // read sonar module
+void Csonar(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) // read sonar module
 {
     unsigned int i;
     i = Param[0]->Val->Integer;
@@ -251,12 +251,12 @@ void Csonar(struct ParseState *Parser, struct Value *ReturnValue, struct Value *
     ReturnValue->Val->Integer = sonar_data[i] / 100;
 }
 
-void Crange(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Crange(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = laser_range(0);
 }
 
-void Cbattery(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cbattery(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     if (*pPORTHIO & 0x0004)
         ReturnValue->Val->Integer = 0;  // low battery voltage detected
@@ -264,7 +264,7 @@ void Cbattery(struct ParseState *Parser, struct Value *ReturnValue, struct Value
         ReturnValue->Val->Integer = 1;  // battery voltage okay
 }
 
-void Cvcolor(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) // set color bin - 
+void Cvcolor(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) // set color bin - 
                 //    vcolor (color, ymin, ymax, umin, umax, vmin, vmax);                  
 {
     int ix;
@@ -278,7 +278,7 @@ void Cvcolor(struct ParseState *Parser, struct Value *ReturnValue, struct Value 
     vmax[ix] = Param[6]->Val->Integer;
 }
 
-void Cvcam(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) // set camera functions - 
+void Cvcam(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) // set camera functions - 
      //    enable/disable AGC(4) / AWB(2) / AEC(1) camera controls
      //    vcam(7) = AGC+AWB+AEC on   vcam(0) = AGC+AWB+AEC off
 {
@@ -291,7 +291,7 @@ void Cvcam(struct ParseState *Parser, struct Value *ReturnValue, struct Value **
     i2cwrite(0x21, (unsigned char *)i2c_data, 1, SCCB_ON);  // OV7725
 }
 
-void Cvfind(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) // set color bin - 
+void Cvfind(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) // set color bin - 
                 //    vfind (color, x1, x2, y1, y2);                  
 {
     int ix, x1, x2, y1, y2;
@@ -304,22 +304,22 @@ void Cvfind(struct ParseState *Parser, struct Value *ReturnValue, struct Value *
     ReturnValue->Val->Integer = vfind((unsigned char *)FRAME_BUF, ix, x1, x2, y1, y2);
 }
 
-void Cvcap(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cvcap(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     grab_frame();   // capture frame for processing
 }
 
-void Cvrcap(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cvrcap(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     grab_reference_frame();   // capture reference frame for differencing
 }
 
-void Cvdiff(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cvdiff(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     frame_diff_flag = Param[0]->Val->Integer;   // set/clear frame_diff_flag
 }
 
-void Cvpix(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cvpix(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     int x, y, ix;
     x = Param[0]->Val->Integer;
@@ -330,7 +330,7 @@ void Cvpix(struct ParseState *Parser, struct Value *ReturnValue, struct Value **
     Iv1 = ((ix>>8)  & 0x000000FF);  // V
 }
 
-void Cvscan(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cvscan(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     int col, thresh, ix;
     col = Param[0]->Val->Integer;
@@ -343,7 +343,7 @@ void Cvscan(struct ParseState *Parser, struct Value *ReturnValue, struct Value *
     ReturnValue->Val->Integer = ix;
 }
 
-void Cvmean(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) 
+void Cvmean(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) 
 {
     vmean((unsigned char *)FRAME_BUF);
     Iy1 = mean[0];
@@ -352,7 +352,7 @@ void Cvmean(struct ParseState *Parser, struct Value *ReturnValue, struct Value *
 }
 
 //    search for blob by color, index;  return center point X,Y and width Z
-void Cvblob(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)    {
+void Cvblob(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)    {
     int ix, iblob, numblob;
 
     ix = Param[0]->Val->Integer;
@@ -376,7 +376,7 @@ void Cvblob(struct ParseState *Parser, struct Value *ReturnValue, struct Value *
     ReturnValue->Val->Integer = numblob;
 }
 
-void Cvjpeg (struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) {
+void Cvjpeg (struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) {
     unsigned int image_size, qual;
     unsigned char *output_start, *output_end;
     
@@ -392,7 +392,7 @@ void Cvjpeg (struct ParseState *Parser, struct Value *ReturnValue, struct Value 
     ReturnValue->Val->Integer = image_size;
 }
 
-void Cvsend (struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) {
+void Cvsend (struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) {
     unsigned int ix, image_size;
     unsigned char *cp;
     
@@ -409,7 +409,7 @@ void Cvsend (struct ParseState *Parser, struct Value *ReturnValue, struct Value 
     led0_on();
 }
 
-void Ccompass(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // return reading from HMC6352 I2C compass
+void Ccompass(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // return reading from HMC6352 I2C compass
 {
     unsigned char i2c_data[2];
     unsigned int ix;
@@ -423,7 +423,7 @@ void Ccompass(struct ParseState *Parser, struct Value *ReturnValue, struct Value
     ReturnValue->Val->Integer = ix;
 }
 
-void Ctilt(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // return reading from HMC6352 I2C compass
+void Ctilt(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // return reading from HMC6352 I2C compass
 {
     unsigned int ix;
     
@@ -433,7 +433,7 @@ void Ctilt(struct ParseState *Parser, struct Value *ReturnValue, struct Value **
     ReturnValue->Val->Integer = tilt(ix);
 }
 
-void Canalog(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // return reading from HMC6352 I2C compass
+void Canalog(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // return reading from HMC6352 I2C compass
 {
     unsigned char i2c_data[3], device_id;
     unsigned int ix, channel;
@@ -481,7 +481,7 @@ void Canalog(struct ParseState *Parser, struct Value *ReturnValue, struct Value 
     ReturnValue->Val->Integer = ix;
 }
 
-void Cgps(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+void Cgps(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     gps_parse();
     GPSlat = gps_gga.lat;
@@ -492,7 +492,7 @@ void Cgps(struct ParseState *Parser, struct Value *ReturnValue, struct Value **P
     GPSutc = gps_gga.utc;
 }
 
-void Creadi2c(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  //  syntax   val = readi2c(device, register);
+void Creadi2c(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  //  syntax   val = readi2c(device, register);
 {
     unsigned char i2c_device, i2c_data[2];
     
@@ -503,7 +503,7 @@ void Creadi2c(struct ParseState *Parser, struct Value *ReturnValue, struct Value
     ReturnValue->Val->Integer = ((int)i2c_data[0] & 0x000000FF);
 }
 
-void Creadi2c2(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  //  syntax   two_byte_val = readi2c(device, register); 
+void Creadi2c2(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  //  syntax   two_byte_val = readi2c(device, register); 
 {
     unsigned char i2c_device, i2c_data[2];
 
@@ -514,7 +514,7 @@ void Creadi2c2(struct ParseState *Parser, struct Value *ReturnValue, struct Valu
     ReturnValue->Val->Integer = (((unsigned int)i2c_data[0] << 8) + i2c_data[1]);
 }
 
-void Cwritei2c(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  //  syntax   writei2c(device, register, value);
+void Cwritei2c(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  //  syntax   writei2c(device, register, value);
 {
     unsigned char i2c_device, i2c_data[2];
 
@@ -525,7 +525,7 @@ void Cwritei2c(struct ParseState *Parser, struct Value *ReturnValue, struct Valu
     i2cwrite(i2c_device, (unsigned char *)i2c_data, 1, SCCB_OFF);
 }
 
-void Csin(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // sin(angle)
+void Csin(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // sin(angle)
 {
     int ix;
     
@@ -533,7 +533,7 @@ void Csin(struct ParseState *Parser, struct Value *ReturnValue, struct Value **P
     ReturnValue->Val->Integer = sin(ix);
 }
 
-void Ccos(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // cos(angle)
+void Ccos(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // cos(angle)
 {
     int ix;
     
@@ -541,7 +541,7 @@ void Ccos(struct ParseState *Parser, struct Value *ReturnValue, struct Value **P
     ReturnValue->Val->Integer = cos(ix);
 }
 
-void Ctan(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // tan(angle)
+void Ctan(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // tan(angle)
 {
     int ix;
     
@@ -549,7 +549,7 @@ void Ctan(struct ParseState *Parser, struct Value *ReturnValue, struct Value **P
     ReturnValue->Val->Integer = tan(ix);
 }
 
-void Casin(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // asin(y,hyp)
+void Casin(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // asin(y,hyp)
 {
     int y, hyp;
     y = Param[0]->Val->Integer;
@@ -559,7 +559,7 @@ void Casin(struct ParseState *Parser, struct Value *ReturnValue, struct Value **
     ReturnValue->Val->Integer = asin(y, hyp);
 }
 
-void Cacos(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // acos(x,hyp)
+void Cacos(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // acos(x,hyp)
 {
     int x, hyp;
     x = Param[0]->Val->Integer;
@@ -569,7 +569,7 @@ void Cacos(struct ParseState *Parser, struct Value *ReturnValue, struct Value **
     ReturnValue->Val->Integer = acos(x, hyp);
 }
 
-void Catan(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // atan(y,x)
+void Catan(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // atan(y,x)
 {
     int x ,y;
     y = Param[0]->Val->Integer;
@@ -577,7 +577,7 @@ void Catan(struct ParseState *Parser, struct Value *ReturnValue, struct Value **
     ReturnValue->Val->Integer = atan(y, x);
 } 
 
-void Cgps_head(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // gps_head(lat1, lon1, lat2, lon2)
+void Cgps_head(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // gps_head(lat1, lon1, lat2, lon2)
 {
     int lat1, lon1, lat2, lon2;
     lat1 = Param[0]->Val->Integer;
@@ -587,7 +587,7 @@ void Cgps_head(struct ParseState *Parser, struct Value *ReturnValue, struct Valu
     ReturnValue->Val->Integer = gps_head(lat1, lon1, lat2, lon2);
 } 
 
-void Cgps_dist(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // gps_dist(lat1, lon1, lat2, lon2)
+void Cgps_dist(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // gps_dist(lat1, lon1, lat2, lon2)
 {
     int lat1, lon1, lat2, lon2;
     lat1 = Param[0]->Val->Integer;
@@ -597,14 +597,14 @@ void Cgps_dist(struct ParseState *Parser, struct Value *ReturnValue, struct Valu
     ReturnValue->Val->Integer = gps_dist(lat1, lon1, lat2, lon2);
 } 
 
-void Csqrt(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)  // sqrt(x)
+void Csqrt(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // sqrt(x)
 {
     int x;
     x = Param[0]->Val->Integer;
     ReturnValue->Val->Integer = isqrt(x);
 } 
 
-void Cnnset(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) {
+void Cnnset(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) {
     int ix, i1;
     
     ix = Param[0]->Val->Integer;
@@ -614,7 +614,7 @@ void Cnnset(struct ParseState *Parser, struct Value *ReturnValue, struct Value *
         npattern[ix*8 + i1] = (unsigned char)Param[i1+1]->Val->Integer;
 }
 
-void Cnnshow(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) {
+void Cnnshow(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) {
     int ix;
     
     ix = Param[0]->Val->Integer;
@@ -623,11 +623,11 @@ void Cnnshow(struct ParseState *Parser, struct Value *ReturnValue, struct Value 
     nndisplay(ix);
 }
 
-void Cnninit(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) {
+void Cnninit(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) {
     nninit_network();
 }
 
-void Cnntrain(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) {
+void Cnntrain(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) {
     int ix, i1;
 
     nntrain_network(10000);
@@ -640,7 +640,7 @@ void Cnntrain(struct ParseState *Parser, struct Value *ReturnValue, struct Value
     }
 }
 
-void Cnntest(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) {
+void Cnntest(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) {
     int ix, i1, i2, max;
     unsigned char ch;
     
@@ -667,7 +667,7 @@ void Cnntest(struct ParseState *Parser, struct Value *ReturnValue, struct Value 
     ReturnValue->Val->Integer = ix;
 }
 
-void Cnnmatchblob(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) {            
+void Cnnmatchblob(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) {            
     int ix, i1, max;
     
     ix = Param[0]->Val->Integer;
@@ -694,7 +694,7 @@ void Cnnmatchblob(struct ParseState *Parser, struct Value *ReturnValue, struct V
     ReturnValue->Val->Integer = ix;
 }
 
-void Cnnlearnblob (struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) {
+void Cnnlearnblob (struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) {
     int ix;
     
     ix = Param[0]->Val->Integer;
@@ -708,7 +708,7 @@ void Cnnlearnblob (struct ParseState *Parser, struct Value *ReturnValue, struct 
     nndisplay(ix);
 }
 
-void Cautorun (struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) {
+void Cautorun (struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) {
     int ix, t0;
     unsigned char ch;
     
@@ -725,11 +725,11 @@ void Cautorun (struct ParseState *Parser, struct Value *ReturnValue, struct Valu
     }
 }
 
-void Clineno (struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) {
+void Clineno (struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) {
     ReturnValue->Val->Integer = Parser->Line;
 }
 
-void Cerrormsg (struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs) {
+void Cerrormsg (struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) {
     PlatformErrorPrefix(Parser);
     LibPrintf(Parser, ReturnValue, Param, NumArgs);
 }

@@ -40,9 +40,13 @@
 #define INTERACTIVE_PROMPT_STATEMENT "picoc> "
 #define INTERACTIVE_PROMPT_LINE "     > "
 
-struct CleanupTokenNode;
-typedef CPtrWrapper<CleanupTokenNode> TCleanupNode;
-typedef CPtrWrapper<unsigned char> TLexBuf;
+typedef CPtrWrapper<struct CleanupTokenNode> TCleanupNodePtr;
+typedef CPtrWrapper<unsigned char> TLexBufPtr;
+typedef CPtrWrapper<struct Value> TValuePtr;
+typedef CPtrWrapper<TValuePtr> TValuePtrPtr;
+typedef CPtrWrapper<union AnyValue> TAnyValuePtr;
+//typedef struct Value * TValuePtr;
+//typedef struct Value ** TValuePtrPtr;
 //typedef unsigned char * TLexBuf;
 
 /* host platform includes */
