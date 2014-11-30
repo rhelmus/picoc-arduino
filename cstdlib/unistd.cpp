@@ -492,13 +492,13 @@ void UnistdSetupFunc(Picoc *pc)
 {
     /* define NULL */
     if (!VariableDefined(pc, TableStrRegister(pc, "NULL")))
-        VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, (union AnyValue *)&ZeroValue, FALSE);
+        VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, CPtrWrapperBase::wrap(&ZeroValue), FALSE);
 
     /* define optarg and friends */
-    VariableDefinePlatformVar(pc, NULL, "optarg", pc->CharPtrType, (union AnyValue *)&optarg, TRUE);
-    VariableDefinePlatformVar(pc, NULL, "optind", &pc->IntType, (union AnyValue *)&optind, TRUE);
-    VariableDefinePlatformVar(pc, NULL, "opterr", &pc->IntType, (union AnyValue *)&opterr, TRUE);
-    VariableDefinePlatformVar(pc, NULL, "optopt", &pc->IntType, (union AnyValue *)&optopt, TRUE);
+    VariableDefinePlatformVar(pc, NULL, "optarg", pc->CharPtrType, CPtrWrapperBase::wrap(&optarg), TRUE);
+    VariableDefinePlatformVar(pc, NULL, "optind", &pc->IntType, CPtrWrapperBase::wrap(&optind), TRUE);
+    VariableDefinePlatformVar(pc, NULL, "opterr", &pc->IntType, CPtrWrapperBase::wrap(&opterr), TRUE);
+    VariableDefinePlatformVar(pc, NULL, "optopt", &pc->IntType, CPtrWrapperBase::wrap(&optopt), TRUE);
 }
 
 #endif /* !BUILTIN_MINI_STDLIB */

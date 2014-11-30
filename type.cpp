@@ -9,7 +9,7 @@ static int IntAlignBytes;
 
 
 /* add a new type to the set of types we know about */
-struct ValueType *TypeAdd(Picoc *pc, struct ParseState *Parser, struct ValueType *ParentType, enum BaseType Base, int ArraySize, const char *Identifier, int Sizeof, int AlignBytes)
+struct ValueType *TypeAdd(Picoc *pc, struct ParseState *Parser, struct ValueType *ParentType, enum BaseType Base, int ArraySize, TConstRegStringPtr Identifier, int Sizeof, int AlignBytes)
 {
     struct ValueType *NewType = (struct ValueType *)VariableAlloc(pc, Parser, sizeof(struct ValueType), TRUE);
     NewType->Base = Base;
@@ -29,7 +29,7 @@ struct ValueType *TypeAdd(Picoc *pc, struct ParseState *Parser, struct ValueType
 
 /* given a parent type, get a matching derived type and make one if necessary.
  * Identifier should be registered with the shared string table. */
-struct ValueType *TypeGetMatching(Picoc *pc, struct ParseState *Parser, struct ValueType *ParentType, enum BaseType Base, int ArraySize, const char *Identifier, int AllowDuplicates)
+struct ValueType *TypeGetMatching(Picoc *pc, struct ParseState *Parser, struct ValueType *ParentType, enum BaseType Base, int ArraySize, TConstRegStringPtr Identifier, int AllowDuplicates)
 {
     int Sizeof;
     int AlignBytes;
@@ -179,8 +179,8 @@ void TypeParseStruct(struct ParseState *Parser, struct ValueType **Typ, int IsSt
 {
     TValuePtr LexValue;
     struct ValueType *MemberType;
-    char *MemberIdentifier;
-    char *StructIdentifier;
+    TRegStringPtr MemberIdentifier;
+    TRegStringPtr StructIdentifier;
     TValuePtr MemberValue;
     enum LexToken Token;
     int AlignBoundary;
@@ -269,7 +269,7 @@ void TypeParseStruct(struct ParseState *Parser, struct ValueType **Typ, int IsSt
 }
 
 /* create a system struct which has no user-visible members */
-struct ValueType *TypeCreateOpaqueStruct(Picoc *pc, struct ParseState *Parser, const char *StructName, int Size)
+struct ValueType *TypeCreateOpaqueStruct(Picoc *pc, struct ParseState *Parser, TConstRegStringPtr StructName, int Size)
 {
     struct ValueType *Typ = TypeGetMatching(pc, Parser, &pc->UberType, TypeStruct, 0, StructName, FALSE);
     
@@ -289,7 +289,7 @@ void TypeParseEnum(struct ParseState *Parser, struct ValueType **Typ)
     struct Value InitValue;
     enum LexToken Token;
     int EnumValue = 0;
-    char *EnumIdentifier;
+    TRegStringPtr EnumIdentifier;
     Picoc *pc = Parser->pc;
     
     Token = LexGetToken(Parser, &LexValue, FALSE);
@@ -323,7 +323,7 @@ void TypeParseEnum(struct ParseState *Parser, struct ValueType **Typ)
     (*Typ)->Members = &pc->GlobalTable;
     memset((void *)&InitValue, '\0', sizeof(struct Value));
     InitValue.Typ = &pc->IntType;
-    InitValue.Val = (union AnyValue *)&EnumValue;
+    InitValue.Val = (TAnyValuePtr)CPtrWrapperBase::wrap(&EnumValue);
     do {
         if (LexGetToken(Parser, &LexValue, TRUE) != TokenIdentifier)
             ProgramFail(Parser, "identifier expected");
@@ -469,7 +469,7 @@ struct ValueType *TypeParseBack(struct ParseState *Parser, struct ValueType *Fro
 }
 
 /* parse a type - the part which is repeated with each identifier in a declaration list */
-void TypeParseIdentPart(struct ParseState *Parser, struct ValueType *BasicTyp, struct ValueType **Typ, char **Identifier)
+void TypeParseIdentPart(struct ParseState *Parser, struct ValueType *BasicTyp, struct ValueType **Typ, TRegStringPtrPtr Identifier)
 {
     struct ParseState Before;
     enum LexToken Token;
@@ -523,7 +523,7 @@ void TypeParseIdentPart(struct ParseState *Parser, struct ValueType *BasicTyp, s
 }
 
 /* parse a type - a complete declaration including identifier */
-void TypeParse(struct ParseState *Parser, struct ValueType **Typ, char **Identifier, int *IsStatic)
+void TypeParse(struct ParseState *Parser, struct ValueType **Typ, TRegStringPtrPtr Identifier, int *IsStatic)
 {
     struct ValueType *BasicType;
     

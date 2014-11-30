@@ -92,11 +92,11 @@ void LexInit(Picoc *pc)
 
     for (Count = 0; Count < sizeof(ReservedWords) / sizeof(struct ReservedWord); Count++)
     {
-        TableSet(pc, &pc->ReservedWordTable, TableStrRegister(pc, ReservedWords[Count].Word), CPtrWrapperBase::wrap((void *)&ReservedWords[Count]), NULL, 0, 0);
+        TableSet(pc, &pc->ReservedWordTable, TableStrRegister(pc, ReservedWords[Count].Word), CPtrWrapperBase::wrap((void *)&ReservedWords[Count]), NILL, 0, 0);
     }
     
     pc->LexValue.Typ = NULL;
-    pc->LexValue.Val = &pc->LexAnyValue;
+    pc->LexValue.Val = CPtrWrapperBase::wrap(&pc->LexAnyValue);
     pc->LexValue.LValueFrom = NILL;
     pc->LexValue.Flags = FlagValNone;
 }
@@ -215,7 +215,7 @@ int LexGetMoreSource(struct ParseState *Parser, char *LineBuffer, int Size)
 }
 
 /* check if a word is a reserved word - used while scanning */
-enum LexToken LexCheckReservedWord(Picoc *pc, const char *Word)
+enum LexToken LexCheckReservedWord(Picoc *pc, const TRegStringPtr Word)
 {
     TValuePtr val;
     
@@ -428,7 +428,7 @@ enum LexToken LexGetStringConstant(Picoc *pc, struct LexState *Lexer, TValuePtr 
     const char *EndPos;
     char *EscBuf;
     char *EscBufPos;
-    char *RegString;
+    TRegStringPtr RegString;
     TValuePtr ArrayValue;
 
     while (Lexer->Pos != Lexer->End && (*Lexer->Pos != EndChar || Escape))
@@ -472,13 +472,13 @@ enum LexToken LexGetStringConstant(Picoc *pc, struct LexState *Lexer, TValuePtr 
         /* create and store this string literal */
         ArrayValue = VariableAllocValueAndData(pc, NULL, 0, FALSE, NILL, TRUE);
         ArrayValue->Typ = pc->CharArrayType;
-        ArrayValue->Val = (union AnyValue *)RegString;
+        ArrayValue->Val = (TAnyValuePtr)RegString;
         VariableStringLiteralDefine(pc, RegString, ArrayValue);
     }
 
     /* create the the pointer for this char* */
     Value->Typ = pc->CharPtrType;
-    Value->Val->Pointer = RegString;
+    Value->Val->Pointer = CPtrWrapperBase::getPtr(RegString);
     if (*Lexer->Pos == EndChar)
         LEXER_INC(Lexer);
     
@@ -689,7 +689,7 @@ TLexBufPtr LexTokenise(Picoc *pc, struct LexState *Lexer, int *TokenLen)
 }
 
 /* lexically analyse some source text */
-TLexBufPtr LexAnalyse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int *TokenLen)
+TLexBufPtr LexAnalyse(Picoc *pc, TConstRegStringPtr FileName, const char *Source, int SourceLen, int *TokenLen)
 {
     struct LexState Lexer;
     
@@ -706,7 +706,7 @@ TLexBufPtr LexAnalyse(Picoc *pc, const char *FileName, const char *Source, int S
 }
 
 /* prepare to parse a pre-tokenised buffer */
-void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, TLexBufPtr TokenSource, char *FileName, void *FilePointer, int RunIt, int EnableDebugger)
+void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, TLexBufPtr TokenSource, TRegStringPtr FileName, void *FilePointer, int RunIt, int EnableDebugger)
 {
     Parser->pc = pc;
     Parser->Pos = TokenSource;

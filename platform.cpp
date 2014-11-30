@@ -67,8 +67,8 @@ void PicocCallMain(Picoc *pc, int argc, char **argv)
     if (FuncValue->Val->FuncDef.NumParams != 0)
     {
         /* define the arguments */
-        VariableDefinePlatformVar(pc, NULL, "__argc", &pc->IntType, (union AnyValue *)&argc, FALSE);
-        VariableDefinePlatformVar(pc, NULL, "__argv", pc->CharPtrPtrType, (union AnyValue *)&argv, FALSE);
+        VariableDefinePlatformVar(pc, NULL, "__argc", &pc->IntType, (TAnyValuePtr)CPtrWrapperBase::wrap(&argc), FALSE);
+        VariableDefinePlatformVar(pc, NULL, "__argv", pc->CharPtrPtrType, (TAnyValuePtr)CPtrWrapperBase::wrap(&argv), FALSE);
     }
 
     if (FuncValue->Val->FuncDef.ReturnType == &pc->VoidType)
@@ -80,7 +80,7 @@ void PicocCallMain(Picoc *pc, int argc, char **argv)
     }
     else
     {
-        VariableDefinePlatformVar(pc, NULL, "__exit_value", &pc->IntType, (union AnyValue *)&pc->PicocExitValue, TRUE);
+        VariableDefinePlatformVar(pc, NULL, "__exit_value", &pc->IntType, (TAnyValuePtr)CPtrWrapperBase::wrap(&pc->PicocExitValue), TRUE);
     
         if (FuncValue->Val->FuncDef.NumParams == 0)
             PicocParse(pc, "startup", CALL_MAIN_NO_ARGS_RETURN_INT, strlen(CALL_MAIN_NO_ARGS_RETURN_INT), TRUE, TRUE, FALSE, TRUE);
@@ -90,7 +90,7 @@ void PicocCallMain(Picoc *pc, int argc, char **argv)
 }
 #endif
 
-void PrintSourceTextErrorLine(IOFILE *Stream, const char *FileName, const char *SourceText, int Line, int CharacterPos)
+void PrintSourceTextErrorLine(IOFILE *Stream, TConstRegStringPtr FileName, const char *SourceText, int Line, int CharacterPos)
 {
     int LineCount;
     const char *LinePos;
@@ -156,7 +156,7 @@ void ProgramFailNoParser(Picoc *pc, const char *Message, ...)
 }
 
 /* like ProgramFail() but gives descriptive error messages for assignment */
-void AssignFail(struct ParseState *Parser, const char *Format, struct ValueType *Type1, struct ValueType *Type2, int Num1, int Num2, const char *FuncName, int ParamNo)
+void AssignFail(struct ParseState *Parser, const char *Format, struct ValueType *Type1, struct ValueType *Type2, int Num1, int Num2, TConstRegStringPtr FuncName, int ParamNo)
 {
     IOFILE *Stream = Parser->pc->CStdOut;
     
@@ -227,7 +227,7 @@ void PlatformVPrintf(IOFILE *Stream, const char *Format, va_list Args)
 
 /* make a new temporary name. takes a static buffer of char [7] as a parameter. should be initialised to "XX0000"
  * where XX can be any characters */
-char *PlatformMakeTempName(Picoc *pc, char *TempNameBuffer)
+TRegStringPtr PlatformMakeTempName(Picoc *pc, char *TempNameBuffer)
 {
     int CPos = 5;
     

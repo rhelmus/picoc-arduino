@@ -17,26 +17,26 @@ void LibraryInit(Picoc *pc)
     
     /* define the version number macro */
     pc->VersionString = TableStrRegister(pc, PICOC_VERSION);
-    VariableDefinePlatformVar(pc, NULL, "PICOC_VERSION", pc->CharPtrType, (union AnyValue *)&pc->VersionString, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "PICOC_VERSION", pc->CharPtrType, (TAnyValuePtr)&pc->VersionString, FALSE);
 
     /* define endian-ness macros */
     BigEndian = ((*(char*)&__ENDIAN_CHECK__) == 0);
     LittleEndian = ((*(char*)&__ENDIAN_CHECK__) == 1);
 
-    VariableDefinePlatformVar(pc, NULL, "BIG_ENDIAN", &pc->IntType, (union AnyValue *)&BigEndian, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "LITTLE_ENDIAN", &pc->IntType, (union AnyValue *)&LittleEndian, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "BIG_ENDIAN", &pc->IntType, CPtrWrapperBase::wrap(&BigEndian), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "LITTLE_ENDIAN", &pc->IntType, CPtrWrapperBase::wrap(&LittleEndian), FALSE);
 }
 
 /* add a library */
-void LibraryAdd(Picoc *pc, struct Table *GlobalTable, const char *LibraryName, const struct LibraryFunction *FuncList)
+void LibraryAdd(Picoc *pc, struct Table *GlobalTable, TConstRegStringPtr LibraryName, const struct LibraryFunction *FuncList)
 {
     struct ParseState Parser;
     int Count;
-    char *Identifier;
+    TRegStringPtr Identifier;
     struct ValueType *ReturnType;
     TValuePtr NewValue;
     TLexBufPtr Tokens;
-    char *IntrinsicName = TableStrRegister(pc, "c library"); /* UNDONE: Shouldn't this be LibraryName? */
+    TRegStringPtr IntrinsicName = TableStrRegister(pc, "c library"); /* UNDONE: Shouldn't this be LibraryName? */
     /*char *IntrinsicName = TableStrRegister(pc, LibraryName);*/
     
     /* read all the library definitions */
@@ -104,9 +104,9 @@ void BasicIOInit(Picoc *pc)
 void CLibraryInit(Picoc *pc)
 {
     /* define some constants */
-    VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, (union AnyValue *)&ZeroValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "TRUE", &pc->IntType, (union AnyValue *)&TRUEValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "FALSE", &pc->IntType, (union AnyValue *)&ZeroValue, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, CPtrWrapperBase::wrap(&ZeroValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "TRUE", &pc->IntType, CPtrWrapperBase::wrap(&TRUEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "FALSE", &pc->IntType, CPtrWrapperBase::wrap(&ZeroValue), FALSE);
 }
 
 /* stream for writing into strings */
@@ -124,6 +124,13 @@ void PrintCh(char OutCh, struct OutputStream *Stream)
 
 /* print a string to a stream without using printf/sprintf */
 void PrintStr(const char *Str, struct OutputStream *Stream)
+{
+    while (*Str != 0)
+        PrintCh(*Str++, Stream);
+}
+
+/* print a string to a stream without using printf/sprintf */
+void PrintStr(TConstRegStringPtr Str, struct OutputStream *Stream)
 {
     while (*Str != 0)
         PrintCh(*Str++, Stream);

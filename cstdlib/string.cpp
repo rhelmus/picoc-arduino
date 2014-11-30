@@ -180,7 +180,7 @@ void StringSetupFunc(Picoc *pc)
 {
     /* define NULL */
     if (!VariableDefined(pc, TableStrRegister(pc, "NULL")))
-        VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, (union AnyValue *)&String_ZeroValue, FALSE);
+        VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, CPtrWrapperBase::wrap(&String_ZeroValue), FALSE);
 }
 
 #endif /* !BUILTIN_MINI_STDLIB */

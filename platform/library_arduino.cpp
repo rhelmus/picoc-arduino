@@ -25,11 +25,11 @@ typedef signed long int32_t;\
 
 void ArduinoSetupFunc(Picoc *pc)
 {
-    VariableDefinePlatformVar(pc, NULL, "HIGH", &pc->CharType, (union AnyValue *)&HIGHValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "LOW", &pc->CharType, (union AnyValue *)&LOWValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "INPUT", &pc->CharType, (union AnyValue *)&INPUTValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "OUTPUT", &pc->CharType, (union AnyValue *)&OUTPUTValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "INPUT_PULLUP", &pc->CharType, (union AnyValue *)&INPUT_PULLUPValue, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "HIGH", &pc->CharType, CPtrWrapperBase::wrap(&HIGHValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "LOW", &pc->CharType, CPtrWrapperBase::wrap(&LOWValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "INPUT", &pc->CharType, CPtrWrapperBase::wrap(&INPUTValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "OUTPUT", &pc->CharType, CPtrWrapperBase::wrap(&OUTPUTValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "INPUT_PULLUP", &pc->CharType, CPtrWrapperBase::wrap(&INPUT_PULLUPValue), FALSE);
 }
 
 void CpinMode(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)

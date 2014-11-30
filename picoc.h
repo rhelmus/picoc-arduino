@@ -51,7 +51,9 @@ void PicocFreeCharBuffer(Picoc *pc, char *buf);
 #endif
 
 /* parse.c */
-void PicocParse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int RunIt, int CleanupNow, int CleanupSource, int EnableDebugger);
+void PicocParse(Picoc *pc, TConstRegStringPtr FileName, const char *Source, int SourceLen, int RunIt, int CleanupNow, int CleanupSource, int EnableDebugger);
+inline void PicocParse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int RunIt, int CleanupNow, int CleanupSource, int EnableDebugger)
+{ return PicocParse(pc, CPtrWrapperBase::wrap(FileName), Source, SourceLen, RunIt, CleanupNow, CleanupSource, EnableDebugger); }
 void PicocParseInteractive(Picoc *pc);
 void PicocParseLineByLine(Picoc *pc, const char *FileName, void *FilePointer, int EnableDebugger);
 

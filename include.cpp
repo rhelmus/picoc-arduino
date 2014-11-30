@@ -65,7 +65,7 @@ void PicocIncludeAllSystemHeaders(Picoc *pc)
 }
 
 /* include one of a number of predefined libraries, or perhaps an actual file */
-void IncludeFile(Picoc *pc, char *FileName, int LineByLine)
+void IncludeFile(Picoc *pc, TRegStringPtr FileName, int LineByLine)
 {
     struct IncludeLibrary *LInclude;
     
@@ -98,9 +98,9 @@ void IncludeFile(Picoc *pc, char *FileName, int LineByLine)
     
     /* not a predefined file, read a real file */
     if (LineByLine)
-        PicocPlatformScanFileByLine(pc, FileName);
+        PicocPlatformScanFileByLine(pc, unwrap(FileName));
     else
-        PicocPlatformScanFile(pc, FileName);
+        PicocPlatformScanFile(pc, unwrap(FileName));
 }
 
 #endif /* NO_HASH_INCLUDE */

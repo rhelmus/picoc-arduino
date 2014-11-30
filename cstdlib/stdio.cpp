@@ -695,26 +695,26 @@ void StdioSetupFunc(Picoc *pc)
     TypeCreateOpaqueStruct(pc, NULL, TableStrRegister(pc, "__va_listStruct"), sizeof(FILE));
     
     /* define EOF equal to the system EOF */
-    VariableDefinePlatformVar(pc, NULL, "EOF", &pc->IntType, (union AnyValue *)&EOFValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "SEEK_SET", &pc->IntType, (union AnyValue *)&SEEK_SETValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "SEEK_CUR", &pc->IntType, (union AnyValue *)&SEEK_CURValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "SEEK_END", &pc->IntType, (union AnyValue *)&SEEK_ENDValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "BUFSIZ", &pc->IntType, (union AnyValue *)&BUFSIZValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "FILENAME_MAX", &pc->IntType, (union AnyValue *)&FILENAME_MAXValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "_IOFBF", &pc->IntType, (union AnyValue *)&_IOFBFValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "_IOLBF", &pc->IntType, (union AnyValue *)&_IOLBFValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "_IONBF", &pc->IntType, (union AnyValue *)&_IONBFValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "L_tmpnam", &pc->IntType, (union AnyValue *)&L_tmpnamValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "GETS_MAX", &pc->IntType, (union AnyValue *)&GETS_MAXValue, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EOF", &pc->IntType, CPtrWrapperBase::wrap(&EOFValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "SEEK_SET", &pc->IntType, CPtrWrapperBase::wrap(&SEEK_SETValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "SEEK_CUR", &pc->IntType, CPtrWrapperBase::wrap(&SEEK_CURValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "SEEK_END", &pc->IntType, CPtrWrapperBase::wrap(&SEEK_ENDValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "BUFSIZ", &pc->IntType, CPtrWrapperBase::wrap(&BUFSIZValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "FILENAME_MAX", &pc->IntType, CPtrWrapperBase::wrap(&FILENAME_MAXValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "_IOFBF", &pc->IntType, CPtrWrapperBase::wrap(&_IOFBFValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "_IOLBF", &pc->IntType, CPtrWrapperBase::wrap(&_IOLBFValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "_IONBF", &pc->IntType, CPtrWrapperBase::wrap(&_IONBFValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "L_tmpnam", &pc->IntType, CPtrWrapperBase::wrap(&L_tmpnamValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "GETS_MAX", &pc->IntType, CPtrWrapperBase::wrap(&GETS_MAXValue), FALSE);
     
     /* define stdin, stdout and stderr */
-    VariableDefinePlatformVar(pc, NULL, "stdin", FilePtrType, (union AnyValue *)&stdinValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "stdout", FilePtrType, (union AnyValue *)&stdoutValue, FALSE);
-    VariableDefinePlatformVar(pc, NULL, "stderr", FilePtrType, (union AnyValue *)&stderrValue, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "stdin", FilePtrType, CPtrWrapperBase::wrap(&stdinValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "stdout", FilePtrType, CPtrWrapperBase::wrap(&stdoutValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "stderr", FilePtrType, CPtrWrapperBase::wrap(&stderrValue), FALSE);
 
     /* define NULL, TRUE and FALSE */
     if (!VariableDefined(pc, TableStrRegister(pc, "NULL")))
-        VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, (union AnyValue *)&Stdio_ZeroValue, FALSE);
+        VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, CPtrWrapperBase::wrap(&Stdio_ZeroValue), FALSE);
 }
 
 /* portability-related I/O calls */
@@ -731,6 +731,15 @@ void PrintSimpleInt(long Num, FILE *Stream)
 void PrintStr(const char *Str, FILE *Stream)
 {
     fputs(Str, Stream);
+}
+
+void PrintStr(TConstRegStringPtr Str, FILE *Stream)
+{
+    while (*Str)
+    {
+        fputc(*Str, Stream);
+        ++Str;
+    }
 }
 
 void PrintFP(double Num, FILE *Stream)

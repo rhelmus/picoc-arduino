@@ -134,14 +134,14 @@ enum RunMode
 struct ParseState
 {
     Picoc *pc;                  /* the picoc instance this parser is a part of */
-    TLexBufPtr Pos;                /* the character position in the source text */
-    char *FileName;             /* what file we're executing (registered string) */
+    TLexBufPtr Pos;             /* the character position in the source text */
+    TRegStringPtr FileName;     /* what file we're executing (registered string) */
     void *LineFilePointer;      /* Pointer to file data for line by line parsing (Similar to Interactive mode) */
     short int Line;             /* line number we're executing */
     short int CharacterPos;     /* character/column in the line we're executing */
     enum RunMode Mode;          /* whether to skip or run code */
     int SearchLabel;            /* what case label we're searching for */
-    const char *SearchGotoLabel;/* what goto label we're searching for */
+    TConstRegStringPtr SearchGotoLabel;/* what goto label we're searching for */
     const char *SourceText;     /* the entire source text */
     short int HashIfLevel;      /* how many "if"s we're nested down */
     short int HashIfEvaluateToLevel;    /* if we're not evaluating an if branch, what the last evaluated level was */
@@ -179,10 +179,10 @@ enum BaseType
 struct ValueType
 {
     enum BaseType Base;             /* what kind of type this is */
-    uint16_t ArraySize;                  /* the size of an array type */
-    uint16_t Sizeof;                     /* the storage required */
-    uint8_t AlignBytes;                 /* the alignment boundary of this type */
-    const char *Identifier;         /* the name of a struct or union */
+    uint16_t ArraySize;             /* the size of an array type */
+    uint16_t Sizeof;                /* the storage required */
+    uint8_t AlignBytes;             /* the alignment boundary of this type */
+    TConstRegStringPtr Identifier;  /* the name of a struct or union */
     struct ValueType *FromType;     /* the type we're derived from (or NULL) */
     struct ValueType *DerivedTypeList;  /* first in a list of types derived from this one */
     struct ValueType *Next;         /* next item in the derived type list */
@@ -197,7 +197,7 @@ struct FuncDef
     int8_t NumParams;                  /* the number of parameters */
     int8_t VarArgs;                    /* has a variable number of arguments after the explicitly specified ones */
     struct ValueType **ParamType;   /* array of parameter types */
-    char **ParamName;               /* array of parameter names */
+    TRegStringPtrPtr ParamName;     /* array of parameter names */
     void (*Intrinsic)(struct ParseState *, TValuePtr, TValuePtrPtr, int); /* intrinsic call address or NULL */
     struct ParseState *Body;        /* lexical tokens of the function body if not intrinsic (otherwise NULL) */
 };
@@ -206,7 +206,7 @@ struct FuncDef
 struct MacroDef
 {
     int8_t NumParams;                  /* the number of parameters */
-    char **ParamName;               /* array of parameter names */
+    TRegStringPtrPtr ParamName;        /* array of parameter names */
     struct ParseState Body;         /* lexical tokens of the function body if not intrinsic */
 };
 
@@ -221,7 +221,7 @@ union AnyValue
     unsigned int UnsignedInteger;
     unsigned long UnsignedLongInteger;
     unsigned char UnsignedCharacter;
-    char *Identifier;
+    TRegStringPtr Identifier;
     char ArrayMem[2];               /* placeholder for where the data starts, doesn't point to it */
     struct ValueType *Typ;
     struct FuncDef FuncDef;
@@ -235,7 +235,7 @@ union AnyValue
 struct Value
 {
     struct ValueType *Typ;          /* the type of this value */
-    union AnyValue *Val;            /* pointer to the AnyValue which holds the actual content */
+    TAnyValuePtr Val;            /* pointer to the AnyValue which holds the actual content */
     TValuePtr LValueFrom;       /* if an LValue, this is a Value our LValue is contained within (or NULL) */
     uint8_t Flags;
     int16_t ScopeID;                    /* to know when it goes out of scope */
@@ -258,15 +258,19 @@ struct TableEntry
     {
         struct ValueEntry
         {
-            char *Key;              /* points to the shared string table */
+            TRegStringPtr Key;     /* points to the shared string table */
             TValuePtr Val;          /* the value we're storing */
         } v;                        /* used for tables of values */
         
+#ifdef WRAP_REGSTRINGS
+        TRegStringPtr Key;
+#else
         char Key[1];                /* dummy size - used for the shared string table */
+#endif
         
         struct BreakpointEntry      /* defines a breakpoint */
         {
-            const char *FileName;
+            TConstRegStringPtr FileName;
             short int Line;
             short int CharacterPos;
         } b;
@@ -285,10 +289,10 @@ struct Table
 struct StackFrame
 {
     struct ParseState ReturnParser;         /* how we got here */
-    const char *FuncName;                   /* the name of the function we're in */
-    TValuePtr ReturnValue;              /* copy the return value here */
-    TValuePtrPtr Parameter;               /* array of parameter values */
-    int8_t NumParams;                          /* the number of parameters */
+    TConstRegStringPtr FuncName;            /* the name of the function we're in */
+    TValuePtr ReturnValue;                  /* copy the return value here */
+    TValuePtrPtr Parameter;                 /* array of parameter values */
+    int8_t NumParams;                       /* the number of parameters */
     struct Table LocalTable;                /* the local variables and parameters */
     struct TableEntry *LocalHashTable[LOCAL_TABLE_SIZE];
     struct StackFrame *PreviousStackFrame;  /* the next lower stack frame */
@@ -308,7 +312,7 @@ struct LexState
 {
     const char *Pos;
     const char *End;
-    const char *FileName;
+    TConstRegStringPtr FileName;
     int Line;
     int CharacterPos;
     const char *SourceText;
@@ -366,7 +370,7 @@ struct TokenLine
 /* a list of libraries we can include */
 struct IncludeLibrary
 {
-    char *IncludeName;
+    TRegStringPtr IncludeName;
     void (*SetupFunction)(Picoc *pc);
     struct LibraryFunction *FuncList;
     const char *SetupCSource;
@@ -470,7 +474,7 @@ struct Picoc_Struct
     IOFILE CStdOutBase;
 
     /* the picoc version string */
-    const char *VersionString;
+    TConstRegStringPtr VersionString;
     
     /* exit longjump buffer */
 #if defined(UNIX_HOST) || defined(WIN32)
@@ -483,25 +487,27 @@ struct Picoc_Struct
     /* string table */
     struct Table StringTable;
     struct TableEntry *StringHashTable[STRING_TABLE_SIZE];
-    char *StrEmpty;
+    TRegStringPtr StrEmpty;
 };
 
 /* table.c */
 void TableInit(Picoc *pc);
-char *TableStrRegister(Picoc *pc, const char *Str);
-char *TableStrRegister2(Picoc *pc, const char *Str, int Len);
+TRegStringPtr TableStrRegister(Picoc *pc, const char *Str);
+TRegStringPtr TableStrRegister(Picoc *pc, TConstRegStringPtr Str);
+TRegStringPtr TableStrRegister2(Picoc *pc, const char *Str, int Len);
+TRegStringPtr TableStrRegister2(Picoc *pc, TConstRegStringPtr Str, int Len);
 void TableInitTable(struct Table *Tbl, struct TableEntry **HashTable, int Size, int OnHeap);
-int TableSet(Picoc *pc, struct Table *Tbl, char *Key, TValuePtr Val, const char *DeclFileName, int DeclLine, int DeclColumn);
-int TableGet(struct Table *Tbl, const char *Key, TValuePtrPtr Val, const char **DeclFileName, int *DeclLine, int *DeclColumn);
-TValuePtr TableDelete(Picoc *pc, struct Table *Tbl, const char *Key);
-char *TableSetIdentifier(Picoc *pc, struct Table *Tbl, const char *Ident, int IdentLen);
+int TableSet(Picoc *pc, struct Table *Tbl, TRegStringPtr Key, TValuePtr Val, TConstRegStringPtr DeclFileName, int DeclLine, int DeclColumn);
+int TableGet(struct Table *Tbl, TConstRegStringPtr Key, TValuePtrPtr Val, const char **DeclFileName, int *DeclLine, int *DeclColumn);
+TValuePtr TableDelete(Picoc *pc, struct Table *Tbl, const TRegStringPtr Key);
+TRegStringPtr TableSetIdentifier(Picoc *pc, struct Table *Tbl, TConstRegStringPtr Ident, int IdentLen);
 void TableStrFree(Picoc *pc);
 
 /* lex.c */
 void LexInit(Picoc *pc);
 void LexCleanup(Picoc *pc);
-TLexBufPtr LexAnalyse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int *TokenLen);
-void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, TLexBufPtr TokenSource, char *FileName, void *FilePointer, int RunIt, int SetDebugMode);
+TLexBufPtr LexAnalyse(Picoc *pc, TConstRegStringPtr FileName, const char *Source, int SourceLen, int *TokenLen);
+void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, TLexBufPtr TokenSource, TRegStringPtr FileName, void *FilePointer, int RunIt, int SetDebugMode);
 enum LexToken LexGetToken(struct ParseState *Parser, TValuePtrPtr Value, int IncPos);
 enum LexToken LexRawPeekToken(struct ParseState *Parser);
 void LexToEndOfLine(struct ParseState *Parser);
@@ -516,7 +522,7 @@ void LexInteractiveStatementPrompt(Picoc *pc);
  * void PicocParseInteractive(); */
 void PicocParseInteractiveNoStartPrompt(Picoc *pc, int EnableDebugger);
 enum ParseResult ParseStatement(struct ParseState *Parser, int CheckTrailingSemicolon);
-TValuePtr ParseFunctionDefinition(struct ParseState *Parser, struct ValueType *ReturnType, char *Identifier);
+TValuePtr ParseFunctionDefinition(struct ParseState *Parser, struct ValueType *ReturnType, TRegStringPtr Identifier);
 void ParseCleanup(Picoc *pc);
 void ParserCopyPos(struct ParseState *To, struct ParseState *From);
 void ParserCopy(struct ParseState *To, struct ParseState *From);
@@ -524,7 +530,7 @@ void ParserCopy(struct ParseState *To, struct ParseState *From);
 /* expression.c */
 int ExpressionParse(struct ParseState *Parser, TValuePtrPtr Result);
 long ExpressionParseInt(struct ParseState *Parser);
-void ExpressionAssign(struct ParseState *Parser, TValuePtr DestValue, TValuePtr SourceValue, int Force, const char *FuncName, int ParamNo, int AllowPointerCoercion);
+void ExpressionAssign(struct ParseState *Parser, TValuePtr DestValue, TValuePtr SourceValue, int Force, TConstRegStringPtr FuncName, int ParamNo, int AllowPointerCoercion);
 long ExpressionCoerceInteger(TValuePtr Val);
 unsigned long ExpressionCoerceUnsignedInteger(TValuePtr Val);
 #ifndef NO_FP
@@ -539,10 +545,10 @@ int TypeSizeValue(TValuePtr Val, int Compact);
 int TypeStackSizeValue(TValuePtr Val);
 int TypeLastAccessibleOffset(Picoc *pc, TValuePtr Val);
 int TypeParseFront(struct ParseState *Parser, struct ValueType **Typ, int *IsStatic);
-void TypeParseIdentPart(struct ParseState *Parser, struct ValueType *BasicTyp, struct ValueType **Typ, char **Identifier);
-void TypeParse(struct ParseState *Parser, struct ValueType **Typ, char **Identifier, int *IsStatic);
-struct ValueType *TypeGetMatching(Picoc *pc, struct ParseState *Parser, struct ValueType *ParentType, enum BaseType Base, int ArraySize, const char *Identifier, int AllowDuplicates);
-struct ValueType *TypeCreateOpaqueStruct(Picoc *pc, struct ParseState *Parser, const char *StructName, int Size);
+void TypeParseIdentPart(struct ParseState *Parser, struct ValueType *BasicTyp, struct ValueType **Typ, TRegStringPtrPtr Identifier);
+void TypeParse(struct ParseState *Parser, struct ValueType **Typ, TRegStringPtrPtr Identifier, int *IsStatic);
+struct ValueType *TypeGetMatching(Picoc *pc, struct ParseState *Parser, struct ValueType *ParentType, enum BaseType Base, int ArraySize, TConstRegStringPtr Identifier, int AllowDuplicates);
+struct ValueType *TypeCreateOpaqueStruct(Picoc *pc, struct ParseState *Parser, TConstRegStringPtr StructName, int Size);
 int TypeIsForwardDeclared(struct ParseState *Parser, struct ValueType *Typ);
 
 /* heap.c */
@@ -566,19 +572,20 @@ void VariableStackPop(struct ParseState *Parser, TValuePtr Var);
 TValuePtr VariableAllocValueAndData(Picoc *pc, struct ParseState *Parser, int DataSize, int IsLValue, TValuePtr LValueFrom, int OnHeap);
 TValuePtr VariableAllocValueAndCopy(Picoc *pc, struct ParseState *Parser, TValuePtr FromValue, int OnHeap);
 TValuePtr VariableAllocValueFromType(Picoc *pc, struct ParseState *Parser, struct ValueType *Typ, int IsLValue, TValuePtr LValueFrom, int OnHeap);
-TValuePtr VariableAllocValueFromExistingData(struct ParseState *Parser, struct ValueType *Typ, union AnyValue *FromValue, int IsLValue, TValuePtr LValueFrom);
+TValuePtr VariableAllocValueFromExistingData(struct ParseState *Parser, struct ValueType *Typ, TAnyValuePtr FromValue, int IsLValue, TValuePtr LValueFrom);
 TValuePtr VariableAllocValueShared(struct ParseState *Parser, TValuePtr FromValue);
-TValuePtr VariableDefine(Picoc *pc, struct ParseState *Parser, char *Ident, TValuePtr InitValue, struct ValueType *Typ, int MakeWritable);
-TValuePtr VariableDefineButIgnoreIdentical(struct ParseState *Parser, char *Ident, struct ValueType *Typ, int IsStatic, int *FirstVisit);
-int VariableDefined(Picoc *pc, const char *Ident);
-int VariableDefinedAndOutOfScope(Picoc *pc, const char *Ident);
+TValuePtr VariableDefine(Picoc *pc, struct ParseState *Parser, TRegStringPtr Ident, TValuePtr InitValue, struct ValueType *Typ, int MakeWritable);
+TValuePtr VariableDefineButIgnoreIdentical(struct ParseState *Parser, TRegStringPtr Ident, struct ValueType *Typ, int IsStatic, int *FirstVisit);
+int VariableDefined(Picoc *pc, TConstRegStringPtr Ident);
+int VariableDefinedAndOutOfScope(Picoc *pc, TConstRegStringPtr Ident);
 void VariableRealloc(struct ParseState *Parser, TValuePtr FromValue, int NewSize);
-void VariableGet(Picoc *pc, struct ParseState *Parser, const char *Ident, TValuePtrPtr LVal);
-void VariableDefinePlatformVar(Picoc *pc, struct ParseState *Parser, const char *Ident, struct ValueType *Typ, union AnyValue *FromValue, int IsWritable);
-void VariableStackFrameAdd(struct ParseState *Parser, const char *FuncName, int NumParams);
+void VariableGet(Picoc *pc, struct ParseState *Parser, TConstRegStringPtr Ident, TValuePtrPtr LVal);
+void VariableDefinePlatformVar(Picoc *pc, struct ParseState *Parser, const char *Ident, struct ValueType *Typ, TAnyValuePtr FromValue, int IsWritable);
+void VariableDefinePlatformVar(Picoc *pc, struct ParseState *Parser, TConstRegStringPtr Ident, struct ValueType *Typ, TAnyValuePtr FromValue, int IsWritable);
+void VariableStackFrameAdd(struct ParseState *Parser, TConstRegStringPtr FuncName, int NumParams);
 void VariableStackFramePop(struct ParseState *Parser);
-TValuePtr VariableStringLiteralGet(Picoc *pc, char *Ident);
-void VariableStringLiteralDefine(Picoc *pc, char *Ident, TValuePtr Val);
+TValuePtr VariableStringLiteralGet(Picoc *pc, TRegStringPtr Ident);
+void VariableStringLiteralDefine(Picoc *pc, TRegStringPtr Ident, TValuePtr Val);
 void *VariableDereferencePointer(struct ParseState *Parser, TValuePtr PointerValue, TValuePtrPtr DerefVal, int *DerefOffset, struct ValueType **DerefType, int *DerefIsLValue);
 int VariableScopeBegin(struct ParseState * Parser, int16_t *PrevScopeID);
 void VariableScopeEnd(struct ParseState * Parser, int ScopeID, int16_t PrevScopeID);
@@ -586,12 +593,15 @@ void VariableScopeEnd(struct ParseState * Parser, int ScopeID, int16_t PrevScope
 /* clibrary.c */
 void BasicIOInit(Picoc *pc);
 void LibraryInit(Picoc *pc);
-void LibraryAdd(Picoc *pc, struct Table *GlobalTable, const char *LibraryName, const struct LibraryFunction *FuncList);
+void LibraryAdd(Picoc *pc, struct Table *GlobalTable, TConstRegStringPtr LibraryName, const struct LibraryFunction *FuncList);
+inline void LibraryAdd(Picoc *pc, struct Table *GlobalTable, const char *LibraryName, const struct LibraryFunction *FuncList)
+{ return LibraryAdd(pc, GlobalTable, CPtrWrapperBase::wrap(LibraryName), FuncList); }
 void CLibraryInit(Picoc *pc);
 void PrintCh(char OutCh, IOFILE *Stream);
 void PrintSimpleInt(long Num, IOFILE *Stream);
 void PrintInt(long Num, int FieldWidth, int ZeroPad, int LeftJustify, IOFILE *Stream);
 void PrintStr(const char *Str, IOFILE *Stream);
+void PrintStr(TConstRegStringPtr Str, IOFILE *Stream);
 void PrintFP(double Num, IOFILE *Stream);
 void PrintType(struct ValueType *Typ, IOFILE *Stream);
 void LibPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs);
@@ -610,7 +620,7 @@ const extern struct LibraryFunction CLibrary[];
  * extern int PicocExitValue; */
 void ProgramFail(struct ParseState *Parser, const char *Message, ...);
 void ProgramFailNoParser(Picoc *pc, const char *Message, ...);
-void AssignFail(struct ParseState *Parser, const char *Format, struct ValueType *Type1, struct ValueType *Type2, int Num1, int Num2, const char *FuncName, int ParamNo);
+void AssignFail(struct ParseState *Parser, const char *Format, struct ValueType *Type1, struct ValueType *Type2, int Num1, int Num2, TConstRegStringPtr FuncName, int ParamNo);
 void LexFail(Picoc *pc, struct LexState *Lexer, const char *Message, ...);
 void PlatformInit(Picoc *pc);
 void PlatformCleanup(Picoc *pc);
@@ -621,14 +631,14 @@ void PlatformPutc(unsigned char OutCh, union OutputStreamInfo *);
 void PlatformPrintf(IOFILE *Stream, const char *Format, ...);
 void PlatformVPrintf(IOFILE *Stream, const char *Format, va_list Args);
 void PlatformExit(Picoc *pc, int ExitVal);
-char *PlatformMakeTempName(Picoc *pc, char *TempNameBuffer);
+TRegStringPtr PlatformMakeTempName(Picoc *pc, char *TempNameBuffer);
 void PlatformLibraryInit(Picoc *pc);
 
 /* include.c */
 void IncludeInit(Picoc *pc);
 void IncludeCleanup(Picoc *pc);
 void IncludeRegister(Picoc *pc, const char *IncludeName, void (*SetupFunction)(Picoc *pc), struct LibraryFunction *FuncList, const char *SetupCSource);
-void IncludeFile(Picoc *pc, char *Filename, int LineByLine);
+void IncludeFile(Picoc *pc, TRegStringPtr Filename, int LineByLine);
 /* the following is defined in picoc.h:
  * void PicocIncludeAllSystemHeaders(); */
  

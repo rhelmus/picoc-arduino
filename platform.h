@@ -45,6 +45,11 @@ typedef CPtrWrapper<unsigned char> TLexBufPtr;
 typedef CPtrWrapper<struct Value> TValuePtr;
 typedef CPtrWrapper<TValuePtr> TValuePtrPtr;
 typedef CPtrWrapper<union AnyValue> TAnyValuePtr;
+typedef CPtrWrapper<char> TRegStringPtr;
+typedef CPtrWrapper<const char> TConstRegStringPtr;
+typedef CPtrWrapper<TRegStringPtr> TRegStringPtrPtr;
+#define WRAP_REGSTRINGS
+#define WRAP_ANYVALUE
 //typedef struct Value * TValuePtr;
 //typedef struct Value ** TValuePtrPtr;
 //typedef unsigned char * TLexBuf;
@@ -55,7 +60,7 @@ typedef CPtrWrapper<union AnyValue> TAnyValuePtr;
 # undef USE_MALLOC_HEAP                    /* heap is allocated using malloc() */
 # define HEAP_SIZE (4096*1024)
 //# define BUILTIN_MINI_STDLIB
-# define debugline printf
+# define debugline /*printf*/
 # include <stdio.h>
 # include <stdlib.h>
 # include <ctype.h>
