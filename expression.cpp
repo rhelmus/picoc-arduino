@@ -360,7 +360,7 @@ void ExpressionAssignToPointer(struct ParseState *Parser, TValuePtr ToValue, TVa
     else if (FromValue->Typ->Base == TypeArray && (PointedToType == FromValue->Typ->FromType || ToValue->Typ == Parser->pc->VoidPtrType))
     {
         /* the form is: blah *x = array of blah */
-        ToValue->Val->Pointer = (void *)&FromValue->Val->ArrayMem[0];
+        ToValue->Val->Pointer = (void *)CPtrWrapperBase::getPtr(getMembrPtr(FromValue->Val, &FromValue->Val->ArrayMem[0])); // UNDONE
     }
     else if (FromValue->Typ->Base == TypePointer && FromValue->Typ->FromType->Base == TypeArray && 
                (PointedToType == FromValue->Typ->FromType->FromType || ToValue->Typ == Parser->pc->VoidPtrType) )
@@ -705,7 +705,7 @@ void ExpressionInfixOperator(struct ParseState *Parser, struct ExpressionStack *
         /* make the array element result */
         switch (BottomValue->Typ->Base)
         {
-            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, CPtrWrapperBase::wrap(&BottomValue->Val->ArrayMem[0] + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break; // UNDONE
+            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, getMembrPtr(BottomValue->Val, (&BottomValue->Val->ArrayMem[0]) + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
             case TypePointer: Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, CPtrWrapperBase::wrap((char *)BottomValue->Val->Pointer + TypeSize(BottomValue->Typ->FromType, 0, TRUE) * ArrayIndex), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break; // UNDONE
             default:          ProgramFail(Parser, "this %t is not an array", BottomValue->Typ);
         }
@@ -1270,7 +1270,7 @@ int ExpressionParse(struct ParseState *Parser, TValuePtrPtr Result)
                         struct ParseState MacroParser;
                         TValuePtr MacroResult;
                         
-                        ParserCopy(&MacroParser, &VariableValue->Val->MacroDef.Body);
+                        ParserCopy(&MacroParser, getMembrPtr(VariableValue->Val, &VariableValue->Val->MacroDef.Body));
                         MacroParser.Mode = Parser->Mode;
                         if (VariableValue->Val->MacroDef.NumParams != 0)
                             ProgramFail(&MacroParser, "macro arguments missing");
@@ -1363,7 +1363,12 @@ int ExpressionParse(struct ParseState *Parser, TValuePtrPtr Result)
 
 
 /* do a parameterised macro call */
-void ExpressionParseMacroCall(struct ParseState *Parser, struct ExpressionStack **StackTop, TConstRegStringPtr MacroName, struct MacroDef *MDef)
+void ExpressionParseMacroCall(struct ParseState *Parser, struct ExpressionStack **StackTop, TConstRegStringPtr MacroName,
+#ifdef WRAP_ANYVALUE
+                              CPtrWrapper<struct MacroDef> MDef)
+#else
+                              struct MacroDef *MDef)
+#endif
 {
     TValuePtr ReturnValue = NILL;
     TValuePtr Param;
@@ -1429,7 +1434,7 @@ void ExpressionParseMacroCall(struct ParseState *Parser, struct ExpressionStack 
         if (MDef->Body.Pos == NULL)
             ProgramFail(Parser, "'%s' is undefined", MacroName);
         
-        ParserCopy(&MacroParser, &MDef->Body);
+        ParserCopy(&MacroParser, getMembrPtr(MDef, &MDef->Body));
         MacroParser.Mode = Parser->Mode;
         VariableStackFrameAdd(Parser, MacroName, 0);
         Parser->pc->TopStackFrame->NumParams = ArgCount;
@@ -1463,7 +1468,7 @@ void ExpressionParseFunctionCall(struct ParseState *Parser, struct ExpressionSta
         if (FuncValue->Typ->Base == TypeMacro)
         {
             /* this is actually a macro, not a function */
-            ExpressionParseMacroCall(Parser, StackTop, FuncName, &FuncValue->Val->MacroDef);
+            ExpressionParseMacroCall(Parser, StackTop, FuncName, getMembrPtr(FuncValue->Val, &FuncValue->Val->MacroDef));
             return;
         }
         

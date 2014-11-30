@@ -153,7 +153,7 @@ TValuePtr ParseFunctionDefinition(struct ParseState *Parser, struct ValueType *R
             ProgramFail(Parser, "function definition expected");
 
         FuncValue->Val->FuncDef.Body = FuncBody;
-        FuncValue->Val->FuncDef.Body->Pos = LexCopyTokens(FuncBody, Parser);
+        FuncValue->Val->FuncDef.Body->Pos = LexCopyTokens(FuncBody, FuncBody->Pos, Parser->Pos);
 
         /* is this function already in the global table? */
         if (TableGet(&pc->GlobalTable, Identifier, &OldFuncValue, NULL, NULL, NULL))
@@ -216,7 +216,7 @@ int ParseArrayInitialiser(struct ParseState *Parser, TValuePtr NewVariable, int 
             if (Parser->Mode == RunModeRun && DoAssignment)
             {
                 SubArraySize = TypeSize(NewVariable->Typ->FromType, NewVariable->Typ->FromType->ArraySize, TRUE);
-                SubArray = VariableAllocValueFromExistingData(Parser, NewVariable->Typ->FromType, CPtrWrapperBase::wrap(&NewVariable->Val->ArrayMem[0] + SubArraySize * ArrayIndex), TRUE, NewVariable); // UNDONE
+                SubArray = VariableAllocValueFromExistingData(Parser, NewVariable->Typ->FromType, getMembrPtr(NewVariable->Val, &NewVariable->Val->ArrayMem[0] + SubArraySize * ArrayIndex), TRUE, NewVariable);
                 #ifdef DEBUG_ARRAY_INITIALIZER
                 int FullArraySize = TypeSize(NewVariable->Typ, NewVariable->Typ->ArraySize, TRUE);
                 PRINT_SOURCE_POS;
@@ -256,7 +256,7 @@ int ParseArrayInitialiser(struct ParseState *Parser, TValuePtr NewVariable, int 
                 #endif
                 if (ArrayIndex >= TotalSize)
                     ProgramFail(Parser, "too many array elements");
-                ArrayElement = VariableAllocValueFromExistingData(Parser, ElementType, CPtrWrapperBase::wrap(&NewVariable->Val->ArrayMem[0] + ElementSize * ArrayIndex), TRUE, NewVariable); // UNDONE
+                ArrayElement = VariableAllocValueFromExistingData(Parser, ElementType, getMembrPtr(NewVariable->Val, &NewVariable->Val->ArrayMem[0] + ElementSize * ArrayIndex), TRUE, NewVariable);
             }
 
             /* this is a normal expression initialiser */
@@ -422,10 +422,10 @@ void ParseMacroDefinition(struct ParseState *Parser)
     }
     
     /* copy the body of the macro to execute later */
-    ParserCopy(&MacroValue->Val->MacroDef.Body, Parser);
+    ParserCopy(getMembrPtr(MacroValue->Val, &MacroValue->Val->MacroDef.Body), Parser);
     MacroValue->Typ = &Parser->pc->MacroType;
     LexToEndOfLine(Parser);
-    MacroValue->Val->MacroDef.Body.Pos = LexCopyTokens(&MacroValue->Val->MacroDef.Body, Parser);
+    MacroValue->Val->MacroDef.Body.Pos = LexCopyTokens(Parser, MacroValue->Val->MacroDef.Body.Pos, Parser->Pos); // UNDONE: switched MacroDef.Body to Parser, shouldn't matter
     
     if (!TableSet(Parser->pc, &Parser->pc->GlobalTable, MacroNameStr, MacroValue, Parser->FileName, Parser->Line, Parser->CharacterPos))
         ProgramFail(Parser, "'%s' is already defined", MacroNameStr);
@@ -435,6 +435,18 @@ void ParseMacroDefinition(struct ParseState *Parser)
 void ParserCopy(struct ParseState *To, struct ParseState *From)
 {
     memcpy((void *)To, (void *)From, sizeof(*To));
+}
+
+/* copy the entire parser state */
+void ParserCopy(CPtrWrapperBase To, struct ParseState *From)
+{
+    memcpy(To, (void *)From, sizeof(struct ParseState));
+}
+
+/* copy the entire parser state */
+void ParserCopy(struct ParseState *To, const CPtrWrapperBase &From)
+{
+    memcpy((void *)To, From, sizeof(struct ParseState));
 }
 
 /* copy where we're at in the parsing */

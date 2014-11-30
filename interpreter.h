@@ -511,7 +511,7 @@ void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText,
 enum LexToken LexGetToken(struct ParseState *Parser, TValuePtrPtr Value, int IncPos);
 enum LexToken LexRawPeekToken(struct ParseState *Parser);
 void LexToEndOfLine(struct ParseState *Parser);
-TLexBufPtr LexCopyTokens(struct ParseState *StartParser, struct ParseState *EndParser);
+TLexBufPtr LexCopyTokens(struct ParseState *Parser, const TLexBufPtr &StartParserPos, const TLexBufPtr &EndParserPos);
 void LexInteractiveClear(Picoc *pc, struct ParseState *Parser);
 void LexInteractiveCompleted(Picoc *pc, struct ParseState *Parser);
 void LexInteractiveStatementPrompt(Picoc *pc);
@@ -526,6 +526,8 @@ TValuePtr ParseFunctionDefinition(struct ParseState *Parser, struct ValueType *R
 void ParseCleanup(Picoc *pc);
 void ParserCopyPos(struct ParseState *To, struct ParseState *From);
 void ParserCopy(struct ParseState *To, struct ParseState *From);
+void ParserCopy(CPtrWrapperBase To, struct ParseState *From);
+void ParserCopy(struct ParseState *To, const CPtrWrapperBase &From);
 
 /* expression.c */
 int ExpressionParse(struct ParseState *Parser, TValuePtrPtr Result);

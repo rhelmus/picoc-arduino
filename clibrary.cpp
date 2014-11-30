@@ -307,7 +307,7 @@ void GenericPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPt
                                 if (NextArg->Typ->Base == TypePointer)
                                     Str = (char *)NextArg->Val->Pointer;
                                 else
-                                    Str = &NextArg->Val->ArrayMem[0];
+                                    Str = getMembrPtr(NextArg->Val, &NextArg->Val->ArrayMem[0]);
                                     
                                 if (Str == NULL)
                                     PrintStr("NULL", Stream); 

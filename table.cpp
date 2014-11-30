@@ -132,7 +132,7 @@ static struct TableEntry *TableSearchIdentifier(struct Table *Tbl, TConstRegStri
     
     for (Entry = Tbl->HashTable[HashValue]; Entry != NULL; Entry = Entry->Next)
     {
-        if (strncmp(getMembrPtr(Entry,  &Entry->p.Key[0]), Key, Len) == 0 && Entry->p.Key[Len] == '\0')
+        if (strncmp(&Entry->p.Key[0], Key, Len) == 0 && Entry->p.Key[Len] == '\0')
             return Entry;   /* found */
     }
     
@@ -162,7 +162,7 @@ TRegStringPtr TableSetIdentifier(Picoc *pc, struct Table *Tbl, TConstRegStringPt
             ProgramFailNoParser(pc, "out of memory");
 
 #ifdef WRAP_REGSTRINGS
-        NewEntry->p.Key = (TRegStringPtr)getMembrPtr(NewEntry, &NewEntry->p.Key) + sizeof(TRegStringPtr); // point just past pointer
+        NewEntry->p.Key = (TRegStringPtr)(&NewEntry->p.Key) + sizeof(TRegStringPtr); // point just past pointer
 #endif
 
         strncpy((TRegStringPtr)&NewEntry->p.Key[0], Ident, IdentLen);

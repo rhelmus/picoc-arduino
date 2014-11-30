@@ -885,7 +885,7 @@ void LexHashIf(struct ParseState *Parser)
         if (SavedValue->Typ->Base != TypeMacro)
             ProgramFail(Parser, "value expected");
         
-        ParserCopy(&MacroParser, &SavedValue->Val->MacroDef.Body);
+        ParserCopy(&MacroParser, getMembrPtr(SavedValue->Val, &SavedValue->Val->MacroDef.Body));
         Token = LexGetRawToken(&MacroParser, &IdentValue, TRUE);
     }
     
@@ -1018,22 +1018,22 @@ void LexToEndOfLine(struct ParseState *Parser)
 }
 
 /* copy the tokens from StartParser to EndParser into new memory, removing TokenEOFs and terminate with a TokenEndOfFunction */
-TLexBufPtr LexCopyTokens(struct ParseState *StartParser, struct ParseState *EndParser)
+TLexBufPtr LexCopyTokens(struct ParseState *Parser, const TLexBufPtr &StartParserPos, const TLexBufPtr &EndParserPos)
 {
     int MemSize = 0;
     int CopySize;
-    TLexBufPtr Pos = StartParser->Pos;
+    TLexBufPtr Pos = StartParserPos;
     TLexBufPtr NewTokens;
     TLexBufPtr NewTokenPos;
     struct TokenLine *ILine;
-    Picoc *pc = StartParser->pc;
+    Picoc *pc = Parser->pc;
     
     if (pc->InteractiveHead == NULL)
     { 
         /* non-interactive mode - copy the tokens */
-        MemSize = EndParser->Pos - StartParser->Pos;
-        NewTokens = allocMemVariable<unsigned char>(StartParser, FALSE, MemSize + TOKEN_DATA_OFFSET);
-        memcpy(NewTokens, StartParser->Pos, MemSize);
+        MemSize = EndParserPos - StartParserPos;
+        NewTokens = allocMemVariable<unsigned char>(Parser, FALSE, MemSize + TOKEN_DATA_OFFSET);
+        memcpy(NewTokens, StartParserPos, MemSize);
     }
     else
     { 
@@ -1041,35 +1041,35 @@ TLexBufPtr LexCopyTokens(struct ParseState *StartParser, struct ParseState *EndP
         for (pc->InteractiveCurrentLine = pc->InteractiveHead; pc->InteractiveCurrentLine != NULL && (Pos < &pc->InteractiveCurrentLine->Tokens[0] || Pos >= &pc->InteractiveCurrentLine->Tokens[pc->InteractiveCurrentLine->NumBytes]); pc->InteractiveCurrentLine = pc->InteractiveCurrentLine->Next)
         {} /* find the line we just counted */
         
-        if (EndParser->Pos >= StartParser->Pos && EndParser->Pos < &pc->InteractiveCurrentLine->Tokens[pc->InteractiveCurrentLine->NumBytes])
+        if (EndParserPos >= StartParserPos && EndParserPos < &pc->InteractiveCurrentLine->Tokens[pc->InteractiveCurrentLine->NumBytes])
         { 
             /* all on a single line */
-            MemSize = EndParser->Pos - StartParser->Pos;
-            NewTokens = allocMemVariable<unsigned char>(StartParser, FALSE, MemSize + TOKEN_DATA_OFFSET);
-            memcpy(NewTokens, StartParser->Pos, MemSize);
+            MemSize = EndParserPos - StartParserPos;
+            NewTokens = allocMemVariable<unsigned char>(Parser, FALSE, MemSize + TOKEN_DATA_OFFSET);
+            memcpy(NewTokens, StartParserPos, MemSize);
         }
         else
         { 
             /* it's spread across multiple lines */
             MemSize = &pc->InteractiveCurrentLine->Tokens[pc->InteractiveCurrentLine->NumBytes-TOKEN_DATA_OFFSET] - Pos;
 
-            for (ILine = pc->InteractiveCurrentLine->Next; ILine != NULL && (EndParser->Pos < &ILine->Tokens[0] || EndParser->Pos >= &ILine->Tokens[ILine->NumBytes]); ILine = ILine->Next)
+            for (ILine = pc->InteractiveCurrentLine->Next; ILine != NULL && (EndParserPos < &ILine->Tokens[0] || EndParserPos >= &ILine->Tokens[ILine->NumBytes]); ILine = ILine->Next)
                 MemSize += ILine->NumBytes - TOKEN_DATA_OFFSET;
             
             assert(ILine != NULL);
-            MemSize += EndParser->Pos - &ILine->Tokens[0];
-            NewTokens = allocMemVariable<unsigned char>(StartParser, FALSE, MemSize + TOKEN_DATA_OFFSET);
+            MemSize += EndParserPos - &ILine->Tokens[0];
+            NewTokens = allocMemVariable<unsigned char>(Parser, FALSE, MemSize + TOKEN_DATA_OFFSET);
             
             CopySize = &pc->InteractiveCurrentLine->Tokens[pc->InteractiveCurrentLine->NumBytes-TOKEN_DATA_OFFSET] - Pos;
             memcpy(NewTokens, Pos, CopySize);
             NewTokenPos = NewTokens + CopySize;
-            for (ILine = pc->InteractiveCurrentLine->Next; ILine != NULL && (EndParser->Pos < &ILine->Tokens[0] || EndParser->Pos >= &ILine->Tokens[ILine->NumBytes]); ILine = ILine->Next)
+            for (ILine = pc->InteractiveCurrentLine->Next; ILine != NULL && (EndParserPos < &ILine->Tokens[0] || EndParserPos >= &ILine->Tokens[ILine->NumBytes]); ILine = ILine->Next)
             {
                 memcpy(NewTokenPos, &ILine->Tokens[0], ILine->NumBytes - TOKEN_DATA_OFFSET);
                 NewTokenPos += ILine->NumBytes-TOKEN_DATA_OFFSET;
             }
             assert(ILine != NULL);
-            memcpy(NewTokenPos, &ILine->Tokens[0], EndParser->Pos - &ILine->Tokens[0]);
+            memcpy(NewTokenPos, &ILine->Tokens[0], EndParserPos - &ILine->Tokens[0]);
         }
     }
     

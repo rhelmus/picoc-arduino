@@ -290,7 +290,7 @@ int StdioBasePrintf(struct ParseState *Parser, FILE *Stream, char *StrOut, int S
                             StdioFprintfPointer(&SOStream, OneFormatBuf, ThisArg->Val->Pointer);
                             
                         else if (ThisArg->Typ->Base == TypeArray && ThisArg->Typ->FromType->Base == TypeChar)
-                            StdioFprintfPointer(&SOStream, OneFormatBuf, &ThisArg->Val->ArrayMem[0]);
+                            StdioFprintfPointer(&SOStream, OneFormatBuf, CPtrWrapperBase::getPtr(getMembrPtr(ThisArg->Val, &ThisArg->Val->ArrayMem[0])));
                             
                         else
                             StdioOutPuts("XXX", &SOStream);
@@ -301,7 +301,7 @@ int StdioBasePrintf(struct ParseState *Parser, FILE *Stream, char *StrOut, int S
                             StdioFprintfPointer(&SOStream, OneFormatBuf, ThisArg->Val->Pointer);
                             
                         else if (ThisArg->Typ->Base == TypeArray)
-                            StdioFprintfPointer(&SOStream, OneFormatBuf, &ThisArg->Val->ArrayMem[0]);
+                            StdioFprintfPointer(&SOStream, OneFormatBuf, CPtrWrapperBase::getPtr(getMembrPtr(ThisArg->Val, &ThisArg->Val->ArrayMem[0])));
                             
                         else
                             StdioOutPuts("XXX", &SOStream);
@@ -344,7 +344,7 @@ int StdioBaseScanf(struct ParseState *Parser, FILE *Stream, char *StrIn, char *F
             ScanfArg[ArgCount] = ThisArg->Val->Pointer;
         
         else if (ThisArg->Typ->Base == TypeArray)
-            ScanfArg[ArgCount] = &ThisArg->Val->ArrayMem[0];
+            ScanfArg[ArgCount] = CPtrWrapperBase::getPtr(getMembrPtr(ThisArg, &ThisArg->Val->ArrayMem[0]));
         
         else
             ProgramFail(Parser, "non-pointer argument to scanf() - argument %d after format", ArgCount+1);
