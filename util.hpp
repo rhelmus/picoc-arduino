@@ -205,12 +205,10 @@ template <typename T> inline int popStack(CPtrWrapper<T> &p, int size) { return 
 // Generic NULL type
 class CNILL
 {
-    static CPtrWrapperBase nillPtrWrapperBase;
-
 public:
     template <typename T> inline operator T*(void) const { return NULL; }
     template <typename T> inline operator CPtrWrapper<T>(void) const { return CPtrWrapper<T>(); }
-    inline operator CPtrWrapperBase(void) const { return nillPtrWrapperBase; }
+    inline operator CPtrWrapperBase(void) const { return CPtrWrapperBase(); }
 
 } extern const NILL;
 

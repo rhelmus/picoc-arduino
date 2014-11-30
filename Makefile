@@ -1,6 +1,6 @@
 CC=gcc
 CXX=g++
-CXXFLAGS=-Wall -pedantic -g3 -DVER=\"`git rev-parse --short HEAD`\"
+CXXFLAGS=-Wall -pedantic -g3 -DVER=\"`git rev-parse --short HEAD`\" -std=gnu++11
 LIBS=-lm -lreadline
 
 TARGET	= picoc
