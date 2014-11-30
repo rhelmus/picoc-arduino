@@ -92,11 +92,11 @@ void LexInit(Picoc *pc)
 
     for (Count = 0; Count < sizeof(ReservedWords) / sizeof(struct ReservedWord); Count++)
     {
-        TableSet(pc, &pc->ReservedWordTable, TableStrRegister(pc, ReservedWords[Count].Word), CPtrWrapperBase::wrap((void *)&ReservedWords[Count]), NILL, 0, 0);
+        TableSet(pc, &pc->ReservedWordTable, TableStrRegister(pc, ReservedWords[Count].Word), (TValuePtr)ptrWrap((void *)&ReservedWords[Count]), NILL, 0, 0);
     }
     
     pc->LexValue.Typ = NULL;
-    pc->LexValue.Val = CPtrWrapperBase::wrap(&pc->LexAnyValue);
+    pc->LexValue.Val = ptrWrap(&pc->LexAnyValue);
     pc->LexValue.LValueFrom = NILL;
     pc->LexValue.Flags = FlagValNone;
 }
@@ -215,7 +215,7 @@ int LexGetMoreSource(struct ParseState *Parser, char *LineBuffer, int Size)
 }
 
 /* check if a word is a reserved word - used while scanning */
-enum LexToken LexCheckReservedWord(Picoc *pc, const TRegStringPtr Word)
+enum LexToken LexCheckReservedWord(Picoc *pc, TConstRegStringPtr Word)
 {
     TValuePtr val;
     
@@ -541,7 +541,7 @@ enum LexToken LexScanGetToken(Picoc *pc, struct LexState *Lexer, TValuePtrPtr Va
     /* scan for a token */
     do
     {
-        *Value = CPtrWrapperBase::wrap(&pc->LexValue);
+        *Value = ptrWrap(&pc->LexValue);
         while (Lexer->Pos != Lexer->End && isspace((int)*Lexer->Pos))
         {
             if (*Lexer->Pos == '\n')
@@ -818,7 +818,7 @@ enum LexToken LexGetRawToken(struct ParseState *Parser, TValuePtrPtr Value, int 
             memcpy(pc->LexValue.Val, &Parser->Pos[TOKEN_DATA_OFFSET], ValueSize);
             pc->LexValue.Flags &= ~(FlagValOnHeap | FlagOnStack | FlagIsLValue);
             pc->LexValue.LValueFrom = NILL;
-            *Value = CPtrWrapperBase::wrap(&pc->LexValue);
+            *Value = ptrWrap(&pc->LexValue);
         }
         
         if (IncPos)

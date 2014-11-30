@@ -15,6 +15,12 @@ void *HeapAllocStack(Picoc *pc, int Size);
 int HeapPopStack(Picoc *pc, void *Addr, int Size);
 void *VariableAlloc(Picoc *pc, struct ParseState *Parser, int Size, int OnHeap);
 
+#if __cplusplus > 199711L
+#define EXPLICIT explicit
+#else
+#define EXPLICIT
+#endif
+
 template <typename T> class CPtrWrapper;
 template <typename T, bool VA> class CAllocProxy;
 
@@ -37,36 +43,36 @@ class CPtrWrapperBase
     friend CPtrWrapperBase memcpy(CPtrWrapperBase &dest, const void *src, size_t n);
     friend void *memcpy(void *dest, const CPtrWrapperBase &src, size_t n);
     friend inline char *strncpy(CPtrWrapper<char> dest, const char *src, size_t n);
-    friend inline char *strncpy(CPtrWrapper<char> dest, const CPtrWrapper<char> &src, size_t n);
-    friend inline char *strncpy(char *dest, const CPtrWrapper<char> &src, size_t n);
-    friend inline int strncmp(const CPtrWrapper<char> &s1, const char *s2, size_t n);
-    friend inline int strncmp(const CPtrWrapper<char> &s1, const CPtrWrapper<char> &s2, size_t n);
-    friend inline int strncmp(const char *s1, const CPtrWrapper<char> &s2, size_t n);
-    friend inline int strcmp(const CPtrWrapper<char> &s1, const char *s2);
-    friend inline int strcmp(const CPtrWrapper<char> &s1, const CPtrWrapper<char> &s2);
-    friend inline int strcmp(const char *s1, const CPtrWrapper<char> &s2);
-    friend inline size_t strlen(const CPtrWrapper<char> &s);
+    friend inline char *strncpy(CPtrWrapper<char> dest, const CPtrWrapper<const char> &src, size_t n);
+    friend inline char *strncpy(char *dest, const CPtrWrapper<const char> &src, size_t n);
+    friend inline int strncmp(const CPtrWrapper<const char> &s1, const char *s2, size_t n);
+    friend inline int strncmp(const CPtrWrapper<const char> &s1, const CPtrWrapper<const char> &s2, size_t n);
+    friend inline int strncmp(const char *s1, const CPtrWrapper<const char> &s2, size_t n);
+    friend inline int strcmp(const CPtrWrapper<const char> &s1, const char *s2);
+    friend inline int strcmp(const CPtrWrapper<const char> &s1, const CPtrWrapper<const char> &s2);
+    friend inline int strcmp(const char *s1, const CPtrWrapper<const char> &s2);
+    friend inline size_t strlen(const CPtrWrapper<const char> &s);
     template <typename T1, typename T2> friend inline CPtrWrapper<T1> pointerCast(const T2 &p);
     friend intptr_t getNumPtr(const CPtrWrapperBase &pwb);
     friend void setPtrFromNum(CPtrWrapperBase &pwb, intptr_t ip);
     template <typename M> friend inline CPtrWrapperBase getMembrPtr(void *, const CPtrWrapper<M> &m);
-    template <typename M> friend inline CPtrWrapperBase getMembrPtr(const CPtrWrapperBase &c, const M *m);
-    template <typename M> friend inline CPtrWrapperBase getMembrPtr(const CPtrWrapperBase &c, const CPtrWrapper<M> &m);
+    template <typename M> friend inline CPtrWrapper<M> getMembrPtr(const CPtrWrapperBase &c, const M *m);
+    template <typename M> friend inline CPtrWrapper<M> getMembrPtr(const CPtrWrapperBase &c, const CPtrWrapper<M> &m);
+    template <typename T2> friend inline CPtrWrapper<T2> ptrWrap(const T2 *p) { CPtrWrapper<T2> ret; ret.ptr = (void *)p; return ret; }
+    template <typename T2> friend inline T2 *ptrUnwrap(const CPtrWrapper<T2> &p) { return static_cast<T2 *>(p.ptr); } // UNDONE
 
 protected:
     void *ptr;
 
 public:
     static void setPicoc(Picoc *p) { pc = p; }
-    static CPtrWrapperBase wrap(void *p) { CPtrWrapperBase ret; ret.ptr = p; return ret; }
-    static CPtrWrapperBase wrap(const void *p) { CPtrWrapperBase ret; ret.ptr = const_cast<void *>(p); return ret; }
     static void *getPtr(const CPtrWrapperBase &p) { return p.ptr; } // UNDONE
 
     // HACK: this allows constructing CPtrWrapper objects from CPtrWrapperBase variables, similar to
     // initializing non void pointers with a void pointer
     // Note that we could have used a copy constructor in CPtrWrapper instead, but this would make the latter
     // class non-POD
-    template <typename T> operator CPtrWrapper<T>(void) const { CPtrWrapper<T> ret; ret.ptr = ptr; return ret; }
+//    template <typename T> operator CPtrWrapper<T>(void) const { CPtrWrapper<T> ret; ret.ptr = ptr; return ret; }
 
     // allow checking with NULL
     inline bool operator==(const SNull *) const { return ptr == 0; }
@@ -80,8 +86,6 @@ public:
     inline bool operator<=(const CPtrWrapperBase &pb) const { return ptr <= pb.ptr; }
     inline bool operator>=(const CPtrWrapperBase &pb) const { return ptr >= pb.ptr; }
     inline bool operator>(const CPtrWrapperBase &pb) const { return ptr > pb.ptr; }
-
-    template <typename T> friend inline T *unwrap(const CPtrWrapper<T> &p) { return static_cast<T *>(p.ptr); } // UNDONE
 };
 
 template <typename T> class CPtrWrapper : public CPtrWrapperBase
@@ -99,7 +103,6 @@ public:
         template <typename> friend class CPtrWrapper;
 
     public:
-//        operator T(void) const { return *ptr; }
         template <typename T2> operator T2(void) const { return static_cast<T2>(*ptr); }
         CValueWrapper &operator=(const T &v) { *ptr = v; return *this; }
         CPtrWrapper<T> operator&(void) { CPtrWrapper<T> ret; ret.ptr = ptr; return ret; }
@@ -141,12 +144,16 @@ public:
         HeapFreeMem(pc, size); // *size points at beginning of actual block
     }
 
-//    CPtrWrapper<T>& operator=(const T *p) { ptr = p; return *this; }
     CValueWrapper operator*(void) { return CValueWrapper(static_cast<T *>(ptr)); }
     T *operator->(void) { return static_cast<T *>(ptr); }
     const T *operator->(void) const { return static_cast<T *>(ptr); }
     // allow double wrapped pointer
     CPtrWrapper<CPtrWrapper<T> > operator&(void) { CPtrWrapper<CPtrWrapper<T> > ret; ret.ptr = this; return ret; }
+
+    // const conversion
+    inline operator CPtrWrapper<const T>(void) { CPtrWrapper<const T> ret; ret.ptr = ptr; return ret; }
+    // pointer to pointer conversion
+    template <typename T2> EXPLICIT inline operator CPtrWrapper<T2>(void) { CPtrWrapper<T2> ret; ret.ptr = ptr; return ret; }
 
     CPtrWrapper<T> &operator+=(int n) { ptr = static_cast<T *>(ptr) + n; return *this; }
     CPtrWrapper<T> &operator++(void) { ptr = (void *)(static_cast<T *>(ptr) + 1); return *this; }
@@ -201,9 +208,8 @@ class CNILL
     static CPtrWrapperBase nillPtrWrapperBase;
 
 public:
-//    template <typename T> inline operator T(void) const { return T(0); }
     template <typename T> inline operator T*(void) const { return NULL; }
-    template <typename T> inline operator CPtrWrapper<T>(void) const { return nillPtrWrapperBase; }
+    template <typename T> inline operator CPtrWrapper<T>(void) const { return CPtrWrapper<T>(); }
     inline operator CPtrWrapperBase(void) const { return nillPtrWrapperBase; }
 
 } extern const NILL;
@@ -227,15 +233,15 @@ inline CPtrWrapperBase memcpy(CPtrWrapperBase &dest, const CPtrWrapperBase &src,
 inline CPtrWrapperBase memcpy(CPtrWrapperBase &dest, const void *src, size_t n) { memcpy(dest.ptr, src, n); return dest; }
 inline void *memcpy(void *dest, const CPtrWrapperBase &src, size_t n) { return memcpy(dest, src.ptr, n); }
 inline char *strncpy(CPtrWrapper<char> dest, const char *src, size_t n) { return strncpy((char *)dest.ptr, src, n); }
-inline char *strncpy(CPtrWrapper<char> dest, const CPtrWrapper<char> &src, size_t n) { return strncpy((char *)dest.ptr, (const char *)src.ptr, n); }
-inline char *strncpy(char *dest, const CPtrWrapper<char> &src, size_t n) { return strncpy(dest, (const char *)src.ptr, n); }
-inline int strncmp(const CPtrWrapper<char> &s1, const char *s2, size_t n) { return strncmp((const char *)s1.ptr, s2, n); }
-inline int strncmp(const CPtrWrapper<char> &s1, const CPtrWrapper<char> &s2, size_t n) { return strncmp((const char *)s1.ptr, (const char *)s2.ptr, n); }
-inline int strncmp(const char *s1, const CPtrWrapper<char> &s2, size_t n) { return strcmp(s1, (const char *)s2.ptr); }
-inline int strcmp(const CPtrWrapper<char> &s1, const char *s2) { return strcmp((const char *)s1.ptr, s2); }
-inline int strcmp(const CPtrWrapper<char> &s1, const CPtrWrapper<char> &s2) { return strcmp((const char *)s1.ptr, (const char *)s2.ptr); }
-inline int strcmp(const char *s1, const CPtrWrapper<char> &s2) { return strcmp(s1, (const char *)s2.ptr); }
-inline size_t strlen(const CPtrWrapper<char> &s) { return strlen((const char *)s.ptr); }
+inline char *strncpy(CPtrWrapper<char> dest, const CPtrWrapper<const char> &src, size_t n) { return strncpy((char *)dest.ptr, (const char *)src.ptr, n); }
+inline char *strncpy(char *dest, const CPtrWrapper<const char> &src, size_t n) { return strncpy(dest, (const char *)src.ptr, n); }
+inline int strncmp(const CPtrWrapper<const char> &s1, const char *s2, size_t n) { return strncmp((const char *)s1.ptr, s2, n); }
+inline int strncmp(const CPtrWrapper<const char> &s1, const CPtrWrapper<const char> &s2, size_t n) { return strncmp((const char *)s1.ptr, (const char *)s2.ptr, n); }
+inline int strncmp(const char *s1, const CPtrWrapper<const char> &s2, size_t n) { return strcmp(s1, (const char *)s2.ptr); }
+inline int strcmp(const CPtrWrapper<const char> &s1, const char *s2) { return strcmp((const char *)s1.ptr, s2); }
+inline int strcmp(const CPtrWrapper<const char> &s1, const CPtrWrapper<const char> &s2) { return strcmp((const char *)s1.ptr, (const char *)s2.ptr); }
+inline int strcmp(const char *s1, const CPtrWrapper<const char> &s2) { return strcmp(s1, (const char *)s2.ptr); }
+inline size_t strlen(const CPtrWrapper<const char> &s) { return strlen((const char *)s.ptr); }
 
 template <typename T1, typename T2> inline T1 *pointerCast(const T2 *p) { return static_cast<T2 *>(p); }
 template <typename T1, typename T2> inline CPtrWrapper<T1> pointerCast(const T2 &p)
@@ -248,10 +254,10 @@ inline void setPtrFromNum(CPtrWrapperBase &pwb, intptr_t ip) { pwb.ptr = reinter
 inline intptr_t getMembrPtrDiff(const void *c, const void *m) { return (const char *)m - (const char *)c; }
 template <typename M> inline M *getMembrPtr(void *, M *m) { return m; }
 template <typename M> inline CPtrWrapperBase getMembrPtr(void *, const CPtrWrapper<M> &m) { return m; }
-template <typename M> inline CPtrWrapperBase getMembrPtr(const CPtrWrapperBase &c, const M *m)
-{ CPtrWrapperBase ret; ret.ptr = ((void *)((char *)(c.ptr) + getMembrPtrDiff(c.ptr, m))); return ret; }
-template <typename M> inline CPtrWrapperBase getMembrPtr(const CPtrWrapperBase &c, const CPtrWrapper<M> &m)
-{ CPtrWrapperBase ret; ret.ptr = ((void *)((char *)(c.ptr) + getMembrPtrDiff(c.ptr, m.ptr))); return ret; }
+template <typename M> inline CPtrWrapper<M> getMembrPtr(const CPtrWrapperBase &c, const M *m)
+{ CPtrWrapper<M> ret; ret.ptr = ((void *)((char *)(c.ptr) + getMembrPtrDiff(c.ptr, m))); return ret; }
+template <typename M> inline CPtrWrapper<M> getMembrPtr(const CPtrWrapperBase &c, const CPtrWrapper<M> &m)
+{ CPtrWrapper<M> ret; ret.ptr = ((void *)((char *)(c.ptr) + getMembrPtrDiff(c.ptr, m.ptr))); return ret; }
 
 
 #if 0

@@ -150,9 +150,9 @@ int IsTypeToken(struct ParseState * Parser, enum LexToken t, TValuePtr LexValue)
     if (t == TokenIdentifier) /* see TypeParseFront, case TokenIdentifier and ParseTypedef */
     {
         TValuePtr VarValue;
-        if (VariableDefined(Parser->pc, CPtrWrapperBase::wrap(LexValue->Val->Pointer))) // UNDONE
+        if (VariableDefined(Parser->pc, (TConstRegStringPtr)ptrWrap(LexValue->Val->Pointer))) // UNDONE
         {
-            VariableGet(Parser->pc, Parser, CPtrWrapperBase::wrap(LexValue->Val->Pointer), &VarValue); // UNDONE
+            VariableGet(Parser->pc, Parser, (TConstRegStringPtr)ptrWrap(LexValue->Val->Pointer), &VarValue); // UNDONE
             if (VarValue->Typ == &Parser->pc->TypeType)
                 return 1;
         }
@@ -314,7 +314,7 @@ void ExpressionStackPushValue(struct ParseState *Parser, struct ExpressionStack 
 void ExpressionStackPushLValue(struct ParseState *Parser, struct ExpressionStack **StackTop, TValuePtr PushValue, int Offset)
 {
     TValuePtr ValueLoc = VariableAllocValueShared(Parser, PushValue);
-    ValueLoc->Val = (pointerCast<char>(ValueLoc->Val) + Offset);
+    ValueLoc->Val = (TAnyValuePtr)(pointerCast<char>(ValueLoc->Val) + Offset);
     ExpressionStackPushValueNode(Parser, StackTop, ValueLoc);
 }
 
@@ -329,7 +329,7 @@ void ExpressionStackPushDereference(struct ParseState *Parser, struct Expression
     if (DerefDataLoc == NULL)
         ProgramFail(Parser, "NULL pointer dereference");
 
-    ValueLoc = VariableAllocValueFromExistingData(Parser, DerefType, CPtrWrapperBase::wrap(DerefDataLoc), DerefIsLValue, DerefVal); // UNDONE
+    ValueLoc = VariableAllocValueFromExistingData(Parser, DerefType, (TAnyValuePtr)ptrWrap(DerefDataLoc), DerefIsLValue, DerefVal); // UNDONE
     ExpressionStackPushValueNode(Parser, StackTop, ValueLoc);
 }
 
@@ -705,8 +705,8 @@ void ExpressionInfixOperator(struct ParseState *Parser, struct ExpressionStack *
         /* make the array element result */
         switch (BottomValue->Typ->Base)
         {
-            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, getMembrPtr(BottomValue->Val, (&BottomValue->Val->ArrayMem[0]) + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
-            case TypePointer: Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, CPtrWrapperBase::wrap((char *)BottomValue->Val->Pointer + TypeSize(BottomValue->Typ->FromType, 0, TRUE) * ArrayIndex), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break; // UNDONE
+            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)getMembrPtr(BottomValue->Val, (&BottomValue->Val->ArrayMem[0]) + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
+            case TypePointer: Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)ptrWrap((char *)BottomValue->Val->Pointer + TypeSize(BottomValue->Typ->FromType, 0, TRUE) * ArrayIndex), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break; // UNDONE
             default:          ProgramFail(Parser, "this %t is not an array", BottomValue->Typ);
         }
         
@@ -1053,16 +1053,17 @@ void ExpressionGetStructElement(struct ParseState *Parser, struct ExpressionStac
         TValuePtr StructVal = ParamVal;
         struct ValueType *StructType = ParamVal->Typ;
 #ifdef WRAP_ANYVALUE
-        CPtrWrapper<char> DerefDataLoc = ParamVal->Val;
+        typedef CPtrWrapper<char> DerefType;
 #else
-        char *DerefDataLoc = ParamVal->Val;
+        typedef DerefType char *;
 #endif
+        DerefType DerefDataLoc = (DerefType)ParamVal->Val;
         TValuePtr MemberValue = NILL;
         TValuePtr Result;
 
         /* if we're doing '->' dereference the struct pointer first */
         if (Token == TokenArrow)
-            DerefDataLoc = CPtrWrapperBase::wrap(VariableDereferencePointer(Parser, ParamVal, &StructVal, NULL, &StructType, NULL)); // UNDONE
+            DerefDataLoc = (DerefType)ptrWrap(VariableDereferencePointer(Parser, ParamVal, &StructVal, NULL, &StructType, NULL)); // UNDONE
         
         if (StructType->Base != TypeStruct && StructType->Base != TypeUnion)
             ProgramFail(Parser, "can't use '%s' on something that's not a struct or union %s : it's a %t", (Token == TokenDot) ? "." : "->", (Token == TokenArrow) ? "pointer" : "", ParamVal->Typ);

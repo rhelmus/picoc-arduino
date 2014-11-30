@@ -497,7 +497,7 @@ TRegStringPtr TableStrRegister(Picoc *pc, TConstRegStringPtr Str);
 TRegStringPtr TableStrRegister2(Picoc *pc, const char *Str, int Len);
 TRegStringPtr TableStrRegister2(Picoc *pc, TConstRegStringPtr Str, int Len);
 void TableInitTable(struct Table *Tbl, struct TableEntry **HashTable, int Size, int OnHeap);
-int TableSet(Picoc *pc, struct Table *Tbl, TRegStringPtr Key, TValuePtr Val, TConstRegStringPtr DeclFileName, int DeclLine, int DeclColumn);
+int TableSet(Picoc *pc, struct Table *Tbl, TConstRegStringPtr Key, TValuePtr Val, TConstRegStringPtr DeclFileName, int DeclLine, int DeclColumn);
 int TableGet(struct Table *Tbl, TConstRegStringPtr Key, TValuePtrPtr Val, const char **DeclFileName, int *DeclLine, int *DeclColumn);
 TValuePtr TableDelete(Picoc *pc, struct Table *Tbl, const TRegStringPtr Key);
 TRegStringPtr TableSetIdentifier(Picoc *pc, struct Table *Tbl, TConstRegStringPtr Ident, int IdentLen);
@@ -597,7 +597,7 @@ void BasicIOInit(Picoc *pc);
 void LibraryInit(Picoc *pc);
 void LibraryAdd(Picoc *pc, struct Table *GlobalTable, TConstRegStringPtr LibraryName, const struct LibraryFunction *FuncList);
 inline void LibraryAdd(Picoc *pc, struct Table *GlobalTable, const char *LibraryName, const struct LibraryFunction *FuncList)
-{ return LibraryAdd(pc, GlobalTable, CPtrWrapperBase::wrap(LibraryName), FuncList); }
+{ return LibraryAdd(pc, GlobalTable, ptrWrap(LibraryName), FuncList); }
 void CLibraryInit(Picoc *pc);
 void PrintCh(char OutCh, IOFILE *Stream);
 void PrintSimpleInt(long Num, IOFILE *Stream);

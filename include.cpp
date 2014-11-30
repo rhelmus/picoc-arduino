@@ -98,9 +98,9 @@ void IncludeFile(Picoc *pc, TRegStringPtr FileName, int LineByLine)
     
     /* not a predefined file, read a real file */
     if (LineByLine)
-        PicocPlatformScanFileByLine(pc, unwrap(FileName));
+        PicocPlatformScanFileByLine(pc, ptrUnwrap(FileName));
     else
-        PicocPlatformScanFile(pc, unwrap(FileName));
+        PicocPlatformScanFile(pc, ptrUnwrap(FileName));
 }
 
 #endif /* NO_HASH_INCLUDE */

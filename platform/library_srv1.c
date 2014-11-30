@@ -10,27 +10,27 @@ struct ValueType *IntArrayType;
 void SRV1SetupFunc()
 {    
     IntArrayType = TypeGetMatching(NULL, &IntType, TypeArray, 16, StrEmpty, TRUE);
-    VariableDefinePlatformVar(NULL, "scanvect", IntArrayType, CPtrWrapperBase::wrap(&ScanVect), FALSE);
-    VariableDefinePlatformVar(NULL, "neuron", IntArrayType, CPtrWrapperBase::wrap(&NNVect), FALSE);
-    VariableDefinePlatformVar(NULL, "blobcnt", &IntType, CPtrWrapperBase::wrap(&Blobcnt), FALSE);
-    VariableDefinePlatformVar(NULL, "blobx1", &IntType, CPtrWrapperBase::wrap(&Blobx1), FALSE);
-    VariableDefinePlatformVar(NULL, "blobx2", &IntType, CPtrWrapperBase::wrap(&Blobx2), FALSE);
-    VariableDefinePlatformVar(NULL, "bloby1", &IntType, CPtrWrapperBase::wrap(&Bloby1), FALSE);
-    VariableDefinePlatformVar(NULL, "bloby2", &IntType, CPtrWrapperBase::wrap(&Bloby2), FALSE);
-    VariableDefinePlatformVar(NULL, "lcount", &IntType, CPtrWrapperBase::wrap(&Elcount), FALSE);
-    VariableDefinePlatformVar(NULL, "rcount", &IntType, CPtrWrapperBase::wrap(&Ercount), FALSE);
-    VariableDefinePlatformVar(NULL, "y1", &IntType, CPtrWrapperBase::wrap(&Iy1), FALSE);
-    VariableDefinePlatformVar(NULL, "y2", &IntType, CPtrWrapperBase::wrap(&Iy2), FALSE);
-    VariableDefinePlatformVar(NULL, "u1", &IntType, CPtrWrapperBase::wrap(&Iu1), FALSE);
-    VariableDefinePlatformVar(NULL, "u2", &IntType, CPtrWrapperBase::wrap(&Iu2), FALSE);
-    VariableDefinePlatformVar(NULL, "v1", &IntType, CPtrWrapperBase::wrap(&Iv1), FALSE);
-    VariableDefinePlatformVar(NULL, "v2", &IntType, CPtrWrapperBase::wrap(&Iv2), FALSE);
-    VariableDefinePlatformVar(NULL, "gpslat", &IntType, CPtrWrapperBase::wrap(&GPSlat), FALSE);
-    VariableDefinePlatformVar(NULL, "gpslon", &IntType, CPtrWrapperBase::wrap(&GPSlon), FALSE);
-    VariableDefinePlatformVar(NULL, "gpsalt", &IntType, CPtrWrapperBase::wrap(&GPSalt), FALSE);
-    VariableDefinePlatformVar(NULL, "gpsfix", &IntType, CPtrWrapperBase::wrap(&GPSfix), FALSE);
-    VariableDefinePlatformVar(NULL, "gpssat", &IntType, CPtrWrapperBase::wrap(&GPSsat), FALSE);
-    VariableDefinePlatformVar(NULL, "gpsutc", &IntType, CPtrWrapperBase::wrap(&GPSutc), FALSE);
+    VariableDefinePlatformVar(NULL, "scanvect", IntArrayType, ptrWrap(&ScanVect), FALSE);
+    VariableDefinePlatformVar(NULL, "neuron", IntArrayType, ptrWrap(&NNVect), FALSE);
+    VariableDefinePlatformVar(NULL, "blobcnt", &IntType, ptrWrap(&Blobcnt), FALSE);
+    VariableDefinePlatformVar(NULL, "blobx1", &IntType, ptrWrap(&Blobx1), FALSE);
+    VariableDefinePlatformVar(NULL, "blobx2", &IntType, ptrWrap(&Blobx2), FALSE);
+    VariableDefinePlatformVar(NULL, "bloby1", &IntType, ptrWrap(&Bloby1), FALSE);
+    VariableDefinePlatformVar(NULL, "bloby2", &IntType, ptrWrap(&Bloby2), FALSE);
+    VariableDefinePlatformVar(NULL, "lcount", &IntType, ptrWrap(&Elcount), FALSE);
+    VariableDefinePlatformVar(NULL, "rcount", &IntType, ptrWrap(&Ercount), FALSE);
+    VariableDefinePlatformVar(NULL, "y1", &IntType, ptrWrap(&Iy1), FALSE);
+    VariableDefinePlatformVar(NULL, "y2", &IntType, ptrWrap(&Iy2), FALSE);
+    VariableDefinePlatformVar(NULL, "u1", &IntType, ptrWrap(&Iu1), FALSE);
+    VariableDefinePlatformVar(NULL, "u2", &IntType, ptrWrap(&Iu2), FALSE);
+    VariableDefinePlatformVar(NULL, "v1", &IntType, ptrWrap(&Iv1), FALSE);
+    VariableDefinePlatformVar(NULL, "v2", &IntType, ptrWrap(&Iv2), FALSE);
+    VariableDefinePlatformVar(NULL, "gpslat", &IntType, ptrWrap(&GPSlat), FALSE);
+    VariableDefinePlatformVar(NULL, "gpslon", &IntType, ptrWrap(&GPSlon), FALSE);
+    VariableDefinePlatformVar(NULL, "gpsalt", &IntType, ptrWrap(&GPSalt), FALSE);
+    VariableDefinePlatformVar(NULL, "gpsfix", &IntType, ptrWrap(&GPSfix), FALSE);
+    VariableDefinePlatformVar(NULL, "gpssat", &IntType, ptrWrap(&GPSsat), FALSE);
+    VariableDefinePlatformVar(NULL, "gpsutc", &IntType, ptrWrap(&GPSutc), FALSE);
 }
 
 void Csignal(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)  // check for kbhit, return t or nil

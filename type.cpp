@@ -323,7 +323,7 @@ void TypeParseEnum(struct ParseState *Parser, struct ValueType **Typ)
     (*Typ)->Members = &pc->GlobalTable;
     memset((void *)&InitValue, '\0', sizeof(struct Value));
     InitValue.Typ = &pc->IntType;
-    InitValue.Val = (TAnyValuePtr)CPtrWrapperBase::wrap(&EnumValue);
+    InitValue.Val = (TAnyValuePtr)ptrWrap(&EnumValue);
     do {
         if (LexGetToken(Parser, &LexValue, TRUE) != TokenIdentifier)
             ProgramFail(Parser, "identifier expected");
@@ -335,7 +335,7 @@ void TypeParseEnum(struct ParseState *Parser, struct ValueType **Typ)
             EnumValue = ExpressionParseInt(Parser);
         }
         
-        VariableDefine(pc, Parser, EnumIdentifier, CPtrWrapperBase::wrap(&InitValue), NILL, FALSE);
+        VariableDefine(pc, Parser, EnumIdentifier, ptrWrap(&InitValue), NILL, FALSE);
             
         Token = LexGetToken(Parser, NILL, TRUE);
         if (Token != TokenComma && Token != TokenRightBrace)

@@ -83,7 +83,7 @@ TValuePtr ParseFunctionDefinition(struct ParseState *Parser, struct ValueType *R
     FuncValue->Val->FuncDef.NumParams = ParamCount;
     FuncValue->Val->FuncDef.VarArgs = FALSE;
     FuncValue->Val->FuncDef.ParamType = (struct ValueType **)CPtrWrapperBase::getPtr(pointerCast<char>(FuncValue->Val) + sizeof(struct FuncDef)); // UNDONE
-    FuncValue->Val->FuncDef.ParamName = CPtrWrapperBase::wrap((char *)FuncValue->Val->FuncDef.ParamType + sizeof(struct ValueType *) * ParamCount); // UNDONE
+    FuncValue->Val->FuncDef.ParamName = (TRegStringPtrPtr)ptrWrap((char *)FuncValue->Val->FuncDef.ParamType + sizeof(struct ValueType *) * ParamCount); // UNDONE
     FuncValue->Val->FuncDef.Body = NULL;
    
     for (ParamCount = 0; ParamCount < FuncValue->Val->FuncDef.NumParams; ParamCount++)
@@ -216,7 +216,7 @@ int ParseArrayInitialiser(struct ParseState *Parser, TValuePtr NewVariable, int 
             if (Parser->Mode == RunModeRun && DoAssignment)
             {
                 SubArraySize = TypeSize(NewVariable->Typ->FromType, NewVariable->Typ->FromType->ArraySize, TRUE);
-                SubArray = VariableAllocValueFromExistingData(Parser, NewVariable->Typ->FromType, getMembrPtr(NewVariable->Val, &NewVariable->Val->ArrayMem[0] + SubArraySize * ArrayIndex), TRUE, NewVariable);
+                SubArray = VariableAllocValueFromExistingData(Parser, NewVariable->Typ->FromType, (TAnyValuePtr)getMembrPtr(NewVariable->Val, &NewVariable->Val->ArrayMem[0] + SubArraySize * ArrayIndex), TRUE, NewVariable);
                 #ifdef DEBUG_ARRAY_INITIALIZER
                 int FullArraySize = TypeSize(NewVariable->Typ, NewVariable->Typ->ArraySize, TRUE);
                 PRINT_SOURCE_POS;
@@ -256,7 +256,7 @@ int ParseArrayInitialiser(struct ParseState *Parser, TValuePtr NewVariable, int 
                 #endif
                 if (ArrayIndex >= TotalSize)
                     ProgramFail(Parser, "too many array elements");
-                ArrayElement = VariableAllocValueFromExistingData(Parser, ElementType, getMembrPtr(NewVariable->Val, &NewVariable->Val->ArrayMem[0] + ElementSize * ArrayIndex), TRUE, NewVariable);
+                ArrayElement = VariableAllocValueFromExistingData(Parser, ElementType, (TAnyValuePtr)getMembrPtr(NewVariable->Val, &NewVariable->Val->ArrayMem[0] + ElementSize * ArrayIndex), TRUE, NewVariable);
             }
 
             /* this is a normal expression initialiser */
@@ -577,8 +577,8 @@ void ParseTypedef(struct ParseState *Parser)
     {
         TypPtr = &Typ;
         InitValue.Typ = &Parser->pc->TypeType;
-        InitValue.Val = (TAnyValuePtr)CPtrWrapperBase::wrap(TypPtr); // UNDONE
-        VariableDefine(Parser->pc, Parser, TypeName, CPtrWrapperBase::wrap(&InitValue), NILL, FALSE);
+        InitValue.Val = (TAnyValuePtr)ptrWrap(TypPtr); // UNDONE
+        VariableDefine(Parser->pc, Parser, TypeName, ptrWrap(&InitValue), NILL, FALSE);
     }
 }
 
@@ -800,7 +800,7 @@ enum ParseResult ParseStatement(struct ParseState *Parser, int CheckTrailingSemi
             if (LexGetToken(Parser, &LexerValue, TRUE) != TokenStringConstant)
                 ProgramFail(Parser, "\"filename.h\" expected");
             
-            IncludeFile(Parser->pc, (TRegStringPtr)CPtrWrapperBase::wrap(LexerValue->Val->Pointer), (Parser->LineFilePointer || Parser->FileName == Parser->pc->StrEmpty)); // UNDONE
+            IncludeFile(Parser->pc, (TRegStringPtr)ptrWrap(LexerValue->Val->Pointer), (Parser->LineFilePointer || Parser->FileName == Parser->pc->StrEmpty)); // UNDONE
             CheckTrailingSemicolon = FALSE;
             break;
 #endif

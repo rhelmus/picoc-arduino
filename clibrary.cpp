@@ -23,8 +23,8 @@ void LibraryInit(Picoc *pc)
     BigEndian = ((*(char*)&__ENDIAN_CHECK__) == 0);
     LittleEndian = ((*(char*)&__ENDIAN_CHECK__) == 1);
 
-    VariableDefinePlatformVar(pc, NULL, "BIG_ENDIAN", &pc->IntType, CPtrWrapperBase::wrap(&BigEndian), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "LITTLE_ENDIAN", &pc->IntType, CPtrWrapperBase::wrap(&LittleEndian), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "BIG_ENDIAN", &pc->IntType, (TAnyValuePtr)ptrWrap(&BigEndian), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "LITTLE_ENDIAN", &pc->IntType, (TAnyValuePtr)ptrWrap(&LittleEndian), FALSE);
 }
 
 /* add a library */
@@ -104,9 +104,9 @@ void BasicIOInit(Picoc *pc)
 void CLibraryInit(Picoc *pc)
 {
     /* define some constants */
-    VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, CPtrWrapperBase::wrap(&ZeroValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "TRUE", &pc->IntType, CPtrWrapperBase::wrap(&TRUEValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "FALSE", &pc->IntType, CPtrWrapperBase::wrap(&ZeroValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, ptrWrap(&ZeroValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "TRUE", &pc->IntType, ptrWrap(&TRUEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "FALSE", &pc->IntType, ptrWrap(&ZeroValue), FALSE);
 }
 
 /* stream for writing into strings */

@@ -330,326 +330,326 @@ void StdErrnoSetupFunc(Picoc *pc)
 {
     /* defines */
 #ifdef EACCES
-    VariableDefinePlatformVar(pc, NULL, "EACCES", &pc->IntType, CPtrWrapperBase::wrap(&EACCESValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EACCES", &pc->IntType, (TAnyValuePtr)ptrWrap(&EACCESValue), FALSE);
 #endif
 
 #ifdef EADDRINUSE
-    VariableDefinePlatformVar(pc, NULL, "EADDRINUSE", &pc->IntType, CPtrWrapperBase::wrap(&EADDRINUSEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EADDRINUSE", &pc->IntType, (TAnyValuePtr)ptrWrap(&EADDRINUSEValue), FALSE);
 #endif
 
 #ifdef EADDRNOTAVAIL
-    VariableDefinePlatformVar(pc, NULL, "EADDRNOTAVAIL", &pc->IntType, CPtrWrapperBase::wrap(&EADDRNOTAVAILValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EADDRNOTAVAIL", &pc->IntType, (TAnyValuePtr)ptrWrap(&EADDRNOTAVAILValue), FALSE);
 #endif
 
 #ifdef EAFNOSUPPORT
-    VariableDefinePlatformVar(pc, NULL, "EAFNOSUPPORT", &pc->IntType, CPtrWrapperBase::wrap(&EAFNOSUPPORTValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EAFNOSUPPORT", &pc->IntType, (TAnyValuePtr)ptrWrap(&EAFNOSUPPORTValue), FALSE);
 #endif
 
 #ifdef EAGAIN
-    VariableDefinePlatformVar(pc, NULL, "EAGAIN", &pc->IntType, CPtrWrapperBase::wrap(&EAGAINValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EAGAIN", &pc->IntType, (TAnyValuePtr)ptrWrap(&EAGAINValue), FALSE);
 #endif
 
 #ifdef EALREADY
-    VariableDefinePlatformVar(pc, NULL, "EALREADY", &pc->IntType, CPtrWrapperBase::wrap(&EALREADYValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EALREADY", &pc->IntType, (TAnyValuePtr)ptrWrap(&EALREADYValue), FALSE);
 #endif
 
 #ifdef EBADF
-    VariableDefinePlatformVar(pc, NULL, "EBADF", &pc->IntType, CPtrWrapperBase::wrap(&EBADFValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EBADF", &pc->IntType, (TAnyValuePtr)ptrWrap(&EBADFValue), FALSE);
 #endif
 
 #ifdef EBADMSG
-    VariableDefinePlatformVar(pc, NULL, "EBADMSG", &pc->IntType, CPtrWrapperBase::wrap(&EBADMSGValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EBADMSG", &pc->IntType, (TAnyValuePtr)ptrWrap(&EBADMSGValue), FALSE);
 #endif
 
 #ifdef EBUSY
-    VariableDefinePlatformVar(pc, NULL, "EBUSY", &pc->IntType, CPtrWrapperBase::wrap(&EBUSYValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EBUSY", &pc->IntType, (TAnyValuePtr)ptrWrap(&EBUSYValue), FALSE);
 #endif
 
 #ifdef ECANCELED
-    VariableDefinePlatformVar(pc, NULL, "ECANCELED", &pc->IntType, CPtrWrapperBase::wrap(&ECANCELEDValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ECANCELED", &pc->IntType, (TAnyValuePtr)ptrWrap(&ECANCELEDValue), FALSE);
 #endif
 
 #ifdef ECHILD
-    VariableDefinePlatformVar(pc, NULL, "ECHILD", &pc->IntType, CPtrWrapperBase::wrap(&ECHILDValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ECHILD", &pc->IntType, (TAnyValuePtr)ptrWrap(&ECHILDValue), FALSE);
 #endif
 
 #ifdef ECONNABORTED
-    VariableDefinePlatformVar(pc, NULL, "ECONNABORTED", &pc->IntType, CPtrWrapperBase::wrap(&ECONNABORTEDValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ECONNABORTED", &pc->IntType, (TAnyValuePtr)ptrWrap(&ECONNABORTEDValue), FALSE);
 #endif
 
 #ifdef ECONNREFUSED
-    VariableDefinePlatformVar(pc, NULL, "ECONNREFUSED", &pc->IntType, CPtrWrapperBase::wrap(&ECONNREFUSEDValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ECONNREFUSED", &pc->IntType, (TAnyValuePtr)ptrWrap(&ECONNREFUSEDValue), FALSE);
 #endif
 
 #ifdef ECONNRESET
-    VariableDefinePlatformVar(pc, NULL, "ECONNRESET", &pc->IntType, CPtrWrapperBase::wrap(&ECONNRESETValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ECONNRESET", &pc->IntType, (TAnyValuePtr)ptrWrap(&ECONNRESETValue), FALSE);
 #endif
 
 #ifdef EDEADLK
-    VariableDefinePlatformVar(pc, NULL, "EDEADLK", &pc->IntType, CPtrWrapperBase::wrap(&EDEADLKValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EDEADLK", &pc->IntType, (TAnyValuePtr)ptrWrap(&EDEADLKValue), FALSE);
 #endif
 
 #ifdef EDESTADDRREQ
-    VariableDefinePlatformVar(pc, NULL, "EDESTADDRREQ", &pc->IntType, CPtrWrapperBase::wrap(&EDESTADDRREQValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EDESTADDRREQ", &pc->IntType, (TAnyValuePtr)ptrWrap(&EDESTADDRREQValue), FALSE);
 #endif
 
 #ifdef EDOM
-    VariableDefinePlatformVar(pc, NULL, "EDOM", &pc->IntType, CPtrWrapperBase::wrap(&EDOMValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EDOM", &pc->IntType, (TAnyValuePtr)ptrWrap(&EDOMValue), FALSE);
 #endif
 
 #ifdef EDQUOT
-    VariableDefinePlatformVar(pc, NULL, "EDQUOT", &pc->IntType, CPtrWrapperBase::wrap(&EDQUOTValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EDQUOT", &pc->IntType, (TAnyValuePtr)ptrWrap(&EDQUOTValue), FALSE);
 #endif
 
 #ifdef EEXIST
-    VariableDefinePlatformVar(pc, NULL, "EEXIST", &pc->IntType, CPtrWrapperBase::wrap(&EEXISTValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EEXIST", &pc->IntType, (TAnyValuePtr)ptrWrap(&EEXISTValue), FALSE);
 #endif
 
 #ifdef EFAULT
-    VariableDefinePlatformVar(pc, NULL, "EFAULT", &pc->IntType, CPtrWrapperBase::wrap(&EFAULTValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EFAULT", &pc->IntType, (TAnyValuePtr)ptrWrap(&EFAULTValue), FALSE);
 #endif
 
 #ifdef EFBIG
-    VariableDefinePlatformVar(pc, NULL, "EFBIG", &pc->IntType, CPtrWrapperBase::wrap(&EFBIGValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EFBIG", &pc->IntType, (TAnyValuePtr)ptrWrap(&EFBIGValue), FALSE);
 #endif
 
 #ifdef EHOSTUNREACH
-    VariableDefinePlatformVar(pc, NULL, "EHOSTUNREACH", &pc->IntType, CPtrWrapperBase::wrap(&EHOSTUNREACHValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EHOSTUNREACH", &pc->IntType, (TAnyValuePtr)ptrWrap(&EHOSTUNREACHValue), FALSE);
 #endif
 
 #ifdef EIDRM
-    VariableDefinePlatformVar(pc, NULL, "EIDRM", &pc->IntType, CPtrWrapperBase::wrap(&EIDRMValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EIDRM", &pc->IntType, (TAnyValuePtr)ptrWrap(&EIDRMValue), FALSE);
 #endif
 
 #ifdef EILSEQ
-    VariableDefinePlatformVar(pc, NULL, "EILSEQ", &pc->IntType, CPtrWrapperBase::wrap(&EILSEQValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EILSEQ", &pc->IntType, (TAnyValuePtr)ptrWrap(&EILSEQValue), FALSE);
 #endif
 
 #ifdef EINPROGRESS
-    VariableDefinePlatformVar(pc, NULL, "EINPROGRESS", &pc->IntType, CPtrWrapperBase::wrap(&EINPROGRESSValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EINPROGRESS", &pc->IntType, (TAnyValuePtr)ptrWrap(&EINPROGRESSValue), FALSE);
 #endif
 
 #ifdef EINTR
-    VariableDefinePlatformVar(pc, NULL, "EINTR", &pc->IntType, CPtrWrapperBase::wrap(&EINTRValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EINTR", &pc->IntType, (TAnyValuePtr)ptrWrap(&EINTRValue), FALSE);
 #endif
 
 #ifdef EINVAL
-    VariableDefinePlatformVar(pc, NULL, "EINVAL", &pc->IntType, CPtrWrapperBase::wrap(&EINVALValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EINVAL", &pc->IntType, (TAnyValuePtr)ptrWrap(&EINVALValue), FALSE);
 #endif
 
 #ifdef EIO
-    VariableDefinePlatformVar(pc, NULL, "EIO", &pc->IntType, CPtrWrapperBase::wrap(&EIOValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EIO", &pc->IntType, (TAnyValuePtr)ptrWrap(&EIOValue), FALSE);
 #endif
 
 #ifdef EISCONN
-    VariableDefinePlatformVar(pc, NULL, "EISCONN", &pc->IntType, CPtrWrapperBase::wrap(&EISCONNValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EISCONN", &pc->IntType, (TAnyValuePtr)ptrWrap(&EISCONNValue), FALSE);
 #endif
 
 #ifdef EISDIR
-    VariableDefinePlatformVar(pc, NULL, "EISDIR", &pc->IntType, CPtrWrapperBase::wrap(&EISDIRValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EISDIR", &pc->IntType, (TAnyValuePtr)ptrWrap(&EISDIRValue), FALSE);
 #endif
 
 #ifdef ELOOP
-    VariableDefinePlatformVar(pc, NULL, "ELOOP", &pc->IntType, CPtrWrapperBase::wrap(&ELOOPValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ELOOP", &pc->IntType, (TAnyValuePtr)ptrWrap(&ELOOPValue), FALSE);
 #endif
 
 #ifdef EMFILE
-    VariableDefinePlatformVar(pc, NULL, "EMFILE", &pc->IntType, CPtrWrapperBase::wrap(&EMFILEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EMFILE", &pc->IntType, (TAnyValuePtr)ptrWrap(&EMFILEValue), FALSE);
 #endif
 
 #ifdef EMLINK
-    VariableDefinePlatformVar(pc, NULL, "EMLINK", &pc->IntType, CPtrWrapperBase::wrap(&EMLINKValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EMLINK", &pc->IntType, (TAnyValuePtr)ptrWrap(&EMLINKValue), FALSE);
 #endif
 
 #ifdef EMSGSIZE
-    VariableDefinePlatformVar(pc, NULL, "EMSGSIZE", &pc->IntType, CPtrWrapperBase::wrap(&EMSGSIZEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EMSGSIZE", &pc->IntType, (TAnyValuePtr)ptrWrap(&EMSGSIZEValue), FALSE);
 #endif
 
 #ifdef EMULTIHOP
-    VariableDefinePlatformVar(pc, NULL, "EMULTIHOP", &pc->IntType, CPtrWrapperBase::wrap(&EMULTIHOPValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EMULTIHOP", &pc->IntType, (TAnyValuePtr)ptrWrap(&EMULTIHOPValue), FALSE);
 #endif
 
 #ifdef ENAMETOOLONG
-    VariableDefinePlatformVar(pc, NULL, "ENAMETOOLONG", &pc->IntType, CPtrWrapperBase::wrap(&ENAMETOOLONGValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENAMETOOLONG", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENAMETOOLONGValue), FALSE);
 #endif
 
 #ifdef ENETDOWN
-    VariableDefinePlatformVar(pc, NULL, "ENETDOWN", &pc->IntType, CPtrWrapperBase::wrap(&ENETDOWNValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENETDOWN", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENETDOWNValue), FALSE);
 #endif
 
 #ifdef ENETRESET
-    VariableDefinePlatformVar(pc, NULL, "ENETRESET", &pc->IntType, CPtrWrapperBase::wrap(&ENETRESETValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENETRESET", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENETRESETValue), FALSE);
 #endif
 
 #ifdef ENETUNREACH
-    VariableDefinePlatformVar(pc, NULL, "ENETUNREACH", &pc->IntType, CPtrWrapperBase::wrap(&ENETUNREACHValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENETUNREACH", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENETUNREACHValue), FALSE);
 #endif
 
 #ifdef ENFILE
-    VariableDefinePlatformVar(pc, NULL, "ENFILE", &pc->IntType, CPtrWrapperBase::wrap(&ENFILEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENFILE", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENFILEValue), FALSE);
 #endif
 
 #ifdef ENOBUFS
-    VariableDefinePlatformVar(pc, NULL, "ENOBUFS", &pc->IntType, CPtrWrapperBase::wrap(&ENOBUFSValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOBUFS", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOBUFSValue), FALSE);
 #endif
 
 #ifdef ENODATA
-    VariableDefinePlatformVar(pc, NULL, "ENODATA", &pc->IntType, CPtrWrapperBase::wrap(&ENODATAValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENODATA", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENODATAValue), FALSE);
 #endif
 
 #ifdef ENODEV
-    VariableDefinePlatformVar(pc, NULL, "ENODEV", &pc->IntType, CPtrWrapperBase::wrap(&ENODEVValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENODEV", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENODEVValue), FALSE);
 #endif
 
 #ifdef ENOENT
-    VariableDefinePlatformVar(pc, NULL, "ENOENT", &pc->IntType, CPtrWrapperBase::wrap(&ENOENTValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOENT", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOENTValue), FALSE);
 #endif
 
 #ifdef ENOEXEC
-    VariableDefinePlatformVar(pc, NULL, "ENOEXEC", &pc->IntType, CPtrWrapperBase::wrap(&ENOEXECValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOEXEC", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOEXECValue), FALSE);
 #endif
 
 #ifdef ENOLCK
-    VariableDefinePlatformVar(pc, NULL, "ENOLCK", &pc->IntType, CPtrWrapperBase::wrap(&ENOLCKValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOLCK", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOLCKValue), FALSE);
 #endif
 
 #ifdef ENOLINK
-    VariableDefinePlatformVar(pc, NULL, "ENOLINK", &pc->IntType, CPtrWrapperBase::wrap(&ENOLINKValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOLINK", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOLINKValue), FALSE);
 #endif
 
 #ifdef ENOMEM
-    VariableDefinePlatformVar(pc, NULL, "ENOMEM", &pc->IntType, CPtrWrapperBase::wrap(&ENOMEMValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOMEM", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOMEMValue), FALSE);
 #endif
 
 #ifdef ENOMSG
-    VariableDefinePlatformVar(pc, NULL, "ENOMSG", &pc->IntType, CPtrWrapperBase::wrap(&ENOMSGValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOMSG", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOMSGValue), FALSE);
 #endif
 
 #ifdef ENOPROTOOPT
-    VariableDefinePlatformVar(pc, NULL, "ENOPROTOOPT", &pc->IntType, CPtrWrapperBase::wrap(&ENOPROTOOPTValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOPROTOOPT", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOPROTOOPTValue), FALSE);
 #endif
 
 #ifdef ENOSPC
-    VariableDefinePlatformVar(pc, NULL, "ENOSPC", &pc->IntType, CPtrWrapperBase::wrap(&ENOSPCValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOSPC", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOSPCValue), FALSE);
 #endif
 
 #ifdef ENOSR
-    VariableDefinePlatformVar(pc, NULL, "ENOSR", &pc->IntType, CPtrWrapperBase::wrap(&ENOSRValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOSR", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOSRValue), FALSE);
 #endif
 
 #ifdef ENOSTR
-    VariableDefinePlatformVar(pc, NULL, "ENOSTR", &pc->IntType, CPtrWrapperBase::wrap(&ENOSTRValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOSTR", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOSTRValue), FALSE);
 #endif
 
 #ifdef ENOSYS
-    VariableDefinePlatformVar(pc, NULL, "ENOSYS", &pc->IntType, CPtrWrapperBase::wrap(&ENOSYSValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOSYS", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOSYSValue), FALSE);
 #endif
 
 #ifdef ENOTCONN
-    VariableDefinePlatformVar(pc, NULL, "ENOTCONN", &pc->IntType, CPtrWrapperBase::wrap(&ENOTCONNValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOTCONN", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOTCONNValue), FALSE);
 #endif
 
 #ifdef ENOTDIR
-    VariableDefinePlatformVar(pc, NULL, "ENOTDIR", &pc->IntType, CPtrWrapperBase::wrap(&ENOTDIRValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOTDIR", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOTDIRValue), FALSE);
 #endif
 
 #ifdef ENOTEMPTY
-    VariableDefinePlatformVar(pc, NULL, "ENOTEMPTY", &pc->IntType, CPtrWrapperBase::wrap(&ENOTEMPTYValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOTEMPTY", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOTEMPTYValue), FALSE);
 #endif
 
 #ifdef ENOTRECOVERABLE
-    VariableDefinePlatformVar(pc, NULL, "ENOTRECOVERABLE", &pc->IntType, CPtrWrapperBase::wrap(&ENOTRECOVERABLEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOTRECOVERABLE", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOTRECOVERABLEValue), FALSE);
 #endif
 
 #ifdef ENOTSOCK
-    VariableDefinePlatformVar(pc, NULL, "ENOTSOCK", &pc->IntType, CPtrWrapperBase::wrap(&ENOTSOCKValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOTSOCK", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOTSOCKValue), FALSE);
 #endif
 
 #ifdef ENOTSUP
-    VariableDefinePlatformVar(pc, NULL, "ENOTSUP", &pc->IntType, CPtrWrapperBase::wrap(&ENOTSUPValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOTSUP", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOTSUPValue), FALSE);
 #endif
 
 #ifdef ENOTTY
-    VariableDefinePlatformVar(pc, NULL, "ENOTTY", &pc->IntType, CPtrWrapperBase::wrap(&ENOTTYValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENOTTY", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENOTTYValue), FALSE);
 #endif
 
 #ifdef ENXIO
-    VariableDefinePlatformVar(pc, NULL, "ENXIO", &pc->IntType, CPtrWrapperBase::wrap(&ENXIOValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ENXIO", &pc->IntType, (TAnyValuePtr)ptrWrap(&ENXIOValue), FALSE);
 #endif
 
 #ifdef EOPNOTSUPP
-    VariableDefinePlatformVar(pc, NULL, "EOPNOTSUPP", &pc->IntType, CPtrWrapperBase::wrap(&EOPNOTSUPPValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EOPNOTSUPP", &pc->IntType, (TAnyValuePtr)ptrWrap(&EOPNOTSUPPValue), FALSE);
 #endif
 
 #ifdef EOVERFLOW
-    VariableDefinePlatformVar(pc, NULL, "EOVERFLOW", &pc->IntType, CPtrWrapperBase::wrap(&EOVERFLOWValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EOVERFLOW", &pc->IntType, (TAnyValuePtr)ptrWrap(&EOVERFLOWValue), FALSE);
 #endif
 
 #ifdef EOWNERDEAD
-    VariableDefinePlatformVar(pc, NULL, "EOWNERDEAD", &pc->IntType, CPtrWrapperBase::wrap(&EOWNERDEADValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EOWNERDEAD", &pc->IntType, (TAnyValuePtr)ptrWrap(&EOWNERDEADValue), FALSE);
 #endif
 
 #ifdef EPERM
-    VariableDefinePlatformVar(pc, NULL, "EPERM", &pc->IntType, CPtrWrapperBase::wrap(&EPERMValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EPERM", &pc->IntType, (TAnyValuePtr)ptrWrap(&EPERMValue), FALSE);
 #endif
 
 #ifdef EPIPE
-    VariableDefinePlatformVar(pc, NULL, "EPIPE", &pc->IntType, CPtrWrapperBase::wrap(&EPIPEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EPIPE", &pc->IntType, (TAnyValuePtr)ptrWrap(&EPIPEValue), FALSE);
 #endif
 
 #ifdef EPROTO
-    VariableDefinePlatformVar(pc, NULL, "EPROTO", &pc->IntType, CPtrWrapperBase::wrap(&EPROTOValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EPROTO", &pc->IntType, (TAnyValuePtr)ptrWrap(&EPROTOValue), FALSE);
 #endif
 
 #ifdef EPROTONOSUPPORT
-    VariableDefinePlatformVar(pc, NULL, "EPROTONOSUPPORT", &pc->IntType, CPtrWrapperBase::wrap(&EPROTONOSUPPORTValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EPROTONOSUPPORT", &pc->IntType, (TAnyValuePtr)ptrWrap(&EPROTONOSUPPORTValue), FALSE);
 #endif
 
 #ifdef EPROTOTYPE
-    VariableDefinePlatformVar(pc, NULL, "EPROTOTYPE", &pc->IntType, CPtrWrapperBase::wrap(&EPROTOTYPEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EPROTOTYPE", &pc->IntType, (TAnyValuePtr)ptrWrap(&EPROTOTYPEValue), FALSE);
 #endif
 
 #ifdef ERANGE
-    VariableDefinePlatformVar(pc, NULL, "ERANGE", &pc->IntType, CPtrWrapperBase::wrap(&ERANGEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ERANGE", &pc->IntType, (TAnyValuePtr)ptrWrap(&ERANGEValue), FALSE);
 #endif
 
 #ifdef EROFS
-    VariableDefinePlatformVar(pc, NULL, "EROFS", &pc->IntType, CPtrWrapperBase::wrap(&EROFSValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EROFS", &pc->IntType, (TAnyValuePtr)ptrWrap(&EROFSValue), FALSE);
 #endif
 
 #ifdef ESPIPE
-    VariableDefinePlatformVar(pc, NULL, "ESPIPE", &pc->IntType, CPtrWrapperBase::wrap(&ESPIPEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ESPIPE", &pc->IntType, (TAnyValuePtr)ptrWrap(&ESPIPEValue), FALSE);
 #endif
 
 #ifdef ESRCH
-    VariableDefinePlatformVar(pc, NULL, "ESRCH", &pc->IntType, CPtrWrapperBase::wrap(&ESRCHValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ESRCH", &pc->IntType, (TAnyValuePtr)ptrWrap(&ESRCHValue), FALSE);
 #endif
 
 #ifdef ESTALE
-    VariableDefinePlatformVar(pc, NULL, "ESTALE", &pc->IntType, CPtrWrapperBase::wrap(&ESTALEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ESTALE", &pc->IntType, (TAnyValuePtr)ptrWrap(&ESTALEValue), FALSE);
 #endif
 
 #ifdef ETIME
-    VariableDefinePlatformVar(pc, NULL, "ETIME", &pc->IntType, CPtrWrapperBase::wrap(&ETIMEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ETIME", &pc->IntType, (TAnyValuePtr)ptrWrap(&ETIMEValue), FALSE);
 #endif
 
 #ifdef ETIMEDOUT
-    VariableDefinePlatformVar(pc, NULL, "ETIMEDOUT", &pc->IntType, CPtrWrapperBase::wrap(&ETIMEDOUTValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ETIMEDOUT", &pc->IntType, (TAnyValuePtr)ptrWrap(&ETIMEDOUTValue), FALSE);
 #endif
 
 #ifdef ETXTBSY
-    VariableDefinePlatformVar(pc, NULL, "ETXTBSY", &pc->IntType, CPtrWrapperBase::wrap(&ETXTBSYValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "ETXTBSY", &pc->IntType, (TAnyValuePtr)ptrWrap(&ETXTBSYValue), FALSE);
 #endif
 
 #ifdef EWOULDBLOCK
-    VariableDefinePlatformVar(pc, NULL, "EWOULDBLOCK", &pc->IntType, CPtrWrapperBase::wrap(&EWOULDBLOCKValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EWOULDBLOCK", &pc->IntType, (TAnyValuePtr)ptrWrap(&EWOULDBLOCKValue), FALSE);
 #endif
 
 #ifdef EXDEV
-    VariableDefinePlatformVar(pc, NULL, "EXDEV", &pc->IntType, CPtrWrapperBase::wrap(&EXDEVValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EXDEV", &pc->IntType, (TAnyValuePtr)ptrWrap(&EXDEVValue), FALSE);
 #endif
 
-    VariableDefinePlatformVar(pc, NULL, "errno", &pc->IntType, CPtrWrapperBase::wrap(&errno), TRUE);
+    VariableDefinePlatformVar(pc, NULL, "errno", &pc->IntType, (TAnyValuePtr)ptrWrap(&errno), TRUE);
 }
 
 #endif /* !BUILTIN_MINI_STDLIB */

@@ -134,7 +134,7 @@ void *VariableAlloc(Picoc *pc, struct ParseState *Parser, int Size, int OnHeap)
 TValuePtr VariableAllocValueAndData(Picoc *pc, struct ParseState *Parser, int DataSize, int IsLValue, TValuePtr LValueFrom, int OnHeap)
 {
     TValuePtr NewValue = allocMemVariable<Value>(Parser, !OnHeap, MEM_ALIGN(sizeof(struct Value)) + DataSize);
-    NewValue->Val = (pointerCast<char>(NewValue) + MEM_ALIGN(sizeof(struct Value)));
+    NewValue->Val = (TAnyValuePtr)(pointerCast<char>(NewValue) + MEM_ALIGN(sizeof(struct Value)));
     NewValue->Flags = 0;
     if (OnHeap)
         NewValue->Flags |= FlagValOnHeap;
@@ -442,7 +442,7 @@ void VariableGet(Picoc *pc, struct ParseState *Parser, TConstRegStringPtr Ident,
 /* define a global variable shared with a platform global. Ident will be registered */
 void VariableDefinePlatformVar(Picoc *pc, struct ParseState *Parser, const char *Ident, struct ValueType *Typ, TAnyValuePtr FromValue, int IsWritable)
 {
-    return VariableDefinePlatformVar(pc, Parser, CPtrWrapperBase::wrap(Ident), Typ, FromValue, IsWritable);
+    return VariableDefinePlatformVar(pc, Parser, ptrWrap(Ident), Typ, FromValue, IsWritable);
 }
 
 void VariableDefinePlatformVar(Picoc *pc, struct ParseState *Parser, TConstRegStringPtr Ident, struct ValueType *Typ, TAnyValuePtr FromValue, int IsWritable)
@@ -493,7 +493,7 @@ void VariableStackFrameAdd(struct ParseState *Parser, TConstRegStringPtr FuncNam
         
     ParserCopy(&NewFrame->ReturnParser, Parser);
     NewFrame->FuncName = FuncName;
-    NewFrame->Parameter = (NumParams > 0) ? /*((TValuePtrPtr)((char *)NewFrame + sizeof(struct StackFrame))) UNDONE*/ CPtrWrapperBase::wrap((char *)NewFrame + sizeof(struct StackFrame)) : NILL;
+    NewFrame->Parameter = (NumParams > 0) ? /*((TValuePtrPtr)((char *)NewFrame + sizeof(struct StackFrame))) UNDONE*/ (TValuePtrPtr)ptrWrap((char *)NewFrame + sizeof(struct StackFrame)) : NILL;
     TableInitTable(&NewFrame->LocalTable, &NewFrame->LocalHashTable[0], LOCAL_TABLE_SIZE, FALSE);
     NewFrame->PreviousStackFrame = Parser->pc->TopStackFrame;
     Parser->pc->TopStackFrame = NewFrame;
