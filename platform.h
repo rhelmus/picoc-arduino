@@ -48,6 +48,15 @@ typedef CPtrWrapper<union AnyValue> TAnyValuePtr;
 typedef CPtrWrapper<char> TRegStringPtr;
 typedef CPtrWrapper<const char> TConstRegStringPtr;
 typedef CPtrWrapper<TRegStringPtr> TRegStringPtrPtr;
+typedef CPtrWrapper<char> TValueCharPointer;
+typedef CPtrWrapperBase TAnyValueVoidPointer;
+typedef CPtrWrapper<int> TAnyValueIntPointer;
+typedef CPtrWrapper<float> TAnyValueFloatPointer;
+typedef CPtrWrapper<char> TAnyValueCharPointer;
+typedef CPtrWrapper<unsigned char> TAnyValueUCharPointer;
+typedef CPtrWrapper<char> TStdioCharPtr;
+typedef CPtrWrapper<const char> TStdioConstCharPtr;
+
 #define WRAP_REGSTRINGS
 #define WRAP_ANYVALUE
 //typedef struct Value * TValuePtr;
@@ -59,7 +68,7 @@ typedef CPtrWrapper<TRegStringPtr> TRegStringPtrPtr;
 # undef USE_MALLOC_STACK                   /* stack is allocated using malloc() */
 # undef USE_MALLOC_HEAP                    /* heap is allocated using malloc() */
 # define HEAP_SIZE (4096*1024)
-//# define BUILTIN_MINI_STDLIB
+# define BUILTIN_MINI_STDLIB
 # define debugline /*printf*/
 # include <stdio.h>
 # include <stdlib.h>

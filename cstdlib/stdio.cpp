@@ -246,7 +246,7 @@ int StdioBasePrintf(struct ParseState *Parser, FILE *Stream, char *StrOut, int S
                         case 'n':   
                             ThisArg = (TValuePtr)(pointerCast<char>(ThisArg) + MEM_ALIGN(sizeof(struct Value) + TypeStackSizeValue(ThisArg)));
                             if (ThisArg->Typ->Base == TypeArray && ThisArg->Typ->FromType->Base == TypeInt)
-                                *(int *)ThisArg->Val->Pointer = SOStream.CharCount;
+                                *(TAnyValueIntPointer)ThisArg->Val->Pointer = SOStream.CharCount;
                             break;
                     }
                 }
@@ -287,11 +287,9 @@ int StdioBasePrintf(struct ParseState *Parser, FILE *Stream, char *StrOut, int S
                     else if (ShowType == pc->CharPtrType)
                     {
                         if (ThisArg->Typ->Base == TypePointer)
-                            StdioFprintfPointer(&SOStream, OneFormatBuf, ThisArg->Val->Pointer);
-                            
+                            StdioFprintfPointer(&SOStream, OneFormatBuf, &CPtrWrapLock(ThisArg->Val->Pointer));
                         else if (ThisArg->Typ->Base == TypeArray && ThisArg->Typ->FromType->Base == TypeChar)
                             StdioFprintfPointer(&SOStream, OneFormatBuf, CPtrWrapperBase::getPtr(getMembrPtr(ThisArg->Val, &ThisArg->Val->ArrayMem[0])));
-                            
                         else
                             StdioOutPuts("XXX", &SOStream);
                     }
@@ -299,10 +297,8 @@ int StdioBasePrintf(struct ParseState *Parser, FILE *Stream, char *StrOut, int S
                     {
                         if (ThisArg->Typ->Base == TypePointer)
                             StdioFprintfPointer(&SOStream, OneFormatBuf, ThisArg->Val->Pointer);
-                            
                         else if (ThisArg->Typ->Base == TypeArray)
                             StdioFprintfPointer(&SOStream, OneFormatBuf, CPtrWrapperBase::getPtr(getMembrPtr(ThisArg->Val, &ThisArg->Val->ArrayMem[0])));
-                            
                         else
                             StdioOutPuts("XXX", &SOStream);
                     }

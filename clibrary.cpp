@@ -104,9 +104,9 @@ void BasicIOInit(Picoc *pc)
 void CLibraryInit(Picoc *pc)
 {
     /* define some constants */
-    VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, ptrWrap(&ZeroValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "TRUE", &pc->IntType, ptrWrap(&TRUEValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "FALSE", &pc->IntType, ptrWrap(&ZeroValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, (TAnyValuePtr)ptrWrap(&ZeroValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "TRUE", &pc->IntType, (TAnyValuePtr)ptrWrap(&TRUEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "FALSE", &pc->IntType, (TAnyValuePtr)ptrWrap(&ZeroValue), FALSE);
 }
 
 /* stream for writing into strings */
@@ -216,9 +216,9 @@ void PrintFP(double Num, struct OutputStream *Stream)
     PrintInt((long)Num, 0, FALSE, FALSE, Stream);
     PrintCh('.', Stream);
     Num = (Num - (long)Num) * 10;
-    if (abs(Num) >= 1e-7)
+    if (fabs(Num) >= 1e-7)
     {
-        for (MaxDecimal = 6; MaxDecimal > 0 && abs(Num) >= 1e-7; Num = (Num - (long)(Num + 1e-7)) * 10, MaxDecimal--)
+        for (MaxDecimal = 6; MaxDecimal > 0 && fabs(Num) >= 1e-7; Num = (Num - (long)(Num + 1e-7)) * 10, MaxDecimal--)
             PrintCh('0' + (long)(Num + 1e-7), Stream);
     }
     else
@@ -236,14 +236,14 @@ void PrintFP(double Num, struct OutputStream *Stream)
 /* intrinsic functions made available to the language */
 void GenericPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs, struct OutputStream *Stream)
 {
-    char *FPos;
+    TStdioCharPtr FPos;
     TValuePtr NextArg = Param[0];
     struct ValueType *FormatType;
     int ArgCount = 1;
     int LeftJustify = FALSE;
     int ZeroPad = FALSE;
     int FieldWidth = 0;
-    char *Format = (char *)Param[0]->Val->Pointer;
+    TStdioCharPtr Format = (TStdioCharPtr)Param[0]->Val->Pointer;
     Picoc *pc = Parser->pc;
     
     for (FPos = Format; *FPos != '\0'; FPos++)
@@ -271,7 +271,7 @@ void GenericPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPt
                 FieldWidth = FieldWidth * 10 + (*FPos++ - '0');
             
             /* now check the format type */
-            switch (*FPos)
+            switch ((char)*FPos)
             {
                 case 's': FormatType = pc->CharPtrType; break;
                 case 'd': case 'u': case 'x': case 'b': case 'c': FormatType = &pc->IntType; break;
@@ -290,7 +290,7 @@ void GenericPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPt
                     PrintStr("XXX", Stream);   /* not enough parameters for format */
                 else
                 {
-                    NextArg = (TValuePtr)(pointerCast<char>(NextArg) + MEM_ALIGN(sizeof(struct Value) + TypeStackSizeValue(NextArg)));
+                    NextArg = (TValuePtr)((TValueCharPointer)(NextArg) + MEM_ALIGN(sizeof(struct Value) + TypeStackSizeValue(NextArg)));
                     if (NextArg->Typ != FormatType && 
                             !((FormatType == &pc->IntType || *FPos == 'f') && IS_NUMERIC_COERCIBLE(NextArg)) &&
                             !(FormatType == pc->CharPtrType && (NextArg->Typ->Base == TypePointer || 
@@ -298,16 +298,16 @@ void GenericPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPt
                         PrintStr("XXX", Stream);   /* bad type for format */
                     else
                     {
-                        switch (*FPos)
+                        switch ((char)*FPos)
                         {
                             case 's':
                             {
-                                char *Str;
+                                TAnyValueCharPointer Str;
                                 
                                 if (NextArg->Typ->Base == TypePointer)
-                                    Str = (char *)NextArg->Val->Pointer;
+                                    Str = (TAnyValueCharPointer)NextArg->Val->Pointer;
                                 else
-                                    Str = getMembrPtr(NextArg->Val, &NextArg->Val->ArrayMem[0]);
+                                    Str = &NextArg->Val->ArrayMem[0];
                                     
                                 if (Str == NULL)
                                     PrintStr("NULL", Stream); 
@@ -351,7 +351,7 @@ void LibSPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr P
     
     StrStream.Putch = &SPutc;
     StrStream.i.Str.Parser = Parser;
-    StrStream.i.Str.WritePos = (char *)Param[0]->Val->Pointer;
+    StrStream.i.Str.WritePos = (TAnyValueCharPointer)Param[0]->Val->Pointer;
 
     GenericPrintf(Parser, ReturnValue, Param+1, NumArgs-1, &StrStream);
     PrintCh(0, &StrStream);
@@ -362,6 +362,22 @@ void LibSPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr P
 /* get a line of input. protected from buffer overrun */
 void LibGets(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
+    // UNDONE: this function doesn't seem very safe? (how do we now the user supplies enough space?)
+
+#ifdef WRAP_ANYVALUE
+    CPtrWrapLock l(Param[0]->Val->Pointer);
+
+    if (PlatformGetLine((char *)&l, GETS_BUF_MAX, NULL) != NULL)
+    {
+        char *EOLPos = strchr((char *)&l, '\n');
+        if (EOLPos != NULL)
+            *EOLPos = '\0';
+
+        ReturnValue->Val->Pointer = Param[0]->Val->Pointer;
+    }
+    else
+        ReturnValue->Val->Pointer = NILL;
+#else
     ReturnValue->Val->Pointer = PlatformGetLine((char *)Param[0]->Val->Pointer, GETS_BUF_MAX, NULL);
     if (ReturnValue->Val->Pointer != NULL)
     {
@@ -369,6 +385,7 @@ void LibGets(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Para
         if (EOLPos != NULL)
             *EOLPos = '\0';
     }
+#endif
 }
 
 void LibGetc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
@@ -476,32 +493,32 @@ void LibFloor(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Par
 #ifndef NO_STRING_FUNCTIONS
 void LibMalloc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    ReturnValue->Val->Pointer = malloc(Param[0]->Val->Integer);
+    ReturnValue->Val->Pointer = ptrWrap(malloc(Param[0]->Val->Integer));
 }
 
 #ifndef NO_CALLOC
 void LibCalloc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    ReturnValue->Val->Pointer = calloc(Param[0]->Val->Integer, Param[1]->Val->Integer);
+    ReturnValue->Val->Pointer = ptrWrap(calloc(Param[0]->Val->Integer, Param[1]->Val->Integer));
 }
 #endif
 
 #ifndef NO_REALLOC
 void LibRealloc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    ReturnValue->Val->Pointer = realloc(Param[0]->Val->Pointer, Param[1]->Val->Integer);
+    ReturnValue->Val->Pointer = ptrWrap(realloc(ptrUnwrap(Param[0]->Val->Pointer), Param[1]->Val->Integer));
 }
 #endif
 
 void LibFree(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    free(Param[0]->Val->Pointer);
+    free(ptrUnwrap(Param[0]->Val->Pointer));
 }
 
 void LibStrcpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    char *To = (char *)Param[0]->Val->Pointer;
-    char *From = (char *)Param[1]->Val->Pointer;
+    TAnyValueCharPointer To = (TAnyValueCharPointer)Param[0]->Val->Pointer;
+    TAnyValueCharPointer From = (TAnyValueCharPointer)Param[1]->Val->Pointer;
     
     while (*From != '\0')
         *To++ = *From++;
@@ -511,8 +528,8 @@ void LibStrcpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
 
 void LibStrncpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    char *To = (char *)Param[0]->Val->Pointer;
-    char *From = (char *)Param[1]->Val->Pointer;
+    TAnyValueCharPointer To = (TAnyValueCharPointer)Param[0]->Val->Pointer;
+    TAnyValueCharPointer From = (TAnyValueCharPointer)Param[1]->Val->Pointer;
     int Len = Param[2]->Val->Integer;
     
     for (; *From != '\0' && Len > 0; Len--)
@@ -524,8 +541,8 @@ void LibStrncpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr P
 
 void LibStrcmp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    char *Str1 = (char *)Param[0]->Val->Pointer;
-    char *Str2 = (char *)Param[1]->Val->Pointer;
+    TAnyValueCharPointer Str1 = (TAnyValueCharPointer)Param[0]->Val->Pointer;
+    TAnyValueCharPointer Str2 = (TAnyValueCharPointer)Param[1]->Val->Pointer;
     int StrEnded;
     
     for (StrEnded = FALSE; !StrEnded; StrEnded = (*Str1 == '\0' || *Str2 == '\0'), Str1++, Str2++)
@@ -539,8 +556,8 @@ void LibStrcmp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
 
 void LibStrncmp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    char *Str1 = (char *)Param[0]->Val->Pointer;
-    char *Str2 = (char *)Param[1]->Val->Pointer;
+    TAnyValueCharPointer Str1 = (TAnyValueCharPointer)Param[0]->Val->Pointer;
+    TAnyValueCharPointer Str2 = (TAnyValueCharPointer)Param[1]->Val->Pointer;
     int Len = Param[2]->Val->Integer;
     int StrEnded;
     
@@ -555,8 +572,8 @@ void LibStrncmp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr P
 
 void LibStrcat(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    char *To = (char *)Param[0]->Val->Pointer;
-    char *From = (char *)Param[1]->Val->Pointer;
+    TAnyValueCharPointer To = (TAnyValueCharPointer)Param[0]->Val->Pointer;
+    TAnyValueCharPointer From = (TAnyValueCharPointer)Param[1]->Val->Pointer;
     
     while (*To != '\0')
         To++;
@@ -569,24 +586,24 @@ void LibStrcat(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
 
 void LibIndex(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    char *Pos = (char *)Param[0]->Val->Pointer;
+    TAnyValueCharPointer Pos = (TAnyValueCharPointer)Param[0]->Val->Pointer;
     int SearchChar = Param[1]->Val->Integer;
 
     while (*Pos != '\0' && *Pos != SearchChar)
         Pos++;
     
     if (*Pos != SearchChar)
-        ReturnValue->Val->Pointer = NULL;
+        ReturnValue->Val->Pointer = NILL;
     else
         ReturnValue->Val->Pointer = Pos;
 }
 
 void LibRindex(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    char *Pos = (char *)Param[0]->Val->Pointer;
+    TAnyValueCharPointer Pos = (TAnyValueCharPointer)Param[0]->Val->Pointer;
     int SearchChar = Param[1]->Val->Integer;
 
-    ReturnValue->Val->Pointer = NULL;
+    ReturnValue->Val->Pointer = NILL;
     for (; *Pos != '\0'; Pos++)
     {
         if (*Pos == SearchChar)
@@ -596,7 +613,7 @@ void LibRindex(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
 
 void LibStrlen(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    char *Pos = (char *)Param[0]->Val->Pointer;
+    TAnyValueCharPointer Pos = (TAnyValueCharPointer)Param[0]->Val->Pointer;
     int Len;
     
     for (Len = 0; *Pos != '\0'; Pos++)
@@ -608,7 +625,7 @@ void LibStrlen(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
 void LibMemset(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     /* we can use the system memset() */
-    memset(Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer);
+    memset(ptrUnwrap(Param[0]->Val->Pointer), Param[1]->Val->Integer, Param[2]->Val->Integer);
 }
 
 void LibMemcpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
@@ -619,8 +636,8 @@ void LibMemcpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
 
 void LibMemcmp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    unsigned char *Mem1 = (unsigned char *)Param[0]->Val->Pointer;
-    unsigned char *Mem2 = (unsigned char *)Param[1]->Val->Pointer;
+    TAnyValueUCharPointer Mem1 = (TAnyValueUCharPointer)Param[0]->Val->Pointer;
+    TAnyValueUCharPointer Mem2 = (TAnyValueUCharPointer)Param[1]->Val->Pointer;
     int Len = Param[2]->Val->Integer;
     
     for (; Len > 0; Mem1++, Mem2++, Len--)

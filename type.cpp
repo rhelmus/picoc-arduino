@@ -48,7 +48,11 @@ struct ValueType *TypeGetMatching(Picoc *pc, struct ParseState *Parser, struct V
     switch (Base)
     {
         case TypePointer:   Sizeof = sizeof(void *); AlignBytes = PointerAlignBytes; break;
+#ifdef WRAP_ANYVALUE
+        case TypeArray:     Sizeof = sizeof(TAnyValueCharPointer) + ArraySize * ParentType->Sizeof; AlignBytes = ParentType->AlignBytes; break;
+#else
         case TypeArray:     Sizeof = ArraySize * ParentType->Sizeof; AlignBytes = ParentType->AlignBytes; break;
+#endif
         case TypeEnum:      Sizeof = sizeof(int); AlignBytes = IntAlignBytes; break;
         default:            Sizeof = 0; AlignBytes = 0; break;      /* structs and unions will get bigger when we add members to them */
     }
@@ -73,7 +77,11 @@ int TypeSizeValue(TValuePtr Val, int Compact)
     else if (Val->Typ->Base != TypeArray)
         return Val->Typ->Sizeof;
     else
+#ifdef WRAP_ANYVALUE
+        return Val->Typ->FromType->Sizeof * Val->Typ->ArraySize + sizeof(TAnyValueCharPointer);
+#else
         return Val->Typ->FromType->Sizeof * Val->Typ->ArraySize;
+#endif
 }
 
 /* memory used by a variable given its type and array size */
@@ -84,7 +92,11 @@ int TypeSize(struct ValueType *Typ, int ArraySize, int Compact)
     else if (Typ->Base != TypeArray)
         return Typ->Sizeof;
     else
+#ifdef WRAP_ANYVALUE
+        return Typ->FromType->Sizeof * ArraySize + sizeof(TAnyValueCharPointer);
+#else
         return Typ->FromType->Sizeof * ArraySize;
+#endif
 }
 
 /* add a base type */

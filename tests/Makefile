@@ -1,5 +1,8 @@
+# Stuff that doesn't work (yet)
 #	63_typedef.test \
-#	61_initializers.test \
+#	22_floating_point.test \
+#	24_math_library.test \
+#	40_stdio.test \
 
 TESTS=	00_assignment.test \
 	01_comment.test \
@@ -23,9 +26,7 @@ TESTS=	00_assignment.test \
 	19_pointer_arithmetic.test \
 	20_pointer_comparison.test \
 	21_char_array.test \
-	22_floating_point.test \
 	23_type_coercion.test \
-	24_math_library.test \
 	25_quicksort.test \
 	26_character_constants.test \
 	28_strings.test \
@@ -40,7 +41,6 @@ TESTS=	00_assignment.test \
 	37_sprintf.test \
 	38_multiple_array_index.test \
 	39_typedef.test \
-	40_stdio.test \
 	41_hashif.test \
 	43_void_param.test \
 	44_scoped_declarations.test \

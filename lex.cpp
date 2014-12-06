@@ -220,7 +220,11 @@ enum LexToken LexCheckReservedWord(Picoc *pc, TConstRegStringPtr Word)
     TValuePtr val;
     
     if (TableGet(&pc->ReservedWordTable, Word, &val, NULL, NULL, NULL))
+#ifdef WRAP_REGSTRINGS
+        return ((CPtrWrapper<struct ReservedWord>)val)->Token;
+#else
         return (pointerCast<struct ReservedWord>(val))->Token;
+#endif
     else
         return TokenNone;
 }
@@ -478,7 +482,7 @@ enum LexToken LexGetStringConstant(Picoc *pc, struct LexState *Lexer, TValuePtr 
 
     /* create the the pointer for this char* */
     Value->Typ = pc->CharPtrType;
-    Value->Val->Pointer = CPtrWrapperBase::getPtr(RegString);
+    Value->Val->Pointer = RegString;
     if (*Lexer->Pos == EndChar)
         LEXER_INC(Lexer);
     

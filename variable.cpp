@@ -134,7 +134,7 @@ void *VariableAlloc(Picoc *pc, struct ParseState *Parser, int Size, int OnHeap)
 TValuePtr VariableAllocValueAndData(Picoc *pc, struct ParseState *Parser, int DataSize, int IsLValue, TValuePtr LValueFrom, int OnHeap)
 {
     TValuePtr NewValue = allocMemVariable<Value>(Parser, !OnHeap, MEM_ALIGN(sizeof(struct Value)) + DataSize);
-    NewValue->Val = (TAnyValuePtr)(pointerCast<char>(NewValue) + MEM_ALIGN(sizeof(struct Value)));
+    NewValue->Val = (TAnyValuePtr)((TAnyValueCharPointer)(NewValue) + MEM_ALIGN(sizeof(struct Value)));
     NewValue->Flags = 0;
     if (OnHeap)
         NewValue->Flags |= FlagValOnHeap;
@@ -161,7 +161,15 @@ TValuePtr VariableAllocValueFromType(Picoc *pc, struct ParseState *Parser, struc
     TValuePtr NewValue = VariableAllocValueAndData(pc, Parser, Size, IsLValue, LValueFrom, OnHeap);
     assert(Size >= 0 || Typ == &pc->VoidType);
     NewValue->Typ = Typ;
-    
+
+#ifdef WRAP_ANYVALUE
+    if (Typ->Base == TypeArray)
+    {
+        NewValue->Val->ArrayMem = (TAnyValueCharPointer)(&NewValue->Val->ArrayMem) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
+        printf("size: %d\n", Size);
+    }
+#endif
+
     return NewValue;
 }
 
@@ -192,7 +200,12 @@ TValuePtr VariableAllocValueFromExistingData(struct ParseState *Parser, struct V
     if (IsLValue)
         NewValue->Flags |= FlagIsLValue;
     NewValue->LValueFrom = LValueFrom;
-    
+
+#ifdef WRAP_ANYVALUE
+    if (Typ->Base == TypeArray)
+        NewValue->Val->ArrayMem = (TAnyValueCharPointer)(&NewValue->Val->ArrayMem) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
+#endif
+
     return NewValue;
 }
 
@@ -207,8 +220,16 @@ void VariableRealloc(struct ParseState *Parser, TValuePtr FromValue, int NewSize
 {
     if (FromValue->Flags & FlagAnyValOnHeap)
         deallocMem(FromValue->Val);
-        
+
+#ifdef WRAP_ANYVALUE
+    struct ValueType *Typ = FromValue->Typ;
+#endif
+
     FromValue->Val = allocMemVariable<AnyValue>(Parser, false, NewSize);
+#ifdef WRAP_ANYVALUE
+    if (Typ->Base == TypeArray)
+        FromValue->Val->ArrayMem = (TAnyValueCharPointer)(&FromValue->Val->ArrayMem) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
+#endif
     FromValue->Flags |= FlagAnyValOnHeap;
 }
 
@@ -313,8 +334,8 @@ TValuePtr VariableDefine(Picoc *pc, struct ParseState *Parser, TRegStringPtr Ide
     struct Table * currentTable = (pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable;
     
     int16_t ScopeID = Parser ? Parser->ScopeID : -1;
-#ifdef VAR_SCOPE_DEBUG
-    if (Parser) fprintf(stderr, "def %s %x (%s:%d:%d)\n", Ident, ScopeID, Parser->FileName, Parser->Line, Parser->CharacterPos);
+#if 1//def VAR_SCOPE_DEBUG
+    if (Parser) fprintf(stderr, "def %s %x (%s:%d:%d)\n", ptrUnwrap(Ident), ScopeID, ptrUnwrap(Parser->FileName), Parser->Line, Parser->CharacterPos);
 #endif
 
     if (InitValue != NULL)
@@ -528,7 +549,7 @@ void VariableStringLiteralDefine(Picoc *pc, TRegStringPtr Ident, TValuePtr Val)
 }
 
 /* check a pointer for validity and dereference it for use */
-void *VariableDereferencePointer(struct ParseState *Parser, TValuePtr PointerValue, TValuePtrPtr DerefVal, int *DerefOffset, struct ValueType **DerefType, int *DerefIsLValue)
+TAnyValueVoidPointer VariableDereferencePointer(struct ParseState *Parser, TValuePtr PointerValue, TValuePtrPtr DerefVal, int *DerefOffset, struct ValueType **DerefType, int *DerefIsLValue)
 {
     if (DerefVal != NULL)
         *DerefVal = NILL;

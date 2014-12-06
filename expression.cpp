@@ -150,9 +150,9 @@ int IsTypeToken(struct ParseState * Parser, enum LexToken t, TValuePtr LexValue)
     if (t == TokenIdentifier) /* see TypeParseFront, case TokenIdentifier and ParseTypedef */
     {
         TValuePtr VarValue;
-        if (VariableDefined(Parser->pc, (TConstRegStringPtr)ptrWrap(LexValue->Val->Pointer))) // UNDONE
+        if (VariableDefined(Parser->pc, (TConstRegStringPtr)LexValue->Val->Pointer))
         {
-            VariableGet(Parser->pc, Parser, (TConstRegStringPtr)ptrWrap(LexValue->Val->Pointer), &VarValue); // UNDONE
+            VariableGet(Parser->pc, Parser, (TConstRegStringPtr)LexValue->Val->Pointer, &VarValue);
             if (VarValue->Typ == &Parser->pc->TypeType)
                 return 1;
         }
@@ -173,7 +173,7 @@ long ExpressionCoerceInteger(TValuePtr Val)
         case TypeUnsignedShort:   return (long)Val->Val->UnsignedShortInteger;
         case TypeUnsignedLong:    return (long)Val->Val->UnsignedLongInteger;
         case TypeUnsignedChar:    return (long)Val->Val->UnsignedCharacter;
-        case TypePointer:         return (long)Val->Val->Pointer;
+        case TypePointer:         return (long)getNumPtr(Val->Val->Pointer);
 #ifndef NO_FP
         case TypeFP:              return (long)Val->Val->FP;
 #endif
@@ -193,7 +193,7 @@ unsigned long ExpressionCoerceUnsignedInteger(TValuePtr Val)
         case TypeUnsignedShort:   return (unsigned long)Val->Val->UnsignedShortInteger;
         case TypeUnsignedLong:    return (unsigned long)Val->Val->UnsignedLongInteger;
         case TypeUnsignedChar:    return (unsigned long)Val->Val->UnsignedCharacter;
-        case TypePointer:         return (unsigned long)Val->Val->Pointer;
+        case TypePointer:         return (unsigned long)getNumPtr(Val->Val->Pointer);
 #ifndef NO_FP
         case TypeFP:              return (unsigned long)Val->Val->FP;
 #endif
@@ -314,7 +314,7 @@ void ExpressionStackPushValue(struct ParseState *Parser, struct ExpressionStack 
 void ExpressionStackPushLValue(struct ParseState *Parser, struct ExpressionStack **StackTop, TValuePtr PushValue, int Offset)
 {
     TValuePtr ValueLoc = VariableAllocValueShared(Parser, PushValue);
-    ValueLoc->Val = (TAnyValuePtr)(pointerCast<char>(ValueLoc->Val) + Offset);
+    ValueLoc->Val = (TAnyValuePtr)((TAnyValueCharPointer)(ValueLoc->Val) + Offset);
     ExpressionStackPushValueNode(Parser, StackTop, ValueLoc);
 }
 
@@ -325,11 +325,11 @@ void ExpressionStackPushDereference(struct ParseState *Parser, struct Expression
     int Offset;
     struct ValueType *DerefType;
     int DerefIsLValue;
-    void *DerefDataLoc = VariableDereferencePointer(Parser, DereferenceValue, &DerefVal, &Offset, &DerefType, &DerefIsLValue);
+    TAnyValueVoidPointer DerefDataLoc = VariableDereferencePointer(Parser, DereferenceValue, &DerefVal, &Offset, &DerefType, &DerefIsLValue);
     if (DerefDataLoc == NULL)
         ProgramFail(Parser, "NULL pointer dereference");
 
-    ValueLoc = VariableAllocValueFromExistingData(Parser, DerefType, (TAnyValuePtr)ptrWrap(DerefDataLoc), DerefIsLValue, DerefVal); // UNDONE
+    ValueLoc = VariableAllocValueFromExistingData(Parser, DerefType, (TAnyValuePtr)DerefDataLoc, DerefIsLValue, DerefVal); // UNDONE
     ExpressionStackPushValueNode(Parser, StackTop, ValueLoc);
 }
 
@@ -353,14 +353,14 @@ void ExpressionPushFP(struct ParseState *Parser, struct ExpressionStack **StackT
 void ExpressionAssignToPointer(struct ParseState *Parser, TValuePtr ToValue, TValuePtr FromValue, TConstRegStringPtr FuncName, int ParamNo, int AllowPointerCoercion)
 {
     struct ValueType *PointedToType = ToValue->Typ->FromType;
-    
+
     if (FromValue->Typ == ToValue->Typ || FromValue->Typ == Parser->pc->VoidPtrType || (ToValue->Typ == Parser->pc->VoidPtrType && FromValue->Typ->Base == TypePointer))
         ToValue->Val->Pointer = FromValue->Val->Pointer;      /* plain old pointer assignment */
         
     else if (FromValue->Typ->Base == TypeArray && (PointedToType == FromValue->Typ->FromType || ToValue->Typ == Parser->pc->VoidPtrType))
     {
         /* the form is: blah *x = array of blah */
-        ToValue->Val->Pointer = (void *)CPtrWrapperBase::getPtr(getMembrPtr(FromValue->Val, &FromValue->Val->ArrayMem[0])); // UNDONE
+        ToValue->Val->Pointer = &FromValue->Val->ArrayMem[0];
     }
     else if (FromValue->Typ->Base == TypePointer && FromValue->Typ->FromType->Base == TypeArray && 
                (PointedToType == FromValue->Typ->FromType->FromType || ToValue->Typ == Parser->pc->VoidPtrType) )
@@ -371,12 +371,12 @@ void ExpressionAssignToPointer(struct ParseState *Parser, TValuePtr ToValue, TVa
     else if (IS_NUMERIC_COERCIBLE(FromValue) && ExpressionCoerceInteger(FromValue) == 0)
     {
         /* null pointer assignment */
-        ToValue->Val->Pointer = NULL;
+        ToValue->Val->Pointer = NILL;
     }
     else if (AllowPointerCoercion && IS_NUMERIC_COERCIBLE(FromValue))
     {
         /* assign integer to native pointer */
-        ToValue->Val->Pointer = (void *)(unsigned long)ExpressionCoerceUnsignedInteger(FromValue);
+        ToValue->Val->Pointer = ptrWrap((void *)(unsigned long)ExpressionCoerceUnsignedInteger(FromValue)); // UNDONE
     }
     else if (AllowPointerCoercion && FromValue->Typ->Base == TypePointer)
     {
@@ -442,7 +442,7 @@ void ExpressionAssign(struct ParseState *Parser, TValuePtr DestValue, TValuePtr 
             {
                 if (DestValue->Typ->ArraySize == 0) /* char x[] = "abcd", x is unsized */
                 {
-                    int Size = strlen((const char *)SourceValue->Val->Pointer) + 1;
+                    int Size = strlen((TStdioConstCharPtr)SourceValue->Val->Pointer) + 1;
                     #ifdef DEBUG_ARRAY_INITIALIZER
                     PRINT_SOURCE_POS;
                     fprintf(stderr, "str size: %d\n", Size);
@@ -454,9 +454,14 @@ void ExpressionAssign(struct ParseState *Parser, TValuePtr DestValue, TValuePtr 
 
                 #ifdef DEBUG_ARRAY_INITIALIZER
                 PRINT_SOURCE_POS;
-                fprintf(stderr, "char[%d] from char* (len=%d)\n", DestValue->Typ->ArraySize, strlen(SourceValue->Val->Pointer));
+                fprintf(stderr, "char[%d] from char* (len=%d)\n", DestValue->Typ->ArraySize, strlen((TAnyValueCharPointer)SourceValue->Val->Pointer));
                 #endif
+#ifdef WRAP_ANYVALUE
+                printf("hmm: %p/%p/%p\n", ptrUnwrap(DestValue->Val), ptrUnwrap(DestValue->Val->ArrayMem), ptrUnwrap(&DestValue->Val->ArrayMem));
+                memcpy(DestValue->Val->ArrayMem, SourceValue->Val->Pointer, TypeSizeValue(DestValue, FALSE) - sizeof(TAnyValueCharPointer));
+#else
                 memcpy(DestValue->Val, SourceValue->Val->Pointer, TypeSizeValue(DestValue, FALSE));
+#endif
                 break;
             }
 
@@ -531,7 +536,7 @@ void ExpressionPrefixOperator(struct ParseState *Parser, struct ExpressionStack 
 
             ValPtr = TopValue->Val;
             Result = VariableAllocValueFromType(Parser->pc, Parser, TypeGetMatching(Parser->pc, Parser, TopValue->Typ, TypePointer, 0, Parser->pc->StrEmpty, TRUE), FALSE, NILL, FALSE);
-            Result->Val->Pointer = CPtrWrapperBase::getPtr(ValPtr); // UNDONE
+            Result->Val->Pointer = ValPtr;
             ExpressionStackPushValueNode(Parser, StackTop, Result);
             break;
 
@@ -592,7 +597,7 @@ void ExpressionPrefixOperator(struct ParseState *Parser, struct ExpressionStack 
                 /* pointer prefix arithmetic */
                 int Size = TypeSize(TopValue->Typ->FromType, 0, TRUE);
                 TValuePtr StackValue;
-                void *ResultPtr;
+                TAnyValueVoidPointer ResultPtr;
 
                 if (TopValue->Val->Pointer == NULL)
                     ProgramFail(Parser, "invalid use of a NULL pointer");
@@ -602,8 +607,8 @@ void ExpressionPrefixOperator(struct ParseState *Parser, struct ExpressionStack 
                     
                 switch (Op)
                 {
-                    case TokenIncrement:    TopValue->Val->Pointer = (void *)((char *)TopValue->Val->Pointer + Size); break;
-                    case TokenDecrement:    TopValue->Val->Pointer = (void *)((char *)TopValue->Val->Pointer - Size); break;
+                    case TokenIncrement:    TopValue->Val->Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)TopValue->Val->Pointer + Size); break;
+                    case TokenDecrement:    TopValue->Val->Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)TopValue->Val->Pointer - Size); break;
                     default:                ProgramFail(Parser, "invalid operation"); break;
                 }
 
@@ -658,7 +663,7 @@ void ExpressionPostfixOperator(struct ParseState *Parser, struct ExpressionStack
         /* pointer postfix arithmetic */
         int Size = TypeSize(TopValue->Typ->FromType, 0, TRUE);
         TValuePtr StackValue;
-        void *OrigPointer = TopValue->Val->Pointer;
+        TAnyValueVoidPointer OrigPointer = TopValue->Val->Pointer;
         
         if (TopValue->Val->Pointer == NULL)
             ProgramFail(Parser, "invalid use of a NULL pointer");
@@ -668,8 +673,8 @@ void ExpressionPostfixOperator(struct ParseState *Parser, struct ExpressionStack
         
         switch (Op)
         {
-            case TokenIncrement:    TopValue->Val->Pointer = (void *)((char *)TopValue->Val->Pointer + Size); break;
-            case TokenDecrement:    TopValue->Val->Pointer = (void *)((char *)TopValue->Val->Pointer - Size); break;
+            case TokenIncrement:    TopValue->Val->Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)TopValue->Val->Pointer + Size); break;
+            case TokenDecrement:    TopValue->Val->Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)TopValue->Val->Pointer - Size); break;
             default:                ProgramFail(Parser, "invalid operation"); break;
         }
         
@@ -685,7 +690,7 @@ void ExpressionInfixOperator(struct ParseState *Parser, struct ExpressionStack *
 {
     long ResultInt = 0;
     TValuePtr StackValue;
-    void *Pointer;
+    TAnyValueVoidPointer Pointer;
     
     debugf("ExpressionInfixOperator()\n");
     if (BottomValue == NULL || TopValue == NULL)
@@ -705,8 +710,12 @@ void ExpressionInfixOperator(struct ParseState *Parser, struct ExpressionStack *
         /* make the array element result */
         switch (BottomValue->Typ->Base)
         {
-            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)getMembrPtr(BottomValue->Val, (&BottomValue->Val->ArrayMem[0]) + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
-            case TypePointer: Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)ptrWrap((char *)BottomValue->Val->Pointer + TypeSize(BottomValue->Typ->FromType, 0, TRUE) * ArrayIndex), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break; // UNDONE
+#ifdef WRAP_ANYVALUE
+            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)((TAnyValueCharPointer)&BottomValue->Val->ArrayMem + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
+#else
+            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)(&BottomValue->Val->ArrayMem[0] + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
+#endif
+            case TypePointer: Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)((TAnyValueCharPointer)BottomValue->Val->Pointer + TypeSize(BottomValue->Typ->FromType, 0, TRUE) * ArrayIndex), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
             default:          ProgramFail(Parser, "this %t is not an array", BottomValue->Typ);
         }
         
@@ -826,9 +835,9 @@ void ExpressionInfixOperator(struct ParseState *Parser, struct ExpressionStack *
                 ProgramFail(Parser, "invalid use of a NULL pointer");
             
             if (Op == TokenPlus)
-                Pointer = (void *)((char *)Pointer + TopInt * Size);
+                Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)Pointer + TopInt * Size);
             else
-                Pointer = (void *)((char *)Pointer - TopInt * Size);
+                Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)Pointer - TopInt * Size);
             
             StackValue = ExpressionStackPushValueByType(Parser, StackTop, BottomValue->Typ);
             StackValue->Val->Pointer = Pointer;
@@ -850,9 +859,9 @@ void ExpressionInfixOperator(struct ParseState *Parser, struct ExpressionStack *
                 ProgramFail(Parser, "invalid use of a NULL pointer");
 
             if (Op == TokenAddAssign)
-                Pointer = (void *)((char *)Pointer + TopInt * Size);
+                Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)Pointer + TopInt * Size);
             else
-                Pointer = (void *)((char *)Pointer - TopInt * Size);
+                Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)Pointer - TopInt * Size);
 
             HeapUnpopStack(Parser->pc, sizeof(struct Value));
             BottomValue->Val->Pointer = Pointer;
@@ -864,8 +873,8 @@ void ExpressionInfixOperator(struct ParseState *Parser, struct ExpressionStack *
     else if (BottomValue->Typ->Base == TypePointer && TopValue->Typ->Base == TypePointer && Op != TokenAssign)
     {
         /* pointer/pointer operations */
-        char *TopLoc = (char *)TopValue->Val->Pointer;
-        char *BottomLoc = (char *)BottomValue->Val->Pointer;
+        TAnyValueCharPointer TopLoc = (TAnyValueCharPointer)TopValue->Val->Pointer;
+        TAnyValueCharPointer BottomLoc = (TAnyValueCharPointer)BottomValue->Val->Pointer;
         
         switch (Op)
         {
@@ -1052,18 +1061,13 @@ void ExpressionGetStructElement(struct ParseState *Parser, struct ExpressionStac
         TValuePtr ParamVal = (*StackTop)->Val;
         TValuePtr StructVal = ParamVal;
         struct ValueType *StructType = ParamVal->Typ;
-#ifdef WRAP_ANYVALUE
-        typedef CPtrWrapper<char> DerefType;
-#else
-        typedef DerefType char *;
-#endif
-        DerefType DerefDataLoc = (DerefType)ParamVal->Val;
+        TAnyValueCharPointer DerefDataLoc = (TAnyValueCharPointer)ParamVal->Val;
         TValuePtr MemberValue = NILL;
         TValuePtr Result;
 
         /* if we're doing '->' dereference the struct pointer first */
         if (Token == TokenArrow)
-            DerefDataLoc = (DerefType)ptrWrap(VariableDereferencePointer(Parser, ParamVal, &StructVal, NULL, &StructType, NULL)); // UNDONE
+            DerefDataLoc = (TAnyValueCharPointer)(VariableDereferencePointer(Parser, ParamVal, &StructVal, NULL, &StructType, NULL)); // UNDONE
         
         if (StructType->Base != TypeStruct && StructType->Base != TypeUnion)
             ProgramFail(Parser, "can't use '%s' on something that's not a struct or union %s : it's a %t", (Token == TokenDot) ? "." : "->", (Token == TokenArrow) ? "pointer" : "", ParamVal->Typ);

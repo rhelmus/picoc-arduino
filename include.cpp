@@ -96,6 +96,12 @@ void IncludeFile(Picoc *pc, TRegStringPtr FileName, int LineByLine)
         }
     }
     
+#ifdef BUILTIN_MINI_STDLIB
+    if (!strcmp(FileName, "stdio.h") || !strcmp(FileName, "stdlib.h") || !strcmp(FileName, "string.h") ||
+        !strcmp(FileName, "math.h"))
+        return; // avoid errors with standard headers
+#endif
+
     /* not a predefined file, read a real file */
     if (LineByLine)
         PicocPlatformScanFileByLine(pc, ptrUnwrap(FileName));

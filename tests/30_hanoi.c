@@ -29,8 +29,10 @@ Recreations & Essays, W.W. Rouse Ball, MacMillan, NewYork, 11th Ed. 1967,
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef TRUE
 #define TRUE 1
 #define FALSE 0
+#endif
 
 #define N 4    /* This is the number of "disks" on tower A initially. */
 	       /* Taken to be 64 in the legend. The number of moves 

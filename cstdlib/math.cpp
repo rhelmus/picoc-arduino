@@ -106,7 +106,7 @@ void MathLog10(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
 
 void MathModf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    ReturnValue->Val->FP = modf(Param[0]->Val->FP, (double *)Param[0]->Val->Pointer);
+    ReturnValue->Val->FP = modf(Param[0]->Val->FP, (double *)Param[0]->Val->Pointer); // UNDONE: shouldn't the 2nd arg be [1]?
 }
 
 void MathPow(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)

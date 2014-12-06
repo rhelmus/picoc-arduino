@@ -222,14 +222,18 @@ union AnyValue
     unsigned long UnsignedLongInteger;
     unsigned char UnsignedCharacter;
     TRegStringPtr Identifier;
+#ifdef WRAP_ANYVALUE
+    TAnyValueCharPointer ArrayMem; /* placeholder for where the data starts, doesn't point to it */
+#else
     char ArrayMem[2];               /* placeholder for where the data starts, doesn't point to it */
+#endif
     struct ValueType *Typ;
     struct FuncDef FuncDef;
     struct MacroDef MacroDef;
 #ifndef NO_FP
     double FP;
 #endif
-    void *Pointer;                  /* unsafe native pointers */
+    TAnyValueVoidPointer Pointer;                  /* unsafe native pointers */
 };
 
 struct Value
@@ -333,7 +337,7 @@ union OutputStreamInfo
     struct StringOutputStream
     {
         struct ParseState *Parser;
-        char *WritePos;
+        TAnyValueCharPointer WritePos;
     } Str;
 };
 
@@ -588,7 +592,7 @@ void VariableStackFrameAdd(struct ParseState *Parser, TConstRegStringPtr FuncNam
 void VariableStackFramePop(struct ParseState *Parser);
 TValuePtr VariableStringLiteralGet(Picoc *pc, TRegStringPtr Ident);
 void VariableStringLiteralDefine(Picoc *pc, TRegStringPtr Ident, TValuePtr Val);
-void *VariableDereferencePointer(struct ParseState *Parser, TValuePtr PointerValue, TValuePtrPtr DerefVal, int *DerefOffset, struct ValueType **DerefType, int *DerefIsLValue);
+TAnyValueVoidPointer VariableDereferencePointer(struct ParseState *Parser, TValuePtr PointerValue, TValuePtrPtr DerefVal, int *DerefOffset, struct ValueType **DerefType, int *DerefIsLValue);
 int VariableScopeBegin(struct ParseState * Parser, int16_t *PrevScopeID);
 void VariableScopeEnd(struct ParseState * Parser, int ScopeID, int16_t PrevScopeID);
 
