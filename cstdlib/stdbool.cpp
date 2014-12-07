@@ -14,9 +14,9 @@ const char StdboolDefs[] = "typedef int bool;";
 void StdboolSetupFunc(Picoc *pc)
 {
     /* defines */
-    VariableDefinePlatformVar(pc, NULL, "true", &pc->IntType, (TAnyValuePtr)ptrWrap(&trueValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "false", &pc->IntType, (TAnyValuePtr)ptrWrap(&falseValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "__bool_true_false_are_defined", &pc->IntType, (TAnyValuePtr)ptrWrap(&trueValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "true", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&trueValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "false", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&falseValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "__bool_true_false_are_defined", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&trueValue), FALSE);
 }
 
 #endif /* !BUILTIN_MINI_STDLIB */

@@ -118,6 +118,7 @@ public:
         const T operator->(void) const { return *ptr; }
 
 //        inline bool operator==(const T &v) const { return *ptr == v; }
+        inline bool operator==(const class CNILL &) const { return *ptr == 0; }
         template <typename T2> inline bool operator==(const T2 &v) const { return *ptr == v; }
 //        inline bool operator!=(const T &v) const { return *ptr != v; }
         template <typename T2> inline bool operator!=(const T2 &v) const { return *ptr != v; }
@@ -218,6 +219,7 @@ public:
     template <typename T> inline operator T*(void) const { return NULL; }
     template <typename T> inline operator CPtrWrapper<T>(void) const { return CPtrWrapper<T>(); }
     inline operator CPtrWrapperBase(void) const { return CPtrWrapperBase(); }
+    template <typename T> inline operator typename CPtrWrapper<T>::CValueWrapper(void) const { return CPtrWrapper<T>::CValueWrapper(0); }
 
 } extern const NILL;
 

@@ -187,7 +187,7 @@ int StdioBasePrintf(struct ParseState *Parser, FILE *Stream, char *StrOut, int S
     const char *FPos;
     char OneFormatBuf[MAX_FORMAT+1];
     int OneFormatCount;
-    struct ValueType *ShowType;
+    TValueTypePtr ShowType;
     StdOutStream SOStream;
     Picoc *pc = Parser->pc;
     
@@ -214,21 +214,21 @@ int StdioBasePrintf(struct ParseState *Parser, FILE *Stream, char *StrOut, int S
             {
                 switch (*FPos)
                 {
-                    case 'd': case 'i':     ShowType = &pc->IntType; break;     /* integer decimal */
-                    case 'o': case 'u': case 'x': case 'X': ShowType = &pc->IntType; break; /* integer base conversions */
+                    case 'd': case 'i':     ShowType = ptrWrap(&pc->IntType); break;     /* integer decimal */
+                    case 'o': case 'u': case 'x': case 'X': ShowType = ptrWrap(&pc->IntType); break; /* integer base conversions */
 #ifndef NO_FP
                     case 'e': case 'E':     ShowType = &pc->FPType; break;      /* double, exponent form */
                     case 'f': case 'F':     ShowType = &pc->FPType; break;      /* double, fixed-point */
                     case 'g': case 'G':     ShowType = &pc->FPType; break;      /* double, flexible format */
 #endif
-                    case 'a': case 'A':     ShowType = &pc->IntType; break;     /* hexadecimal, 0x- format */
-                    case 'c':               ShowType = &pc->IntType; break;     /* character */
+                    case 'a': case 'A':     ShowType = ptrWrap(&pc->IntType); break;     /* hexadecimal, 0x- format */
+                    case 'c':               ShowType = ptrWrap(&pc->IntType); break;     /* character */
                     case 's':               ShowType = pc->CharPtrType; break;  /* string */
                     case 'p':               ShowType = pc->VoidPtrType; break;  /* pointer */
-                    case 'n':               ShowType = &pc->VoidType; break;    /* number of characters written */
-                    case 'm':               ShowType = &pc->VoidType; break;    /* strerror(errno) */
-                    case '%':               ShowType = &pc->VoidType; break;    /* just a '%' character */
-                    case '\0':              ShowType = &pc->VoidType; break;    /* end of format string */
+                    case 'n':               ShowType = ptrWrap(&pc->VoidType); break;    /* number of characters written */
+                    case 'm':               ShowType = ptrWrap(&pc->VoidType); break;    /* strerror(errno) */
+                    case '%':               ShowType = ptrWrap(&pc->VoidType); break;    /* just a '%' character */
+                    case '\0':              ShowType = ptrWrap(&pc->VoidType); break;    /* end of format string */
                 }
                 
                 /* copy one character of format across to the OneFormatBuf */
@@ -236,7 +236,7 @@ int StdioBasePrintf(struct ParseState *Parser, FILE *Stream, char *StrOut, int S
                 OneFormatCount++;
 
                 /* do special actions depending on the conversion type */
-                if (ShowType == &pc->VoidType)
+                if (ShowType == ptrWrap(&pc->VoidType))
                 {
                     switch (*FPos)
                     {
@@ -255,7 +255,7 @@ int StdioBasePrintf(struct ParseState *Parser, FILE *Stream, char *StrOut, int S
                 
             } while (ShowType == NULL && OneFormatCount < MAX_FORMAT);
             
-            if (ShowType != &pc->VoidType)
+            if (ShowType != ptrWrap(&pc->VoidType))
             {
                 if (ArgCount >= Args->NumArgs)
                     StdioOutPuts("XXX", &SOStream);
@@ -266,7 +266,7 @@ int StdioBasePrintf(struct ParseState *Parser, FILE *Stream, char *StrOut, int S
     
                     /* print this argument */
                     ThisArg = (TValuePtr)(pointerCast<char>(ThisArg) + MEM_ALIGN(sizeof(struct Value) + TypeStackSizeValue(ThisArg)));
-                    if (ShowType == &pc->IntType)
+                    if (ShowType == ptrWrap(&pc->IntType))
                     {
                         /* show a signed integer */
                         if (IS_NUMERIC_COERCIBLE(ThisArg))
@@ -678,8 +678,8 @@ struct LibraryFunction StdioFunctions[] =
 /* creates various system-dependent definitions */
 void StdioSetupFunc(Picoc *pc)
 {
-    struct ValueType *StructFileType;
-    struct ValueType *FilePtrType;
+    TValueTypePtr StructFileType;
+    TValueTypePtr FilePtrType;
 
     /* make a "struct __FILEStruct" which is the same size as a native FILE structure */
     StructFileType = TypeCreateOpaqueStruct(pc, NULL, TableStrRegister(pc, "__FILEStruct"), sizeof(FILE));
@@ -691,17 +691,17 @@ void StdioSetupFunc(Picoc *pc)
     TypeCreateOpaqueStruct(pc, NULL, TableStrRegister(pc, "__va_listStruct"), sizeof(FILE));
     
     /* define EOF equal to the system EOF */
-    VariableDefinePlatformVar(pc, NULL, "EOF", &pc->IntType, (TAnyValuePtr)ptrWrap(&EOFValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "SEEK_SET", &pc->IntType, (TAnyValuePtr)ptrWrap(&SEEK_SETValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "SEEK_CUR", &pc->IntType, (TAnyValuePtr)ptrWrap(&SEEK_CURValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "SEEK_END", &pc->IntType, (TAnyValuePtr)ptrWrap(&SEEK_ENDValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "BUFSIZ", &pc->IntType, (TAnyValuePtr)ptrWrap(&BUFSIZValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "FILENAME_MAX", &pc->IntType, (TAnyValuePtr)ptrWrap(&FILENAME_MAXValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "_IOFBF", &pc->IntType, (TAnyValuePtr)ptrWrap(&_IOFBFValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "_IOLBF", &pc->IntType, (TAnyValuePtr)ptrWrap(&_IOLBFValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "_IONBF", &pc->IntType, (TAnyValuePtr)ptrWrap(&_IONBFValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "L_tmpnam", &pc->IntType, (TAnyValuePtr)ptrWrap(&L_tmpnamValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "GETS_MAX", &pc->IntType, (TAnyValuePtr)ptrWrap(&GETS_MAXValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "EOF", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&EOFValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "SEEK_SET", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&SEEK_SETValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "SEEK_CUR", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&SEEK_CURValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "SEEK_END", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&SEEK_ENDValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "BUFSIZ", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&BUFSIZValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "FILENAME_MAX", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&FILENAME_MAXValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "_IOFBF", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&_IOFBFValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "_IOLBF", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&_IOLBFValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "_IONBF", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&_IONBFValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "L_tmpnam", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&L_tmpnamValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "GETS_MAX", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&GETS_MAXValue), FALSE);
     
     /* define stdin, stdout and stderr */
     VariableDefinePlatformVar(pc, NULL, "stdin", FilePtrType, (TAnyValuePtr)ptrWrap(&stdinValue), FALSE);
@@ -710,7 +710,7 @@ void StdioSetupFunc(Picoc *pc)
 
     /* define NULL, TRUE and FALSE */
     if (!VariableDefined(pc, TableStrRegister(pc, "NULL")))
-        VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, (TAnyValuePtr)ptrWrap(&Stdio_ZeroValue), FALSE);
+        VariableDefinePlatformVar(pc, NULL, "NULL", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&Stdio_ZeroValue), FALSE);
 }
 
 /* portability-related I/O calls */

@@ -23,8 +23,8 @@ void LibraryInit(Picoc *pc)
     BigEndian = ((*(char*)&__ENDIAN_CHECK__) == 0);
     LittleEndian = ((*(char*)&__ENDIAN_CHECK__) == 1);
 
-    VariableDefinePlatformVar(pc, NULL, "BIG_ENDIAN", &pc->IntType, (TAnyValuePtr)ptrWrap(&BigEndian), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "LITTLE_ENDIAN", &pc->IntType, (TAnyValuePtr)ptrWrap(&LittleEndian), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "BIG_ENDIAN", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&BigEndian), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "LITTLE_ENDIAN", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&LittleEndian), FALSE);
 }
 
 /* add a library */
@@ -33,7 +33,7 @@ void LibraryAdd(Picoc *pc, struct Table *GlobalTable, TConstRegStringPtr Library
     struct ParseState Parser;
     int Count;
     TRegStringPtr Identifier;
-    struct ValueType *ReturnType;
+    TValueTypePtr ReturnType;
     TValuePtr NewValue;
     TLexBufPtr Tokens;
     TRegStringPtr IntrinsicName = TableStrRegister(pc, "c library"); /* UNDONE: Shouldn't this be LibraryName? */
@@ -53,7 +53,7 @@ void LibraryAdd(Picoc *pc, struct Table *GlobalTable, TConstRegStringPtr Library
 }
 
 /* print a type to a stream without using printf/sprintf */
-void PrintType(struct ValueType *Typ, IOFILE *Stream)
+void PrintType(TValueTypePtr Typ, IOFILE *Stream)
 {
     switch (Typ->Base)
     {
@@ -104,9 +104,9 @@ void BasicIOInit(Picoc *pc)
 void CLibraryInit(Picoc *pc)
 {
     /* define some constants */
-    VariableDefinePlatformVar(pc, NULL, "NULL", &pc->IntType, (TAnyValuePtr)ptrWrap(&ZeroValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "TRUE", &pc->IntType, (TAnyValuePtr)ptrWrap(&TRUEValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "FALSE", &pc->IntType, (TAnyValuePtr)ptrWrap(&ZeroValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "NULL", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&ZeroValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "TRUE", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&TRUEValue), FALSE);
+    VariableDefinePlatformVar(pc, NULL, "FALSE", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&ZeroValue), FALSE);
 }
 
 /* stream for writing into strings */
@@ -238,7 +238,7 @@ void GenericPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPt
 {
     TStdioCharPtr FPos;
     TValuePtr NextArg = Param[0];
-    struct ValueType *FormatType;
+    TValueTypePtr FormatType;
     int ArgCount = 1;
     int LeftJustify = FALSE;
     int ZeroPad = FALSE;
@@ -274,13 +274,13 @@ void GenericPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPt
             switch ((char)*FPos)
             {
                 case 's': FormatType = pc->CharPtrType; break;
-                case 'd': case 'u': case 'x': case 'b': case 'c': FormatType = &pc->IntType; break;
+                case 'd': case 'u': case 'x': case 'b': case 'c': FormatType = ptrWrap(&pc->IntType); break;
 #ifndef NO_FP
-                case 'f': FormatType = &pc->FPType; break;
+                case 'f': FormatType = ptrWrap(&pc->FPType); break;
 #endif
-                case '%': PrintCh('%', Stream); FormatType = NULL; break;
-                case '\0': FPos--; FormatType = NULL; break;
-                default:  PrintCh(*FPos, Stream); FormatType = NULL; break;
+                case '%': PrintCh('%', Stream); FormatType = NILL; break;
+                case '\0': FPos--; FormatType = NILL; break;
+                default:  PrintCh(*FPos, Stream); FormatType = NILL; break;
             }
             
             if (FormatType != NULL)
@@ -292,7 +292,7 @@ void GenericPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPt
                 {
                     NextArg = (TValuePtr)((TValueCharPointer)(NextArg) + MEM_ALIGN(sizeof(struct Value) + TypeStackSizeValue(NextArg)));
                     if (NextArg->Typ != FormatType && 
-                            !((FormatType == &pc->IntType || *FPos == 'f') && IS_NUMERIC_COERCIBLE(NextArg)) &&
+                            !((FormatType == ptrWrap(&pc->IntType) || *FPos == 'f') && IS_NUMERIC_COERCIBLE(NextArg)) &&
                             !(FormatType == pc->CharPtrType && (NextArg->Typ->Base == TypePointer || 
                                                              (NextArg->Typ->Base == TypeArray && NextArg->Typ->FromType->Base == TypeChar) ) ) )
                         PrintStr("XXX", Stream);   /* bad type for format */

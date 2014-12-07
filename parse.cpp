@@ -56,9 +56,9 @@ int ParseCountParams(struct ParseState *Parser)
 }
 
 /* parse a function definition and store it for later */
-TValuePtr ParseFunctionDefinition(struct ParseState *Parser, struct ValueType *ReturnType, TRegStringPtr Identifier)
+TValuePtr ParseFunctionDefinition(struct ParseState *Parser, TValueTypePtr ReturnType, TRegStringPtr Identifier)
 {
-    struct ValueType *ParamType;
+    TValueTypePtr ParamType;
     TRegStringPtr ParamIdentifier;
     enum LexToken Token = TokenNone;
     struct ParseState ParamParser;
@@ -77,13 +77,13 @@ TValuePtr ParseFunctionDefinition(struct ParseState *Parser, struct ValueType *R
     if (ParamCount > PARAMETER_MAX)
         ProgramFail(Parser, "too many parameters (%d allowed)", PARAMETER_MAX);
     
-    FuncValue = VariableAllocValueAndData(pc, Parser, sizeof(struct FuncDef) + sizeof(struct ValueType *) * ParamCount + sizeof(const char *) * ParamCount, FALSE, NILL, TRUE);
-    FuncValue->Typ = &pc->FunctionType;
+    FuncValue = VariableAllocValueAndData(pc, Parser, sizeof(struct FuncDef) + sizeof(TValueTypePtr ) * ParamCount + sizeof(const char *) * ParamCount, FALSE, NILL, TRUE);
+    FuncValue->Typ = ptrWrap(&pc->FunctionType);
     FuncValue->Val->FuncDef.ReturnType = ReturnType;
     FuncValue->Val->FuncDef.NumParams = ParamCount;
     FuncValue->Val->FuncDef.VarArgs = FALSE;
-    FuncValue->Val->FuncDef.ParamType = (struct ValueType **)CPtrWrapperBase::getPtr((TValueCharPointer)(FuncValue->Val) + sizeof(struct FuncDef)); // UNDONE
-    FuncValue->Val->FuncDef.ParamName = (TRegStringPtrPtr)ptrWrap((char *)FuncValue->Val->FuncDef.ParamType + sizeof(struct ValueType *) * ParamCount); // UNDONE
+    FuncValue->Val->FuncDef.ParamType = (TValueTypePtrPtr)((TValueCharPointer)(FuncValue->Val) + sizeof(struct FuncDef));
+    FuncValue->Val->FuncDef.ParamName = (TRegStringPtrPtr)((TValueCharPointer)(FuncValue->Val->FuncDef.ParamType) + sizeof(TValueTypePtr ) * ParamCount);
     FuncValue->Val->FuncDef.Body = NULL;
    
     for (ParamCount = 0; ParamCount < FuncValue->Val->FuncDef.NumParams; ParamCount++)
@@ -124,12 +124,12 @@ TValuePtr ParseFunctionDefinition(struct ParseState *Parser, struct ValueType *R
     if (strcmp(Identifier, "main") == 0)
     {
         /* make sure it's int main() */
-        if ( FuncValue->Val->FuncDef.ReturnType != &pc->IntType &&
-             FuncValue->Val->FuncDef.ReturnType != &pc->VoidType )
+        if ( FuncValue->Val->FuncDef.ReturnType != ptrWrap(&pc->IntType) &&
+             FuncValue->Val->FuncDef.ReturnType != ptrWrap(&pc->VoidType) )
             ProgramFail(Parser, "main() should return an int or void");
 
         if (FuncValue->Val->FuncDef.NumParams != 0 &&
-             (FuncValue->Val->FuncDef.NumParams != 2 || FuncValue->Val->FuncDef.ParamType[0] != &pc->IntType) )
+             (FuncValue->Val->FuncDef.NumParams != 2 || FuncValue->Val->FuncDef.ParamType[0] != ptrWrap(&pc->IntType)) )
             ProgramFail(Parser, "bad parameters to main()");
     }
     
@@ -191,7 +191,7 @@ int ParseArrayInitialiser(struct ParseState *Parser, TValuePtr NewVariable, int 
         NumElements = ParseArrayInitialiser(&CountParser, NewVariable, FALSE);
 
         if (NewVariable->Typ->Base != TypeArray)
-            AssignFail(Parser, "%t from array initializer", NewVariable->Typ, NULL, 0, 0, NILL, 0);
+            AssignFail(Parser, "%t from array initializer", NewVariable->Typ, NILL, 0, 0, NILL, 0);
 
         if (NewVariable->Typ->ArraySize == 0)
         {
@@ -236,7 +236,7 @@ int ParseArrayInitialiser(struct ParseState *Parser, TValuePtr NewVariable, int 
         
             if (Parser->Mode == RunModeRun && DoAssignment)
             {
-                struct ValueType * ElementType = NewVariable->Typ;
+                TValueTypePtr  ElementType = NewVariable->Typ;
                 int TotalSize = 1;
                 int ElementSize = 0;
                 
@@ -325,8 +325,8 @@ void ParseDeclarationAssignment(struct ParseState *Parser, TValuePtr NewVariable
 int ParseDeclaration(struct ParseState *Parser, enum LexToken Token)
 {
     TRegStringPtr Identifier;
-    struct ValueType *BasicType;
-    struct ValueType *Typ;
+    TValueTypePtr BasicType;
+    TValueTypePtr Typ;
     TValuePtr NewVariable = NILL;
     int IsStatic = FALSE;
     int FirstVisit = FALSE;
@@ -349,7 +349,7 @@ int ParseDeclaration(struct ParseState *Parser, enum LexToken Token)
             }
             else
             {
-                if (Typ == &pc->VoidType && Identifier != pc->StrEmpty)
+                if (Typ == ptrWrap(&pc->VoidType) && Identifier != pc->StrEmpty)
                     ProgramFail(Parser, "can't define a void variable");
                     
                 if (Parser->Mode == RunModeRun || Parser->Mode == RunModeGoto)
@@ -428,7 +428,7 @@ void ParseMacroDefinition(struct ParseState *Parser)
     
     /* copy the body of the macro to execute later */
     ParserCopy(getMembrPtr(MacroValue->Val, &MacroValue->Val->MacroDef.Body), Parser);
-    MacroValue->Typ = &Parser->pc->MacroType;
+    MacroValue->Typ = ptrWrap(&Parser->pc->MacroType);
     LexToEndOfLine(Parser);
     MacroValue->Val->MacroDef.Body.Pos = LexCopyTokens(Parser, MacroValue->Val->MacroDef.Body.Pos, Parser->Pos); // UNDONE: switched MacroDef.Body to Parser, shouldn't matter
     
@@ -571,8 +571,8 @@ enum RunMode ParseBlock(struct ParseState *Parser, int AbsorbOpenBrace, int Cond
 /* parse a typedef declaration */
 void ParseTypedef(struct ParseState *Parser)
 {
-    struct ValueType *Typ;
-    struct ValueType **TypPtr;
+    TValueTypePtr Typ;
+    TValueTypePtrPtr TypPtr;
     TRegStringPtr TypeName;
     struct Value InitValue;
     
@@ -581,8 +581,8 @@ void ParseTypedef(struct ParseState *Parser)
     if (Parser->Mode == RunModeRun)
     {
         TypPtr = &Typ;
-        InitValue.Typ = &Parser->pc->TypeType;
-        InitValue.Val = (TAnyValuePtr)ptrWrap(TypPtr); // UNDONE
+        InitValue.Typ = ptrWrap(&Parser->pc->TypeType);
+        InitValue.Val = (TAnyValuePtr)(TypPtr);
         VariableDefine(Parser->pc, Parser, TypeName, ptrWrap(&InitValue), NILL, FALSE);
     }
 }

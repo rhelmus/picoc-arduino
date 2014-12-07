@@ -95,7 +95,7 @@ void LexInit(Picoc *pc)
         TableSet(pc, &pc->ReservedWordTable, TableStrRegister(pc, ReservedWords[Count].Word), (TValuePtr)ptrWrap((void *)&ReservedWords[Count]), NILL, 0, 0);
     }
     
-    pc->LexValue.Typ = NULL;
+    pc->LexValue.Typ = NILL;
     pc->LexValue.Val = ptrWrap(&pc->LexAnyValue);
     pc->LexValue.LValueFrom = NILL;
     pc->LexValue.Flags = FlagValNone;
@@ -275,7 +275,7 @@ enum LexToken LexGetNumber(Picoc *pc, struct LexState *Lexer, TValuePtr Value)
         /* IsLong = 1; */
     }
     
-    Value->Typ = &pc->LongType; /* ignored? */
+    Value->Typ = ptrWrap(&pc->LongType); /* ignored? */
     Value->Val->LongInteger = Result;
 
     ResultToken = TokenIntegerConstant;
@@ -294,7 +294,7 @@ enum LexToken LexGetNumber(Picoc *pc, struct LexState *Lexer, TValuePtr Value)
         return ResultToken;
     }
     
-    Value->Typ = &pc->FPType;
+    Value->Typ = ptrWrap(&pc->FPType);
     FPResult = (double)Result;
     
     if (*Lexer->Pos == '.')
@@ -348,7 +348,7 @@ enum LexToken LexGetWord(Picoc *pc, struct LexState *Lexer, TValuePtr Value)
         LEXER_INC(Lexer);
     } while (Lexer->Pos != Lexer->End && isCident((int)*Lexer->Pos));
     
-    Value->Typ = NULL;
+    Value->Typ = NILL;
     Value->Val->Identifier = TableStrRegister2(pc, StartPos, Lexer->Pos - StartPos);
     
     Token = LexCheckReservedWord(pc, Value->Val->Identifier);
@@ -492,7 +492,7 @@ enum LexToken LexGetStringConstant(Picoc *pc, struct LexState *Lexer, TValuePtr 
 /* get a character constant - used while scanning */
 enum LexToken LexGetCharacterConstant(Picoc *pc, struct LexState *Lexer, TValuePtr Value)
 {
-    Value->Typ = &pc->CharType;
+    Value->Typ = ptrWrap(&pc->CharType);
     Value->Val->Character = LexUnEscapeCharacter(&Lexer->Pos, Lexer->End);
     if (Lexer->Pos != Lexer->End && *Lexer->Pos != '\'')
         LexFail(pc, Lexer, "expected \"'\"");
@@ -810,11 +810,11 @@ enum LexToken LexGetRawToken(struct ParseState *Parser, TValuePtrPtr Value, int 
             switch (Token)
             {
                 case TokenStringConstant:       pc->LexValue.Typ = pc->CharPtrType; break;
-                case TokenIdentifier:           pc->LexValue.Typ = NULL; break;
-                case TokenIntegerConstant:      pc->LexValue.Typ = &pc->LongType; break;
-                case TokenCharacterConstant:    pc->LexValue.Typ = &pc->CharType; break;
+                case TokenIdentifier:           pc->LexValue.Typ = NILL; break;
+                case TokenIntegerConstant:      pc->LexValue.Typ = ptrWrap(&pc->LongType); break;
+                case TokenCharacterConstant:    pc->LexValue.Typ = ptrWrap(&pc->CharType); break;
 #ifndef NO_FP
-                case TokenFPConstant:           pc->LexValue.Typ = &pc->FPType; break;
+                case TokenFPConstant:           pc->LexValue.Typ = ptrWrap(&pc->FPType); break;
 #endif
                 default: break;
             }

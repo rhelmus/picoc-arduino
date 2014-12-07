@@ -67,11 +67,11 @@ void PicocCallMain(Picoc *pc, int argc, char **argv)
     if (FuncValue->Val->FuncDef.NumParams != 0)
     {
         /* define the arguments */
-        VariableDefinePlatformVar(pc, NULL, "__argc", &pc->IntType, (TAnyValuePtr)ptrWrap(&argc), FALSE);
+        VariableDefinePlatformVar(pc, NULL, "__argc", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&argc), FALSE);
         VariableDefinePlatformVar(pc, NULL, "__argv", pc->CharPtrPtrType, (TAnyValuePtr)ptrWrap(&argv), FALSE);
     }
 
-    if (FuncValue->Val->FuncDef.ReturnType == &pc->VoidType)
+    if (FuncValue->Val->FuncDef.ReturnType == ptrWrap(&pc->VoidType))
     {
         if (FuncValue->Val->FuncDef.NumParams == 0)
             PicocParse(pc, "startup", CALL_MAIN_NO_ARGS_RETURN_VOID, strlen(CALL_MAIN_NO_ARGS_RETURN_VOID), TRUE, TRUE, FALSE, TRUE);
@@ -80,7 +80,7 @@ void PicocCallMain(Picoc *pc, int argc, char **argv)
     }
     else
     {
-        VariableDefinePlatformVar(pc, NULL, "__exit_value", &pc->IntType, (TAnyValuePtr)ptrWrap(&pc->PicocExitValue), TRUE);
+        VariableDefinePlatformVar(pc, NULL, "__exit_value", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&pc->PicocExitValue), TRUE);
     
         if (FuncValue->Val->FuncDef.NumParams == 0)
             PicocParse(pc, "startup", CALL_MAIN_NO_ARGS_RETURN_INT, strlen(CALL_MAIN_NO_ARGS_RETURN_INT), TRUE, TRUE, FALSE, TRUE);
@@ -156,7 +156,7 @@ void ProgramFailNoParser(Picoc *pc, const char *Message, ...)
 }
 
 /* like ProgramFail() but gives descriptive error messages for assignment */
-void AssignFail(struct ParseState *Parser, const char *Format, struct ValueType *Type1, struct ValueType *Type2, int Num1, int Num2, TConstRegStringPtr FuncName, int ParamNo)
+void AssignFail(struct ParseState *Parser, const char *Format, TValueTypePtr Type1, TValueTypePtr Type2, int Num1, int Num2, TConstRegStringPtr FuncName, int ParamNo)
 {
     IOFILE *Stream = Parser->pc->CStdOut;
     
@@ -212,7 +212,7 @@ void PlatformVPrintf(IOFILE *Stream, const char *Format, va_list Args)
             case 's': PrintStr(va_arg(Args, char *), Stream); break;
             case 'd': PrintSimpleInt(va_arg(Args, int), Stream); break;
             case 'c': PrintCh(va_arg(Args, int), Stream); break;
-            case 't': PrintType(va_arg(Args, struct ValueType *), Stream); break;
+            case 't': PrintType(va_arg(Args, TValueTypePtr), Stream); break;
 #ifndef NO_FP
             case 'f': PrintFP(va_arg(Args, double), Stream); break;
 #endif

@@ -183,9 +183,9 @@ struct ValueType
     uint16_t Sizeof;                /* the storage required */
     uint8_t AlignBytes;             /* the alignment boundary of this type */
     TConstRegStringPtr Identifier;  /* the name of a struct or union */
-    struct ValueType *FromType;     /* the type we're derived from (or NULL) */
-    struct ValueType *DerivedTypeList;  /* first in a list of types derived from this one */
-    struct ValueType *Next;         /* next item in the derived type list */
+    TValueTypePtr FromType;     /* the type we're derived from (or NULL) */
+    TValueTypePtr DerivedTypeList;  /* first in a list of types derived from this one */
+    TValueTypePtr Next;         /* next item in the derived type list */
     struct Table *Members;          /* members of a struct or union */
     uint8_t Flags;
 };
@@ -193,10 +193,10 @@ struct ValueType
 /* function definition */
 struct FuncDef
 {
-    struct ValueType *ReturnType;   /* the return value type */
+    TValueTypePtr ReturnType;   /* the return value type */
     int8_t NumParams;                  /* the number of parameters */
     int8_t VarArgs;                    /* has a variable number of arguments after the explicitly specified ones */
-    struct ValueType **ParamType;   /* array of parameter types */
+    TValueTypePtrPtr ParamType;   /* array of parameter types */
     TRegStringPtrPtr ParamName;     /* array of parameter names */
     void (*Intrinsic)(struct ParseState *, TValuePtr, TValuePtrPtr, int); /* intrinsic call address or NULL */
     struct ParseState *Body;        /* lexical tokens of the function body if not intrinsic (otherwise NULL) */
@@ -227,7 +227,7 @@ union AnyValue
 #else
     char ArrayMem[2];               /* placeholder for where the data starts, doesn't point to it */
 #endif
-    struct ValueType *Typ;
+    TValueTypePtr Typ;
     struct FuncDef FuncDef;
     struct MacroDef MacroDef;
 #ifndef NO_FP
@@ -238,7 +238,7 @@ union AnyValue
 
 struct Value
 {
-    struct ValueType *Typ;          /* the type of this value */
+    TValueTypePtr Typ;          /* the type of this value */
     TAnyValuePtr Val;            /* pointer to the AnyValue which holds the actual content */
     TValuePtr LValueFrom;       /* if an LValue, this is a Value our LValue is contained within (or NULL) */
     uint8_t Flags;
@@ -459,10 +459,10 @@ struct Picoc_Struct
     struct ValueType MacroType;
     struct ValueType EnumType;
     struct ValueType GotoLabelType;
-    struct ValueType *CharPtrType;
-    struct ValueType *CharPtrPtrType;
-    struct ValueType *CharArrayType;
-    struct ValueType *VoidPtrType;
+    TValueTypePtr CharPtrType;
+    TValueTypePtr CharPtrPtrType;
+    TValueTypePtr CharArrayType;
+    TValueTypePtr VoidPtrType;
 
     /* debugger */
     struct Table BreakpointTable;
@@ -526,7 +526,7 @@ void LexInteractiveStatementPrompt(Picoc *pc);
  * void PicocParseInteractive(); */
 void PicocParseInteractiveNoStartPrompt(Picoc *pc, int EnableDebugger);
 enum ParseResult ParseStatement(struct ParseState *Parser, int CheckTrailingSemicolon);
-TValuePtr ParseFunctionDefinition(struct ParseState *Parser, struct ValueType *ReturnType, TRegStringPtr Identifier);
+TValuePtr ParseFunctionDefinition(struct ParseState *Parser, TValueTypePtr ReturnType, TRegStringPtr Identifier);
 void ParseCleanup(Picoc *pc);
 void ParserCopyPos(struct ParseState *To, struct ParseState *From);
 void ParserCopy(struct ParseState *To, struct ParseState *From);
@@ -546,17 +546,17 @@ double ExpressionCoerceFP(TValuePtr Val);
 /* type.c */
 void TypeInit(Picoc *pc);
 void TypeCleanup(Picoc *pc);
-int TypeSize(struct ValueType *Typ, int ArraySize, int Compact);
-int SizeOf(struct ValueType *Typ, int ArraySize, int Compact);
+int TypeSize(TValueTypePtr Typ, int ArraySize, int Compact);
+int SizeOf(TValueTypePtr Typ, int ArraySize, int Compact);
 int TypeSizeValue(TValuePtr Val, int Compact);
 int TypeStackSizeValue(TValuePtr Val);
 int TypeLastAccessibleOffset(Picoc *pc, TValuePtr Val);
-int TypeParseFront(struct ParseState *Parser, struct ValueType **Typ, int *IsStatic);
-void TypeParseIdentPart(struct ParseState *Parser, struct ValueType *BasicTyp, struct ValueType **Typ, TRegStringPtrPtr Identifier);
-void TypeParse(struct ParseState *Parser, struct ValueType **Typ, TRegStringPtrPtr Identifier, int *IsStatic);
-struct ValueType *TypeGetMatching(Picoc *pc, struct ParseState *Parser, struct ValueType *ParentType, enum BaseType Base, int ArraySize, TConstRegStringPtr Identifier, int AllowDuplicates);
-struct ValueType *TypeCreateOpaqueStruct(Picoc *pc, struct ParseState *Parser, TConstRegStringPtr StructName, int Size);
-int TypeIsForwardDeclared(struct ParseState *Parser, struct ValueType *Typ);
+int TypeParseFront(struct ParseState *Parser, TValueTypePtrPtr Typ, int *IsStatic);
+void TypeParseIdentPart(struct ParseState *Parser, TValueTypePtr BasicTyp, TValueTypePtrPtr Typ, TRegStringPtrPtr Identifier);
+void TypeParse(struct ParseState *Parser, TValueTypePtrPtr Typ, TRegStringPtrPtr Identifier, int *IsStatic);
+TValueTypePtr TypeGetMatching(Picoc *pc, struct ParseState *Parser, TValueTypePtr ParentType, enum BaseType Base, int ArraySize, TConstRegStringPtr Identifier, int AllowDuplicates);
+TValueTypePtr TypeCreateOpaqueStruct(Picoc *pc, struct ParseState *Parser, TConstRegStringPtr StructName, int Size);
+int TypeIsForwardDeclared(struct ParseState *Parser, TValueTypePtr Typ);
 
 /* heap.c */
 void HeapInit(Picoc *pc, int StackSize);
@@ -578,22 +578,22 @@ void *VariableAlloc(Picoc *pc, struct ParseState *Parser, int Size, int OnHeap);
 void VariableStackPop(struct ParseState *Parser, TValuePtr Var);
 TValuePtr VariableAllocValueAndData(Picoc *pc, struct ParseState *Parser, int DataSize, int IsLValue, TValuePtr LValueFrom, int OnHeap);
 TValuePtr VariableAllocValueAndCopy(Picoc *pc, struct ParseState *Parser, TValuePtr FromValue, int OnHeap);
-TValuePtr VariableAllocValueFromType(Picoc *pc, struct ParseState *Parser, struct ValueType *Typ, int IsLValue, TValuePtr LValueFrom, int OnHeap);
-TValuePtr VariableAllocValueFromExistingData(struct ParseState *Parser, struct ValueType *Typ, TAnyValuePtr FromValue, int IsLValue, TValuePtr LValueFrom);
+TValuePtr VariableAllocValueFromType(Picoc *pc, struct ParseState *Parser, TValueTypePtr Typ, int IsLValue, TValuePtr LValueFrom, int OnHeap);
+TValuePtr VariableAllocValueFromExistingData(struct ParseState *Parser, TValueTypePtr Typ, TAnyValuePtr FromValue, int IsLValue, TValuePtr LValueFrom);
 TValuePtr VariableAllocValueShared(struct ParseState *Parser, TValuePtr FromValue);
-TValuePtr VariableDefine(Picoc *pc, struct ParseState *Parser, TRegStringPtr Ident, TValuePtr InitValue, struct ValueType *Typ, int MakeWritable);
-TValuePtr VariableDefineButIgnoreIdentical(struct ParseState *Parser, TRegStringPtr Ident, struct ValueType *Typ, int IsStatic, int *FirstVisit);
+TValuePtr VariableDefine(Picoc *pc, struct ParseState *Parser, TRegStringPtr Ident, TValuePtr InitValue, TValueTypePtr Typ, int MakeWritable);
+TValuePtr VariableDefineButIgnoreIdentical(struct ParseState *Parser, TRegStringPtr Ident, TValueTypePtr Typ, int IsStatic, int *FirstVisit);
 int VariableDefined(Picoc *pc, TConstRegStringPtr Ident);
 int VariableDefinedAndOutOfScope(Picoc *pc, TConstRegStringPtr Ident);
 void VariableRealloc(struct ParseState *Parser, TValuePtr FromValue, int NewSize);
 void VariableGet(Picoc *pc, struct ParseState *Parser, TConstRegStringPtr Ident, TValuePtrPtr LVal);
-void VariableDefinePlatformVar(Picoc *pc, struct ParseState *Parser, const char *Ident, struct ValueType *Typ, TAnyValuePtr FromValue, int IsWritable);
-void VariableDefinePlatformVar(Picoc *pc, struct ParseState *Parser, TConstRegStringPtr Ident, struct ValueType *Typ, TAnyValuePtr FromValue, int IsWritable);
+void VariableDefinePlatformVar(Picoc *pc, struct ParseState *Parser, const char *Ident, TValueTypePtr Typ, TAnyValuePtr FromValue, int IsWritable);
+void VariableDefinePlatformVar(Picoc *pc, struct ParseState *Parser, TConstRegStringPtr Ident, TValueTypePtr Typ, TAnyValuePtr FromValue, int IsWritable);
 void VariableStackFrameAdd(struct ParseState *Parser, TConstRegStringPtr FuncName, int NumParams);
 void VariableStackFramePop(struct ParseState *Parser);
 TValuePtr VariableStringLiteralGet(Picoc *pc, TRegStringPtr Ident);
 void VariableStringLiteralDefine(Picoc *pc, TRegStringPtr Ident, TValuePtr Val);
-TAnyValueVoidPointer VariableDereferencePointer(struct ParseState *Parser, TValuePtr PointerValue, TValuePtrPtr DerefVal, int *DerefOffset, struct ValueType **DerefType, int *DerefIsLValue);
+TAnyValueVoidPointer VariableDereferencePointer(struct ParseState *Parser, TValuePtr PointerValue, TValuePtrPtr DerefVal, int *DerefOffset, TValueTypePtrPtr DerefType, int *DerefIsLValue);
 int VariableScopeBegin(struct ParseState * Parser, int16_t *PrevScopeID);
 void VariableScopeEnd(struct ParseState * Parser, int ScopeID, int16_t PrevScopeID);
 
@@ -610,7 +610,7 @@ void PrintInt(long Num, int FieldWidth, int ZeroPad, int LeftJustify, IOFILE *St
 void PrintStr(const char *Str, IOFILE *Stream);
 void PrintStr(TConstRegStringPtr Str, IOFILE *Stream);
 void PrintFP(double Num, IOFILE *Stream);
-void PrintType(struct ValueType *Typ, IOFILE *Stream);
+void PrintType(TValueTypePtr Typ, IOFILE *Stream);
 void LibPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs);
 
 #ifdef BUILTIN_MINI_STDLIB
@@ -627,7 +627,7 @@ const extern struct LibraryFunction CLibrary[];
  * extern int PicocExitValue; */
 void ProgramFail(struct ParseState *Parser, const char *Message, ...);
 void ProgramFailNoParser(Picoc *pc, const char *Message, ...);
-void AssignFail(struct ParseState *Parser, const char *Format, struct ValueType *Type1, struct ValueType *Type2, int Num1, int Num2, TConstRegStringPtr FuncName, int ParamNo);
+void AssignFail(struct ParseState *Parser, const char *Format, TValueTypePtr Type1, TValueTypePtr Type2, int Num1, int Num2, TConstRegStringPtr FuncName, int ParamNo);
 void LexFail(Picoc *pc, struct LexState *Lexer, const char *Message, ...);
 void PlatformInit(Picoc *pc);
 void PlatformCleanup(Picoc *pc);

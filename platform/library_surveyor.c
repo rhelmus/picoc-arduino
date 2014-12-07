@@ -8,7 +8,7 @@ static int ScanVect[16], NNVect[NUM_OUTPUT];
 
 void PlatformLibraryInit()
 {
-    struct ValueType *IntArrayType;
+    TValueTypePtr IntArrayType;
     
     IntArrayType = TypeGetMatching(NULL, &IntType, TypeArray, 16, StrEmpty, TRUE);
     VariableDefinePlatformVar(NULL, "scanvect", IntArrayType, ptrWrap(&ScanVect), FALSE);

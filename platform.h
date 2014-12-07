@@ -56,6 +56,8 @@ typedef CPtrWrapper<char> TAnyValueCharPointer;
 typedef CPtrWrapper<unsigned char> TAnyValueUCharPointer;
 typedef CPtrWrapper<char> TStdioCharPtr;
 typedef CPtrWrapper<const char> TStdioConstCharPtr;
+typedef CPtrWrapper<struct ValueType> TValueTypePtr;
+typedef CPtrWrapper<TValueTypePtr> TValueTypePtrPtr;
 
 #define WRAP_REGSTRINGS
 #define WRAP_ANYVALUE
