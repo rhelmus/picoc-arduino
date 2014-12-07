@@ -180,7 +180,7 @@ void StdioFprintfPointer(StdOutStream *Stream, const char *Format, void *Value)
 }
 
 /* internal do-anything v[s][n]printf() formatting system with output to strings or FILE * */
-int StdioBasePrintf(struct ParseState *Parser, FILE *Stream, char *StrOut, int StrOutLen, const char *Format, struct StdVararg *Args)
+int StdioBasePrintf(TParseStatePtr Parser, FILE *Stream, char *StrOut, int StrOutLen, const char *Format, struct StdVararg *Args)
 {
     TValuePtr ThisArg = Args->Param[0];
     int ArgCount = 0;
@@ -323,7 +323,7 @@ int StdioBasePrintf(struct ParseState *Parser, FILE *Stream, char *StrOut, int S
 }
 
 /* internal do-anything v[s][n]scanf() formatting system with input from strings or FILE * */
-int StdioBaseScanf(struct ParseState *Parser, FILE *Stream, char *StrIn, char *Format, struct StdVararg *Args)
+int StdioBaseScanf(TParseStatePtr Parser, FILE *Stream, char *StrIn, char *Format, struct StdVararg *Args)
 {
     TValuePtr ThisArg = Args->Param[0];
     int ArgCount = 0;
@@ -353,77 +353,77 @@ int StdioBaseScanf(struct ParseState *Parser, FILE *Stream, char *StrIn, char *F
 }
 
 /* stdio calls */
-void StdioFopen(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFopen(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = fopen((const char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer);
 }
 
-void StdioFreopen(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFreopen(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = freopen((const char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer, (FILE *)Param[2]->Val->Pointer);
 }
 
-void StdioFclose(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFclose(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fclose((FILE *)Param[0]->Val->Pointer);
 }
 
-void StdioFread(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFread(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fread(Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer, (FILE *)Param[3]->Val->Pointer);
 }
 
-void StdioFwrite(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFwrite(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fwrite(Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer, (FILE *)Param[3]->Val->Pointer);
 }
 
-void StdioFgetc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFgetc(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fgetc((FILE *)Param[0]->Val->Pointer);
 }
 
-void StdioFgets(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFgets(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = fgets((char *)Param[0]->Val->Pointer, Param[1]->Val->Integer, (FILE *)Param[2]->Val->Pointer);
 }
 
-void StdioRemove(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioRemove(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = remove((const char *)Param[0]->Val->Pointer);
 }
 
-void StdioRename(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioRename(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = rename((const char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer);
 }
 
-void StdioRewind(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioRewind(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     rewind((FILE *)Param[0]->Val->Pointer);
 }
 
-void StdioTmpfile(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioTmpfile(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = tmpfile();
 }
 
-void StdioClearerr(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioClearerr(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     clearerr((FILE *)Param[0]->Val->Pointer);
 }
 
-void StdioFeof(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFeof(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = feof((FILE *)Param[0]->Val->Pointer);
 }
 
-void StdioFerror(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFerror(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = ferror((FILE *)Param[0]->Val->Pointer);
 }
 
-void StdioFileno(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFileno(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
 #ifndef WIN32
     ReturnValue->Val->Integer = fileno((FILE *)Param[0]->Val->Pointer);
@@ -432,77 +432,77 @@ void StdioFileno(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr 
 #endif
 }
 
-void StdioFflush(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFflush(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fflush((FILE *)Param[0]->Val->Pointer);
 }
 
-void StdioFgetpos(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFgetpos(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fgetpos((FILE *)Param[0]->Val->Pointer, (fpos_t *)Param[1]->Val->Pointer);
 }
 
-void StdioFsetpos(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFsetpos(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fsetpos((FILE *)Param[0]->Val->Pointer, (const fpos_t *)Param[1]->Val->Pointer);
 }
 
-void StdioFputc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFputc(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fputc(Param[0]->Val->Integer, (FILE *)Param[1]->Val->Pointer);
 }
 
-void StdioFputs(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFputs(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fputs((const char *)Param[0]->Val->Pointer, (FILE *)Param[1]->Val->Pointer);
 }
 
-void StdioFtell(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFtell(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = ftell((FILE *)Param[0]->Val->Pointer);
 }
 
-void StdioFseek(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFseek(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fseek((FILE *)Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer);
 }
 
-void StdioPerror(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioPerror(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     perror((const char *)Param[0]->Val->Pointer);
 }
 
-void StdioPutc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioPutc(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = putc(Param[0]->Val->Integer, (FILE *)Param[1]->Val->Pointer);
 }
 
-void StdioPutchar(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioPutchar(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = putchar(Param[0]->Val->Integer);
 }
 
-void StdioSetbuf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioSetbuf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     setbuf((FILE *)Param[0]->Val->Pointer, (char *)Param[1]->Val->Pointer);
 }
 
-void StdioSetvbuf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioSetvbuf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     setvbuf((FILE *)Param[0]->Val->Pointer, (char *)Param[1]->Val->Pointer, Param[2]->Val->Integer, Param[3]->Val->Integer);
 }
 
-void StdioUngetc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioUngetc(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = ungetc(Param[0]->Val->Integer, (FILE *)Param[1]->Val->Pointer);
 }
 
-void StdioPuts(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioPuts(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = puts((const char *)Param[0]->Val->Pointer);
 }
 
-void StdioGets(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioGets(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = fgets((char *)Param[0]->Val->Pointer, GETS_MAXValue, stdin);
     if (ReturnValue->Val->Pointer != NULL)
@@ -513,12 +513,12 @@ void StdioGets(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
     }
 }
 
-void StdioGetchar(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioGetchar(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = getchar();
 }
 
-void StdioPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioPrintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     struct StdVararg PrintfArgs;
     
@@ -527,12 +527,12 @@ void StdioPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr 
     ReturnValue->Val->Integer = StdioBasePrintf(Parser, stdout, NULL, 0, (const char *)Param[0]->Val->Pointer, &PrintfArgs);
 }
 
-void StdioVprintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioVprintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = StdioBasePrintf(Parser, stdout, NULL, 0, (const char *)Param[0]->Val->Pointer, (struct StdVararg *)Param[1]->Val->Pointer);
 }
 
-void StdioFprintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFprintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     struct StdVararg PrintfArgs;
     
@@ -541,12 +541,12 @@ void StdioFprintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr
     ReturnValue->Val->Integer = StdioBasePrintf(Parser, (FILE *)Param[0]->Val->Pointer, NULL, 0, (const char *)Param[1]->Val->Pointer, &PrintfArgs);
 }
 
-void StdioVfprintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioVfprintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = StdioBasePrintf(Parser, (FILE *)Param[0]->Val->Pointer, NULL, 0, (const char *)Param[1]->Val->Pointer, (struct StdVararg *)Param[2]->Val->Pointer);
 }
 
-void StdioSprintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioSprintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     struct StdVararg PrintfArgs;
     
@@ -555,7 +555,7 @@ void StdioSprintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr
     ReturnValue->Val->Integer = StdioBasePrintf(Parser, NULL, (char *)Param[0]->Val->Pointer, -1, (const char *)Param[1]->Val->Pointer, &PrintfArgs);
 }
 
-void StdioSnprintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioSnprintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     struct StdVararg PrintfArgs;
     
@@ -564,7 +564,7 @@ void StdioSnprintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPt
     ReturnValue->Val->Integer = StdioBasePrintf(Parser, NULL, (char *)Param[0]->Val->Pointer, Param[1]->Val->Integer, (const char *)Param[2]->Val->Pointer, &PrintfArgs);
 }
 
-void StdioScanf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioScanf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     struct StdVararg ScanfArgs;
     
@@ -573,7 +573,7 @@ void StdioScanf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr P
     ReturnValue->Val->Integer = StdioBaseScanf(Parser, stdin, NULL, (char *)Param[0]->Val->Pointer, &ScanfArgs);
 }
 
-void StdioFscanf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioFscanf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     struct StdVararg ScanfArgs;
     
@@ -582,7 +582,7 @@ void StdioFscanf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr 
     ReturnValue->Val->Integer = StdioBaseScanf(Parser, (FILE *)Param[0]->Val->Pointer, NULL, (char *)Param[1]->Val->Pointer, &ScanfArgs);
 }
 
-void StdioSscanf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioSscanf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     struct StdVararg ScanfArgs;
     
@@ -591,27 +591,27 @@ void StdioSscanf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr 
     ReturnValue->Val->Integer = StdioBaseScanf(Parser, NULL, (char *)Param[0]->Val->Pointer, (char *)Param[1]->Val->Pointer, &ScanfArgs);
 }
 
-void StdioVsprintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioVsprintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = StdioBasePrintf(Parser, NULL, (char *)Param[0]->Val->Pointer, -1, (const char *)Param[1]->Val->Pointer, (struct StdVararg *)Param[2]->Val->Pointer);
 }
 
-void StdioVsnprintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioVsnprintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = StdioBasePrintf(Parser, NULL, (char *)Param[0]->Val->Pointer, Param[1]->Val->Integer, (const char *)Param[2]->Val->Pointer, (struct StdVararg *)Param[3]->Val->Pointer);
 }
 
-void StdioVscanf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioVscanf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = StdioBaseScanf(Parser, stdin, NULL, (char *)Param[0]->Val->Pointer, (struct StdVararg *)Param[1]->Val->Pointer);
 }
 
-void StdioVfscanf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioVfscanf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = StdioBaseScanf(Parser, (FILE *)Param[0]->Val->Pointer, NULL, (char *)Param[1]->Val->Pointer, (struct StdVararg *)Param[2]->Val->Pointer);
 }
 
-void StdioVsscanf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdioVsscanf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = StdioBaseScanf(Parser, NULL, (char *)Param[0]->Val->Pointer, (char *)Param[1]->Val->Pointer, (struct StdVararg *)Param[2]->Val->Pointer);
 }

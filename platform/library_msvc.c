@@ -4,13 +4,13 @@ void MsvcSetupFunc(Picoc *pc)
 {    
 }
 
-void CTest (struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) 
+void CTest (TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) 
 {
     printf("test(%d)\n", Param[0]->Val->Integer);
     Param[0]->Val->Integer = 1234;
 }
 
-void CLineNo (struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) 
+void CLineNo (TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs) 
 {
     ReturnValue->Val->Integer = Parser->Line;
 }

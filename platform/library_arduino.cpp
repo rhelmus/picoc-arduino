@@ -32,12 +32,12 @@ void ArduinoSetupFunc(Picoc *pc)
     VariableDefinePlatformVar(pc, NULL, "INPUT_PULLUP", &pc->CharType, ptrWrap(&INPUT_PULLUPValue), FALSE);
 }
 
-void CpinMode(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void CpinMode(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     pinMode(Param[0]->Val->Character, Param[1]->Val->Character);
 }
 
-void CdigitalWrite(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void CdigitalWrite(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     digitalWrite(Param[0]->Val->Character, Param[1]->Val->Character);
 }

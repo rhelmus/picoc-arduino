@@ -6,15 +6,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+template <typename T> class CPtrWrapper;
 struct Picoc_Struct;
 typedef struct Picoc_Struct Picoc;
-struct ParseState;
+typedef CPtrWrapper<struct ParseState> TParseStatePtr;
 
 void *HeapAllocMem(Picoc *pc, int Size);
 void HeapFreeMem(Picoc *pc, void *Mem);
 void *HeapAllocStack(Picoc *pc, int Size);
 int HeapPopStack(Picoc *pc, void *Addr, int Size);
-void *VariableAlloc(Picoc *pc, struct ParseState *Parser, int Size, int OnHeap);
+void *VariableAlloc(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap);
 
 #if __cplusplus > 199711L
 #define EXPLICIT explicit
@@ -22,7 +23,6 @@ void *VariableAlloc(Picoc *pc, struct ParseState *Parser, int Size, int OnHeap);
 #define EXPLICIT
 #endif
 
-template <typename T> class CPtrWrapper;
 template <typename T, bool VA> class CAllocProxy;
 
 class CPtrWrapperBase
@@ -128,7 +128,7 @@ public:
 
     // C style malloc/free
     static CPtrWrapper<T> alloc(bool st, size_t size=sizeof(T)) { CPtrWrapper<T> ret; ret.ptr = (st) ? HeapAllocStack(pc, size) : HeapAllocMem(pc, size); return ret; }
-    static CPtrWrapper<T> allocVariable(ParseState *ps, bool st, size_t size=sizeof(T)) { CPtrWrapper<T> ret; ret.ptr = VariableAlloc(pc, ps, size, !st); return ret; }
+    static CPtrWrapper<T> allocVariable(TParseStatePtr ps, bool st, size_t size=sizeof(T)) { CPtrWrapper<T> ret; ret.ptr = VariableAlloc(pc, ps, size, !st); return ret; }
     static void free(CPtrWrapper<T> &p) { HeapFreeMem(pc, p.ptr); }
 
     // C++ style new/delete --> call constructors (by placement new) and destructors
@@ -182,36 +182,26 @@ public:
 };
 
 template <typename T> inline CAllocProxy<T, false> allocMem(bool st, size_t size=sizeof(T));
-template <typename T> inline CAllocProxy<T, true> allocMemVariable(ParseState *p, bool st, size_t size=sizeof(T));
+template <typename T> inline CAllocProxy<T, true> allocMemVariable(TParseStatePtr p, bool st, size_t size=sizeof(T));
 
 // Proxy class for memory allocation: automatically determines whether we want to allocate for a
 // raw pointer or CPtrWrapper
 template <typename T, bool VA=false> class CAllocProxy
 {
     size_t size;
-    ParseState *ps;
+    TParseStatePtr ps;
     bool stack;
 
-    CAllocProxy(size_t s, ParseState *p, bool st) : size(s), ps(p), stack(st) { }
+    CAllocProxy(size_t s, TParseStatePtr p, bool st) : size(s), ps(p), stack(st) { }
     CAllocProxy(const CAllocProxy &);
 
     friend CAllocProxy<T, false> allocMem<>(bool st, size_t size);
-    friend CAllocProxy<T, true> allocMemVariable<>(ParseState *p, bool st, size_t size);
+    friend CAllocProxy<T, true> allocMemVariable<>(TParseStatePtr p, bool st, size_t size);
 
 public:
     inline operator T*(void) { return static_cast<T *>((VA) ? VariableAlloc(CPtrWrapperBase::pc, ps, size, !stack) : (stack) ? HeapAllocStack(CPtrWrapperBase::pc, size) : HeapAllocMem(CPtrWrapperBase::pc, size)); }
     inline operator CPtrWrapper<T>(void) { return (VA) ? CPtrWrapper<T>::allocVariable(ps, stack, size) : CPtrWrapper<T>::alloc(stack, size); }
 };
-
-template <typename T> inline CAllocProxy<T, false> allocMem(bool st, size_t size=sizeof(T))
-{ return CAllocProxy<T, false>(size, NULL, st); }
-template <typename T> inline CAllocProxy<T, true> allocMemVariable(ParseState *p, bool st, size_t size=sizeof(T))
-{ return CAllocProxy<T, true>(size, p, st); }
-
-inline void deallocMem(void *ptr) { HeapFreeMem(CPtrWrapperBase::pc, ptr); }
-template <typename T> inline void deallocMem(CPtrWrapper<T> &p) { CPtrWrapper<T>::free(p); }
-inline int popStack(void *ptr, int size) { return HeapPopStack(CPtrWrapperBase::pc, ptr, size); }
-template <typename T> inline int popStack(CPtrWrapper<T> &p, int size) { return HeapPopStack(CPtrWrapperBase::pc, p.ptr, size); }
 
 // Generic NULL type
 class CNILL
@@ -223,6 +213,17 @@ public:
     template <typename T> inline operator typename CPtrWrapper<T>::CValueWrapper(void) const { return CPtrWrapper<T>::CValueWrapper(0); }
 
 } extern const NILL;
+
+template <typename T> inline CAllocProxy<T, false> allocMem(bool st, size_t size=sizeof(T))
+{ return CAllocProxy<T, false>(size, NILL, st); }
+template <typename T> inline CAllocProxy<T, true> allocMemVariable(TParseStatePtr p, bool st, size_t size=sizeof(T))
+{ return CAllocProxy<T, true>(size, p, st); }
+
+inline void deallocMem(void *ptr) { HeapFreeMem(CPtrWrapperBase::pc, ptr); }
+template <typename T> inline void deallocMem(CPtrWrapper<T> &p) { CPtrWrapper<T>::free(p); }
+inline int popStack(void *ptr, int size) { return HeapPopStack(CPtrWrapperBase::pc, ptr, size); }
+template <typename T> inline int popStack(CPtrWrapper<T> &p, int size) { return HeapPopStack(CPtrWrapperBase::pc, p.ptr, size); }
+
 
 template <typename T> struct SVoidPtr
 {

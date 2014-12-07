@@ -4,83 +4,83 @@
 
 #ifndef BUILTIN_MINI_STDLIB
 
-void StdIsalnum(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdIsalnum(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = isalnum(Param[0]->Val->Integer);
 }
 
-void StdIsalpha(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdIsalpha(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = isalpha(Param[0]->Val->Integer);
 }
 
-void StdIsblank(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdIsblank(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     int ch = Param[0]->Val->Integer;
     ReturnValue->Val->Integer = (ch == ' ') | (ch == '\t');
 }
 
-void StdIscntrl(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdIscntrl(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = iscntrl(Param[0]->Val->Integer);
 }
 
-void StdIsdigit(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdIsdigit(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = isdigit(Param[0]->Val->Integer);
 }
 
-void StdIsgraph(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdIsgraph(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = isgraph(Param[0]->Val->Integer);
 }
 
-void StdIslower(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdIslower(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = islower(Param[0]->Val->Integer);
 }
 
-void StdIsprint(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdIsprint(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = isprint(Param[0]->Val->Integer);
 }
 
-void StdIspunct(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdIspunct(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = ispunct(Param[0]->Val->Integer);
 }
 
-void StdIsspace(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdIsspace(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = isspace(Param[0]->Val->Integer);
 }
 
-void StdIsupper(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdIsupper(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = isupper(Param[0]->Val->Integer);
 }
 
-void StdIsxdigit(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdIsxdigit(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = isxdigit(Param[0]->Val->Integer);
 }
 
-void StdTolower(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdTolower(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = tolower(Param[0]->Val->Integer);
 }
 
-void StdToupper(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdToupper(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = toupper(Param[0]->Val->Integer);
 }
 
-void StdIsascii(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdIsascii(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = isascii(Param[0]->Val->Integer);
 }
 
-void StdToascii(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdToascii(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = toascii(Param[0]->Val->Integer);
 }

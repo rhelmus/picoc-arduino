@@ -106,14 +106,14 @@ void LexCleanup(Picoc *pc)
 {
     unsigned int Count;
 
-    LexInteractiveClear(pc, NULL);
+    LexInteractiveClear(pc, NILL);
 
     for (Count = 0; Count < sizeof(ReservedWords) / sizeof(struct ReservedWord); Count++)
         TableDelete(pc, &pc->ReservedWordTable, TableStrRegister(pc, ReservedWords[Count].Word));
 }
 
 /* used in interactive mode / line by line mode to get more source text from user/file input */
-int LexGetMoreSource(struct ParseState *Parser, char *LineBuffer, int Size)
+int LexGetMoreSource(TParseStatePtr Parser, char *LineBuffer, int Size)
 {
 #if 0
     if (pc->LineFilePointer)
@@ -474,7 +474,7 @@ enum LexToken LexGetStringConstant(Picoc *pc, struct LexState *Lexer, TValuePtr 
     if (ArrayValue == NULL)
     {
         /* create and store this string literal */
-        ArrayValue = VariableAllocValueAndData(pc, NULL, 0, FALSE, NILL, TRUE);
+        ArrayValue = VariableAllocValueAndData(pc, NILL, 0, FALSE, NILL, TRUE);
         ArrayValue->Typ = pc->CharArrayType;
         ArrayValue->Val = (TAnyValuePtr)RegString;
         VariableStringLiteralDefine(pc, RegString, ArrayValue);
@@ -710,7 +710,7 @@ TLexBufPtr LexAnalyse(Picoc *pc, TConstRegStringPtr FileName, const char *Source
 }
 
 /* prepare to parse a pre-tokenised buffer */
-void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText, TLexBufPtr TokenSource, TRegStringPtr FileName, void *FilePointer, int RunIt, int EnableDebugger)
+void LexInitParser(TParseStatePtr Parser, Picoc *pc, const char *SourceText, TLexBufPtr TokenSource, TRegStringPtr FileName, void *FilePointer, int RunIt, int EnableDebugger)
 {
     Parser->pc = pc;
     Parser->Pos = TokenSource;
@@ -727,7 +727,7 @@ void LexInitParser(struct ParseState *Parser, Picoc *pc, const char *SourceText,
 }
 
 /* get the next token, without pre-processing */
-enum LexToken LexGetRawToken(struct ParseState *Parser, TValuePtrPtr Value, int IncPos)
+enum LexToken LexGetRawToken(TParseStatePtr Parser, TValuePtrPtr Value, int IncPos)
 {
     enum LexToken Token = TokenNone;
     int ValueSize;
@@ -842,14 +842,14 @@ enum LexToken LexGetRawToken(struct ParseState *Parser, TValuePtrPtr Value, int 
 }
 
 /* correct the token position depending if we already incremented the position */
-void LexHashIncPos(struct ParseState *Parser, int IncPos)
+void LexHashIncPos(TParseStatePtr Parser, int IncPos)
 {
     if (!IncPos)
         LexGetRawToken(Parser, NILL, TRUE);
 }
 
 /* handle a #ifdef directive */
-void LexHashIfdef(struct ParseState *Parser, int IfNot)
+void LexHashIfdef(TParseStatePtr Parser, int IfNot)
 {
     /* get symbol to check */
     TValuePtr IdentValue;
@@ -872,7 +872,7 @@ void LexHashIfdef(struct ParseState *Parser, int IfNot)
 }
 
 /* handle a #if directive */
-void LexHashIf(struct ParseState *Parser)
+void LexHashIf(TParseStatePtr Parser)
 {
     /* get symbol to check */
     TValuePtr IdentValue;
@@ -889,8 +889,8 @@ void LexHashIf(struct ParseState *Parser)
         if (SavedValue->Typ->Base != TypeMacro)
             ProgramFail(Parser, "value expected");
         
-        ParserCopy(&MacroParser, getMembrPtr(SavedValue->Val, &SavedValue->Val->MacroDef.Body));
-        Token = LexGetRawToken(&MacroParser, &IdentValue, TRUE);
+        ParserCopy(ptrWrap(&MacroParser), getMembrPtr(SavedValue->Val, &SavedValue->Val->MacroDef.Body));
+        Token = LexGetRawToken(ptrWrap(&MacroParser), &IdentValue, TRUE);
     }
     
     if (Token != TokenCharacterConstant && Token != TokenIntegerConstant)
@@ -907,7 +907,7 @@ void LexHashIf(struct ParseState *Parser)
 }
 
 /* handle a #else directive */
-void LexHashElse(struct ParseState *Parser)
+void LexHashElse(TParseStatePtr Parser)
 {
     if (Parser->HashIfEvaluateToLevel == Parser->HashIfLevel - 1)
         Parser->HashIfEvaluateToLevel++;     /* #if was not active, make this next section active */
@@ -923,7 +923,7 @@ void LexHashElse(struct ParseState *Parser)
 }
 
 /* handle a #endif directive */
-void LexHashEndif(struct ParseState *Parser)
+void LexHashEndif(TParseStatePtr Parser)
 {
     if (Parser->HashIfLevel == 0)
         ProgramFail(Parser, "#endif without #if");
@@ -971,7 +971,7 @@ void LexPrintToken(enum LexToken Token)
 #endif
 
 /* get the next token given a parser state, pre-processing as we go */
-enum LexToken LexGetToken(struct ParseState *Parser, TValuePtrPtr Value, int IncPos)
+enum LexToken LexGetToken(TParseStatePtr Parser, TValuePtrPtr Value, int IncPos)
 {
     enum LexToken Token;
     int TryNextToken;
@@ -1003,13 +1003,13 @@ enum LexToken LexGetToken(struct ParseState *Parser, TValuePtrPtr Value, int Inc
 }
 
 /* take a quick peek at the next token, skipping any pre-processing */
-enum LexToken LexRawPeekToken(struct ParseState *Parser)
+enum LexToken LexRawPeekToken(TParseStatePtr Parser)
 {
     return (enum LexToken)*Parser->Pos;
 }
 
 /* find the end of the line */
-void LexToEndOfLine(struct ParseState *Parser)
+void LexToEndOfLine(TParseStatePtr Parser)
 {
     while (TRUE)
     {
@@ -1022,7 +1022,7 @@ void LexToEndOfLine(struct ParseState *Parser)
 }
 
 /* copy the tokens from StartParser to EndParser into new memory, removing TokenEOFs and terminate with a TokenEndOfFunction */
-TLexBufPtr LexCopyTokens(struct ParseState *Parser, const TLexBufPtr &StartParserPos, const TLexBufPtr &EndParserPos)
+TLexBufPtr LexCopyTokens(TParseStatePtr Parser, const TLexBufPtr &StartParserPos, const TLexBufPtr &EndParserPos)
 {
     int MemSize = 0;
     int CopySize;
@@ -1083,7 +1083,7 @@ TLexBufPtr LexCopyTokens(struct ParseState *Parser, const TLexBufPtr &StartParse
 }
 
 /* indicate that we've completed up to this point in the interactive input and free expired tokens */
-void LexInteractiveClear(Picoc *pc, struct ParseState *Parser)
+void LexInteractiveClear(Picoc *pc, TParseStatePtr Parser)
 {
     while (pc->InteractiveHead != NULL)
     {
@@ -1101,7 +1101,7 @@ void LexInteractiveClear(Picoc *pc, struct ParseState *Parser)
 }
 
 /* indicate that we've completed up to this point in the interactive input and free expired tokens */
-void LexInteractiveCompleted(Picoc *pc, struct ParseState *Parser)
+void LexInteractiveCompleted(Picoc *pc, TParseStatePtr Parser)
 {
     while (pc->InteractiveHead != NULL && !(Parser->Pos >= &pc->InteractiveHead->Tokens[0] && Parser->Pos < &pc->InteractiveHead->Tokens[pc->InteractiveHead->NumBytes]))
     { 

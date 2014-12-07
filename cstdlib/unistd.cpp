@@ -9,79 +9,79 @@
 
 static int ZeroValue = 0;
 
-void UnistdAccess(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdAccess(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = access((const char *)Param[0]->Val->Pointer, Param[1]->Val->Integer);
 }
 
-void UnistdAlarm(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdAlarm(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = alarm(Param[0]->Val->Integer);
 }
 
-void UnistdChdir(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdChdir(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = chdir((const char *)Param[0]->Val->Pointer);
 }
 
-void UnistdChroot(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdChroot(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = chroot((const char *)Param[0]->Val->Pointer);
 }
 
-void UnistdChown(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdChown(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = chown((const char *)Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer);
 }
 
-void UnistdClose(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdClose(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = close(Param[0]->Val->Integer);
 }
 
-void UnistdConfstr(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdConfstr(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = confstr(Param[0]->Val->Integer, (char *)Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
-void UnistdCtermid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdCtermid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = ctermid((char *)Param[0]->Val->Pointer);
 }
 
 #if 0
-void UnistdCuserid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdCuserid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = cuserid(Param[0]->Val->Pointer);
 }
 #endif
 
-void UnistdDup(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdDup(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = dup(Param[0]->Val->Integer);
 }
 
-void UnistdDup2(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdDup2(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = dup2(Param[0]->Val->Integer, Param[1]->Val->Integer);
 }
 
-void Unistd_Exit(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void Unistd_Exit(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     _exit(Param[0]->Val->Integer);
 }
 
-void UnistdFchown(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdFchown(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fchown(Param[0]->Val->Integer, Param[1]->Val->Integer, Param[2]->Val->Integer);
 }
 
-void UnistdFchdir(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdFchdir(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fchdir(Param[0]->Val->Integer);
 }
 
-void UnistdFdatasync(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdFdatasync(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
 #ifndef F_FULLSYNC
     ReturnValue->Val->Integer = fdatasync(Param[0]->Val->Integer);
@@ -91,295 +91,295 @@ void UnistdFdatasync(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtr
 #endif
 }
 
-void UnistdFork(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdFork(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fork();
 }
 
-void UnistdFpathconf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdFpathconf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fpathconf(Param[0]->Val->Integer, Param[1]->Val->Integer);
 }
 
-void UnistdFsync(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdFsync(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fsync(Param[0]->Val->Integer);
 }
 
-void UnistdFtruncate(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdFtruncate(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = ftruncate(Param[0]->Val->Integer, Param[1]->Val->Integer);
 }
 
-void UnistdGetcwd(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetcwd(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = getcwd((char *)Param[0]->Val->Pointer, Param[1]->Val->Integer);
 }
 
-void UnistdGetdtablesize(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetdtablesize(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = getdtablesize();
 }
 
-void UnistdGetegid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetegid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = getegid();
 }
 
-void UnistdGeteuid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGeteuid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = geteuid();
 }
 
-void UnistdGetgid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetgid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = getgid();
 }
 
-void UnistdGethostid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGethostid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = gethostid();
 }
 
-void UnistdGetlogin(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetlogin(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = getlogin();
 }
 
-void UnistdGetlogin_r(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetlogin_r(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = getlogin_r((char *)Param[0]->Val->Pointer, Param[1]->Val->Integer);
 }
 
-void UnistdGetpagesize(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetpagesize(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = getpagesize();
 }
 
-void UnistdGetpass(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetpass(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = getpass((const char *)Param[0]->Val->Pointer);
 }
 
 #if 0
-void UnistdGetpgid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetpgid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = getpgid(Param[0]->Val->Integer);
 }
 #endif
 
-void UnistdGetpgrp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetpgrp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = getpgrp();
 }
 
-void UnistdGetpid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetpid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = getpid();
 }
 
-void UnistdGetppid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetppid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = getppid();
 }
 
 #if 0
-void UnistdGetsid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetsid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = getsid(Param[0]->Val->Integer);
 }
 #endif
 
-void UnistdGetuid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetuid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = getuid();
 }
 
-void UnistdGetwd(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdGetwd(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = getcwd((char *)Param[0]->Val->Pointer, PATH_MAX);
 }
 
-void UnistdIsatty(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdIsatty(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = isatty(Param[0]->Val->Integer);
 }
 
-void UnistdLchown(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdLchown(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = lchown((const char *)Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer);
 }
 
-void UnistdLink(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdLink(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = link((const char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer);
 }
 
-void UnistdLockf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdLockf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = lockf(Param[0]->Val->Integer, Param[1]->Val->Integer, Param[2]->Val->Integer);
 }
 
-void UnistdLseek(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdLseek(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = lseek(Param[0]->Val->Integer, Param[1]->Val->Integer, Param[2]->Val->Integer);
 }
 
-void UnistdNice(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdNice(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = nice(Param[0]->Val->Integer);
 }
 
-void UnistdPathconf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdPathconf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = pathconf((const char *)Param[0]->Val->Pointer, Param[1]->Val->Integer);
 }
 
-void UnistdPause(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdPause(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = pause();
 }
 
 #if 0
-void UnistdPread(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdPread(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = pread(Param[0]->Val->Integer, Param[1]->Val->Pointer, Param[2]->Val->Integer, Param[3]->Val->Integer);
 }
 
-void UnistdPwrite(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdPwrite(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = pwrite(Param[0]->Val->Integer, Param[1]->Val->Pointer, Param[2]->Val->Integer, Param[3]->Val->Integer);
 }
 #endif
 
-void UnistdRead(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdRead(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = read(Param[0]->Val->Integer, Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
-void UnistdReadlink(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdReadlink(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = readlink((const char *)Param[0]->Val->Pointer, (char *)Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
-void UnistdRmdir(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdRmdir(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = rmdir((const char *)Param[0]->Val->Pointer);
 }
 
-void UnistdSbrk(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdSbrk(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = sbrk(Param[0]->Val->Integer);
 }
 
-void UnistdSetgid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdSetgid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = setgid(Param[0]->Val->Integer);
 }
 
-void UnistdSetpgid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdSetpgid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = setpgid(Param[0]->Val->Integer, Param[1]->Val->Integer);
 }
 
-void UnistdSetpgrp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdSetpgrp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = setpgrp();
 }
 
-void UnistdSetregid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdSetregid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = setregid(Param[0]->Val->Integer, Param[1]->Val->Integer);
 }
 
-void UnistdSetreuid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdSetreuid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = setreuid(Param[0]->Val->Integer, Param[1]->Val->Integer);
 }
 
-void UnistdSetsid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdSetsid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = setsid();
 }
 
-void UnistdSetuid(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdSetuid(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = setuid(Param[0]->Val->Integer);
 }
 
-void UnistdSleep(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdSleep(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = sleep(Param[0]->Val->Integer);
 }
 
 #if 0
-void UnistdSwab(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdSwab(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = swab(Param[0]->Val->Pointer, Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 #endif
 
-void UnistdSymlink(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdSymlink(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = symlink((const char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer);
 }
 
-void UnistdSync(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdSync(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     sync();
 }
 
-void UnistdSysconf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdSysconf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = sysconf(Param[0]->Val->Integer);
 }
 
-void UnistdTcgetpgrp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdTcgetpgrp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = tcgetpgrp(Param[0]->Val->Integer);
 }
 
-void UnistdTcsetpgrp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdTcsetpgrp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = tcsetpgrp(Param[0]->Val->Integer, Param[1]->Val->Integer);
 }
 
-void UnistdTruncate(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdTruncate(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = truncate((const char *)Param[0]->Val->Pointer, Param[1]->Val->Integer);
 }
 
-void UnistdTtyname(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdTtyname(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = ttyname(Param[0]->Val->Integer);
 }
 
-void UnistdTtyname_r(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdTtyname_r(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = ttyname_r(Param[0]->Val->Integer, (char *)Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
-void UnistdUalarm(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdUalarm(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = ualarm(Param[0]->Val->Integer, Param[1]->Val->Integer);
 }
 
-void UnistdUnlink(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdUnlink(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = unlink((const char *)Param[0]->Val->Pointer);
 }
 
-void UnistdUsleep(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdUsleep(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = usleep(Param[0]->Val->Integer);
 }
 
-void UnistdVfork(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdVfork(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = vfork();
 }
 
-void UnistdWrite(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void UnistdWrite(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = write(Param[0]->Val->Integer, Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }

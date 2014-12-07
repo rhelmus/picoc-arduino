@@ -6,113 +6,113 @@
 static int Stdlib_ZeroValue = 0;
 
 #ifndef NO_FP
-void StdlibAtof(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibAtof(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = atof((const char *)Param[0]->Val->Pointer);
 }
 #endif
 
-void StdlibAtoi(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibAtoi(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = atoi((const char *)Param[0]->Val->Pointer);
 }
 
-void StdlibAtol(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibAtol(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = atol((const char *)Param[0]->Val->Pointer);
 }
 
 #ifndef NO_FP
-void StdlibStrtod(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibStrtod(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = strtod((const char *)Param[0]->Val->Pointer, (char **)Param[1]->Val->Pointer);
 }
 #endif
 
-void StdlibStrtol(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibStrtol(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = strtol((const char *)Param[0]->Val->Pointer, (char **)Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
-void StdlibStrtoul(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibStrtoul(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = strtoul((const char *)Param[0]->Val->Pointer, (char **)Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
-void StdlibMalloc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibMalloc(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = malloc(Param[0]->Val->Integer);
 }
 
-void StdlibCalloc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibCalloc(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = calloc(Param[0]->Val->Integer, Param[1]->Val->Integer);
 }
 
-void StdlibRealloc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibRealloc(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = realloc(Param[0]->Val->Pointer, Param[1]->Val->Integer);
 }
 
-void StdlibFree(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibFree(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     free(Param[0]->Val->Pointer);
 }
 
-void StdlibRand(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibRand(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = rand();
 }
 
-void StdlibSrand(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibSrand(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     srand(Param[0]->Val->Integer);
 }
 
-void StdlibAbort(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibAbort(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ProgramFail(Parser, "abort");
 }
 
-void StdlibExit(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibExit(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     PlatformExit(Parser->pc, Param[0]->Val->Integer);
 }
 
-void StdlibGetenv(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibGetenv(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = getenv((const char *)Param[0]->Val->Pointer);
 }
 
-void StdlibSystem(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibSystem(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = system((const char *)Param[0]->Val->Pointer);
 }
 
 #if 0
-void StdlibBsearch(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibBsearch(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = bsearch(Param[0]->Val->Pointer, Param[1]->Val->Pointer, Param[2]->Val->Integer, Param[3]->Val->Integer, (int (*)())Param[4]->Val->Pointer);
 }
 #endif
 
-void StdlibAbs(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibAbs(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = abs(Param[0]->Val->Integer);
 }
 
-void StdlibLabs(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibLabs(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = labs(Param[0]->Val->Integer);
 }
 
 #if 0
-void StdlibDiv(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibDiv(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = div(Param[0]->Val->Integer, Param[1]->Val->Integer);
 }
 
-void StdlibLdiv(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StdlibLdiv(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = ldiv(Param[0]->Val->Integer, Param[1]->Val->Integer);
 }

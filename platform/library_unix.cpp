@@ -4,13 +4,13 @@ void UnixSetupFunc(Picoc *)
 {    
 }
 
-void Ctest (struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void Ctest (TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     printf("test(%d)\n", Param[0]->Val->Integer);
     Param[0]->Val->Integer = 1234;
 }
 
-void Clineno (struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void Clineno (TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = Parser->Line;
 }

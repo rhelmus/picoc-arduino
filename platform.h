@@ -58,9 +58,14 @@ typedef CPtrWrapper<char> TStdioCharPtr;
 typedef CPtrWrapper<const char> TStdioConstCharPtr;
 typedef CPtrWrapper<struct ValueType> TValueTypePtr;
 typedef CPtrWrapper<TValueTypePtr> TValueTypePtrPtr;
+typedef CPtrWrapper<struct TableEntry> TTableEntryPtr;
+typedef CPtrWrapper<TTableEntryPtr> TTableEntryPtrPtr;
+typedef CPtrWrapper<struct IncludeLibrary> TIncludeLibraryPtr;
+typedef CPtrWrapper<struct ParseState> TParseStatePtr;
 
 #define WRAP_REGSTRINGS
 #define WRAP_ANYVALUE
+#define MAX_INC_FILENAME 128
 //typedef struct Value * TValuePtr;
 //typedef struct Value ** TValuePtrPtr;
 //typedef unsigned char * TLexBuf;

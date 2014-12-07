@@ -60,15 +60,15 @@ void PicocCallMain(Picoc *pc, int argc, char **argv)
     if (!VariableDefined(pc, TableStrRegister(pc, "main")))
         ProgramFailNoParser(pc, "main() is not defined");
         
-    VariableGet(pc, NULL, TableStrRegister(pc, "main"), &FuncValue);
+    VariableGet(pc, NILL, TableStrRegister(pc, "main"), &FuncValue);
     if (FuncValue->Typ->Base != TypeFunction)
         ProgramFailNoParser(pc, "main is not a function - can't call it");
 
     if (FuncValue->Val->FuncDef.NumParams != 0)
     {
         /* define the arguments */
-        VariableDefinePlatformVar(pc, NULL, "__argc", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&argc), FALSE);
-        VariableDefinePlatformVar(pc, NULL, "__argv", pc->CharPtrPtrType, (TAnyValuePtr)ptrWrap(&argv), FALSE);
+        VariableDefinePlatformVar(pc, NILL, "__argc", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&argc), FALSE);
+        VariableDefinePlatformVar(pc, NILL, "__argv", pc->CharPtrPtrType, (TAnyValuePtr)ptrWrap(&argv), FALSE);
     }
 
     if (FuncValue->Val->FuncDef.ReturnType == ptrWrap(&pc->VoidType))
@@ -80,7 +80,7 @@ void PicocCallMain(Picoc *pc, int argc, char **argv)
     }
     else
     {
-        VariableDefinePlatformVar(pc, NULL, "__exit_value", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&pc->PicocExitValue), TRUE);
+        VariableDefinePlatformVar(pc, NILL, "__exit_value", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&pc->PicocExitValue), TRUE);
     
         if (FuncValue->Val->FuncDef.NumParams == 0)
             PicocParse(pc, "startup", CALL_MAIN_NO_ARGS_RETURN_INT, strlen(CALL_MAIN_NO_ARGS_RETURN_INT), TRUE, TRUE, FALSE, TRUE);
@@ -131,7 +131,7 @@ void PrintSourceTextErrorLine(IOFILE *Stream, TConstRegStringPtr FileName, const
 }
 
 /* exit with a message */
-void ProgramFail(struct ParseState *Parser, const char *Message, ...)
+void ProgramFail(TParseStatePtr Parser, const char *Message, ...)
 {
     va_list Args;
 
@@ -156,7 +156,7 @@ void ProgramFailNoParser(Picoc *pc, const char *Message, ...)
 }
 
 /* like ProgramFail() but gives descriptive error messages for assignment */
-void AssignFail(struct ParseState *Parser, const char *Format, TValueTypePtr Type1, TValueTypePtr Type2, int Num1, int Num2, TConstRegStringPtr FuncName, int ParamNo)
+void AssignFail(TParseStatePtr Parser, const char *Format, TValueTypePtr Type1, TValueTypePtr Type2, int Num1, int Num2, TConstRegStringPtr FuncName, int ParamNo)
 {
     IOFILE *Stream = Parser->pc->CStdOut;
     

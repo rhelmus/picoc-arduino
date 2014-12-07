@@ -30,23 +30,23 @@ void IncludeInit(Picoc *pc)
 /* clean up space used by the include system */
 void IncludeCleanup(Picoc *pc)
 {
-    struct IncludeLibrary *ThisInclude = pc->IncludeLibList;
-    struct IncludeLibrary *NextInclude;
+    TIncludeLibraryPtr ThisInclude = pc->IncludeLibList;
+    TIncludeLibraryPtr NextInclude;
     
     while (ThisInclude != NULL)
     {
         NextInclude = ThisInclude->NextLib;
-        HeapFreeMem(pc, ThisInclude);
+        deallocMem(ThisInclude);
         ThisInclude = NextInclude;
     }
 
-    pc->IncludeLibList = NULL;
+    pc->IncludeLibList = NILL;
 }
 
 /* register a new build-in include file */
 void IncludeRegister(Picoc *pc, const char *IncludeName, void (*SetupFunction)(Picoc *pc), struct LibraryFunction *FuncList, const char *SetupCSource)
 {
-    struct IncludeLibrary *NewLib = (struct IncludeLibrary *)HeapAllocMem(pc, sizeof(struct IncludeLibrary));
+    TIncludeLibraryPtr NewLib = allocMem<struct IncludeLibrary>(false);
     NewLib->IncludeName = TableStrRegister(pc, IncludeName);
     NewLib->SetupFunction = SetupFunction;
     NewLib->FuncList = FuncList;
@@ -58,7 +58,7 @@ void IncludeRegister(Picoc *pc, const char *IncludeName, void (*SetupFunction)(P
 /* include all of the system headers */
 void PicocIncludeAllSystemHeaders(Picoc *pc)
 {
-    struct IncludeLibrary *ThisInclude = pc->IncludeLibList;
+    TIncludeLibraryPtr ThisInclude = pc->IncludeLibList;
     
     for (; ThisInclude != NULL; ThisInclude = ThisInclude->NextLib)
         IncludeFile(pc, ThisInclude->IncludeName, FALSE); /* NOTE: LineByLine arg doesn't affect system libs */
@@ -67,7 +67,7 @@ void PicocIncludeAllSystemHeaders(Picoc *pc)
 /* include one of a number of predefined libraries, or perhaps an actual file */
 void IncludeFile(Picoc *pc, TRegStringPtr FileName, int LineByLine)
 {
-    struct IncludeLibrary *LInclude;
+    TIncludeLibraryPtr LInclude;
     
     /* scan for the include file name to see if it's in our list of predefined includes */
     for (LInclude = pc->IncludeLibList; LInclude != NULL; LInclude = LInclude->NextLib)
@@ -77,7 +77,7 @@ void IncludeFile(Picoc *pc, TRegStringPtr FileName, int LineByLine)
             /* found it - protect against multiple inclusion */
             if (!VariableDefined(pc, FileName))
             {
-                VariableDefine(pc, NULL, FileName, NILL, ptrWrap(&pc->VoidType), FALSE);
+                VariableDefine(pc, NILL, FileName, NILL, ptrWrap(&pc->VoidType), FALSE);
                 
                 /* run an extra startup function if there is one */
                 if (LInclude->SetupFunction != NULL)
@@ -103,10 +103,22 @@ void IncludeFile(Picoc *pc, TRegStringPtr FileName, int LineByLine)
 #endif
 
     /* not a predefined file, read a real file */
+
+#ifdef WRAP_REGSTRINGS
+    char buf[MAX_INC_FILENAME + 1];
+    strncpy(buf, FileName, MAX_INC_FILENAME);
+    buf[MAX_INC_FILENAME] = 0;
+
     if (LineByLine)
-        PicocPlatformScanFileByLine(pc, ptrUnwrap(FileName));
+        PicocPlatformScanFileByLine(pc, buf);
     else
-        PicocPlatformScanFile(pc, ptrUnwrap(FileName));
+        PicocPlatformScanFile(pc, buf);
+#else
+    if (LineByLine)
+        PicocPlatformScanFileByLine(pc, FileName);
+    else
+        PicocPlatformScanFile(pc, FileName);
+#endif
 }
 
 #endif /* NO_HASH_INCLUDE */

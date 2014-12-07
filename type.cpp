@@ -9,7 +9,7 @@ static int IntAlignBytes;
 
 
 /* add a new type to the set of types we know about */
-TValueTypePtr TypeAdd(Picoc *pc, struct ParseState *Parser, TValueTypePtr ParentType, enum BaseType Base, int ArraySize, TConstRegStringPtr Identifier, int Sizeof, int AlignBytes)
+TValueTypePtr TypeAdd(Picoc *pc, TParseStatePtr Parser, TValueTypePtr ParentType, enum BaseType Base, int ArraySize, TConstRegStringPtr Identifier, int Sizeof, int AlignBytes)
 {
     TValueTypePtr NewType = allocMemVariable<struct ValueType>(Parser, FALSE);
     NewType->Base = Base;
@@ -29,7 +29,7 @@ TValueTypePtr TypeAdd(Picoc *pc, struct ParseState *Parser, TValueTypePtr Parent
 
 /* given a parent type, get a matching derived type and make one if necessary.
  * Identifier should be registered with the shared string table. */
-TValueTypePtr TypeGetMatching(Picoc *pc, struct ParseState *Parser, TValueTypePtr ParentType, enum BaseType Base, int ArraySize, TConstRegStringPtr Identifier, int AllowDuplicates)
+TValueTypePtr TypeGetMatching(Picoc *pc, TParseStatePtr Parser, TValueTypePtr ParentType, enum BaseType Base, int ArraySize, TConstRegStringPtr Identifier, int AllowDuplicates)
 {
     int Sizeof;
     int AlignBytes;
@@ -159,10 +159,10 @@ void TypeInit(Picoc *pc)
 #else
     TypeAddBaseType(pc, ptrWrap(&pc->TypeType), Type_Type, sizeof(TValueTypePtr ), PointerAlignBytes);
 #endif
-    pc->CharArrayType = TypeAdd(pc, NULL, ptrWrap(&pc->CharType), TypeArray, 0, pc->StrEmpty, sizeof(char), (char *)&ca.y - &ca.x);
-    pc->CharPtrType = TypeAdd(pc, NULL, ptrWrap(&pc->CharType), TypePointer, 0, pc->StrEmpty, sizeof(void *), PointerAlignBytes);
-    pc->CharPtrPtrType = TypeAdd(pc, NULL, pc->CharPtrType, TypePointer, 0, pc->StrEmpty, sizeof(void *), PointerAlignBytes);
-    pc->VoidPtrType = TypeAdd(pc, NULL, ptrWrap(&pc->VoidType), TypePointer, 0, pc->StrEmpty, sizeof(void *), PointerAlignBytes);
+    pc->CharArrayType = TypeAdd(pc, NILL, ptrWrap(&pc->CharType), TypeArray, 0, pc->StrEmpty, sizeof(char), (char *)&ca.y - &ca.x);
+    pc->CharPtrType = TypeAdd(pc, NILL, ptrWrap(&pc->CharType), TypePointer, 0, pc->StrEmpty, sizeof(void *), PointerAlignBytes);
+    pc->CharPtrPtrType = TypeAdd(pc, NILL, pc->CharPtrType, TypePointer, 0, pc->StrEmpty, sizeof(void *), PointerAlignBytes);
+    pc->VoidPtrType = TypeAdd(pc, NILL, ptrWrap(&pc->VoidType), TypePointer, 0, pc->StrEmpty, sizeof(void *), PointerAlignBytes);
 }
 
 /* deallocate heap-allocated types */
@@ -197,7 +197,7 @@ void TypeCleanup(Picoc *pc)
 }
 
 /* parse a struct or union declaration */
-void TypeParseStruct(struct ParseState *Parser, TValueTypePtrPtr Typ, int IsStruct)
+void TypeParseStruct(TParseStatePtr Parser, TValueTypePtrPtr Typ, int IsStruct)
 {
     TValuePtr LexValue;
     TValueTypePtr MemberType;
@@ -241,8 +241,8 @@ void TypeParseStruct(struct ParseState *Parser, TValueTypePtrPtr Typ, int IsStru
         
     LexGetToken(Parser, NILL, TRUE);
     (*Typ)->Members = (struct Table *)VariableAlloc(pc, Parser, sizeof(struct Table) + STRUCT_TABLE_SIZE * sizeof(struct TableEntry), TRUE);
-    (*Typ)->Members->HashTable = (struct TableEntry **)((char *)(*Typ)->Members + sizeof(struct Table));
-    TableInitTable((*Typ)->Members, (struct TableEntry **)((char *)(*Typ)->Members + sizeof(struct Table)), STRUCT_TABLE_SIZE, TRUE);
+    (*Typ)->Members->HashTable = (TTableEntryPtrPtr)ptrWrap((char *)(*Typ)->Members + sizeof(struct Table));
+    TableInitTable((*Typ)->Members, (TTableEntryPtrPtr)ptrWrap((char *)(*Typ)->Members + sizeof(struct Table)), STRUCT_TABLE_SIZE, TRUE);
     
     do {
         TypeParse(Parser, &MemberType, &MemberIdentifier, NULL);
@@ -291,21 +291,21 @@ void TypeParseStruct(struct ParseState *Parser, TValueTypePtrPtr Typ, int IsStru
 }
 
 /* create a system struct which has no user-visible members */
-TValueTypePtr TypeCreateOpaqueStruct(Picoc *pc, struct ParseState *Parser, TConstRegStringPtr StructName, int Size)
+TValueTypePtr TypeCreateOpaqueStruct(Picoc *pc, TParseStatePtr Parser, TConstRegStringPtr StructName, int Size)
 {
     TValueTypePtr Typ = TypeGetMatching(pc, Parser, ptrWrap(&pc->UberType), TypeStruct, 0, StructName, FALSE);
     
     /* create the (empty) table */
     Typ->Members = (struct Table *)VariableAlloc(pc, Parser, sizeof(struct Table) + STRUCT_TABLE_SIZE * sizeof(struct TableEntry), TRUE);
-    Typ->Members->HashTable = (struct TableEntry **)((char *)Typ->Members + sizeof(struct Table));
-    TableInitTable(Typ->Members, (struct TableEntry **)((char *)Typ->Members + sizeof(struct Table)), STRUCT_TABLE_SIZE, TRUE);
+    Typ->Members->HashTable = (TTableEntryPtrPtr)ptrWrap((char *)Typ->Members + sizeof(struct Table));
+    TableInitTable(Typ->Members, (TTableEntryPtrPtr)ptrWrap((char *)Typ->Members + sizeof(struct Table)), STRUCT_TABLE_SIZE, TRUE);
     Typ->Sizeof = Size;
     
     return Typ;
 }
 
 /* parse an enum declaration */
-void TypeParseEnum(struct ParseState *Parser, TValueTypePtrPtr Typ)
+void TypeParseEnum(TParseStatePtr Parser, TValueTypePtrPtr Typ)
 {
     TValuePtr LexValue;
     struct Value InitValue;
@@ -369,7 +369,7 @@ void TypeParseEnum(struct ParseState *Parser, TValueTypePtrPtr Typ)
 }
 
 /* parse a type - just the basic type */
-int TypeParseFront(struct ParseState *Parser, TValueTypePtrPtr Typ, int *IsStatic)
+int TypeParseFront(TParseStatePtr Parser, TValueTypePtrPtr Typ, int *IsStatic)
 {
     struct ParseState Before;
     TValuePtr LexerValue;
@@ -381,7 +381,7 @@ int TypeParseFront(struct ParseState *Parser, TValueTypePtrPtr Typ, int *IsStati
     *Typ = NILL;
 
     /* ignore leading type qualifiers */
-    ParserCopy(&Before, Parser);
+    ParserCopy(ptrWrap(&Before), Parser);
     Token = LexGetToken(Parser, &LexerValue, TRUE);
     while (Token == TokenStaticType || Token == TokenAutoType || Token == TokenRegisterType || Token == TokenExternType)
     {
@@ -444,19 +444,19 @@ int TypeParseFront(struct ParseState *Parser, TValueTypePtrPtr Typ, int *IsStati
             *Typ = VarValue->Val->Typ;
             break;
 
-        default: ParserCopy(Parser, &Before); return FALSE;
+        default: ParserCopy(Parser, ptrWrap(&Before)); return FALSE;
     }
     
     return TRUE;
 }
 
 /* parse a type - the part at the end after the identifier. eg. array specifications etc. */
-TValueTypePtr TypeParseBack(struct ParseState *Parser, TValueTypePtr FromType)
+TValueTypePtr TypeParseBack(TParseStatePtr Parser, TValueTypePtr FromType)
 {
     enum LexToken Token;
     struct ParseState Before;
 
-    ParserCopy(&Before, Parser);
+    ParserCopy(ptrWrap(&Before), Parser);
     Token = LexGetToken(Parser, NILL, TRUE);
     if (Token == TokenLeftSquareBracket)
     {
@@ -485,13 +485,13 @@ TValueTypePtr TypeParseBack(struct ParseState *Parser, TValueTypePtr FromType)
     else
     {
         /* the type specification has finished */
-        ParserCopy(Parser, &Before);
+        ParserCopy(Parser, ptrWrap(&Before));
         return FromType;
     }
 }
 
 /* parse a type - the part which is repeated with each identifier in a declaration list */
-void TypeParseIdentPart(struct ParseState *Parser, TValueTypePtr BasicTyp, TValueTypePtrPtr Typ, TRegStringPtrPtr Identifier)
+void TypeParseIdentPart(TParseStatePtr Parser, TValueTypePtr BasicTyp, TValueTypePtrPtr Typ, TRegStringPtrPtr Identifier)
 {
     struct ParseState Before;
     enum LexToken Token;
@@ -502,7 +502,7 @@ void TypeParseIdentPart(struct ParseState *Parser, TValueTypePtr BasicTyp, TValu
     
     while (!Done)
     {
-        ParserCopy(&Before, Parser);
+        ParserCopy(ptrWrap(&Before), Parser);
         Token = LexGetToken(Parser, &LexValue, TRUE);
         switch (Token)
         {
@@ -530,7 +530,7 @@ void TypeParseIdentPart(struct ParseState *Parser, TValueTypePtr BasicTyp, TValu
                 Done = TRUE;
                 break;
                 
-            default: ParserCopy(Parser, &Before); Done = TRUE; break;
+            default: ParserCopy(Parser, ptrWrap(&Before)); Done = TRUE; break;
         }
     }
     
@@ -545,7 +545,7 @@ void TypeParseIdentPart(struct ParseState *Parser, TValueTypePtr BasicTyp, TValu
 }
 
 /* parse a type - a complete declaration including identifier */
-void TypeParse(struct ParseState *Parser, TValueTypePtrPtr Typ, TRegStringPtrPtr Identifier, int *IsStatic)
+void TypeParse(TParseStatePtr Parser, TValueTypePtrPtr Typ, TRegStringPtrPtr Identifier, int *IsStatic)
 {
     TValueTypePtr BasicType;
     
@@ -554,7 +554,7 @@ void TypeParse(struct ParseState *Parser, TValueTypePtrPtr Typ, TRegStringPtrPtr
 }
 
 /* check if a type has been fully defined - otherwise it's just a forward declaration */
-int TypeIsForwardDeclared(struct ParseState *Parser, TValueTypePtr Typ)
+int TypeIsForwardDeclared(TParseStatePtr Parser, TValueTypePtr Typ)
 {
     if (Typ->Base == TypeArray)
         return TypeIsForwardDeclared(Parser, Typ->FromType);

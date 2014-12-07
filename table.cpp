@@ -29,18 +29,18 @@ static unsigned int TableHash(TConstRegStringPtr Key, int Len)
 }
 
 /* initialise a table */
-void TableInitTable(struct Table *Tbl, struct TableEntry **HashTable, int Size, int OnHeap)
+void TableInitTable(struct Table *Tbl, TTableEntryPtrPtr HashTable, int Size, int OnHeap)
 {
     Tbl->Size = Size;
     Tbl->OnHeap = OnHeap;
     Tbl->HashTable = HashTable;
-    memset((void *)HashTable, '\0', sizeof(struct TableEntry *) * Size);
+    memset(HashTable, '\0', sizeof(TTableEntryPtr) * Size);
 }
 
 /* check a hash table entry for a key */
-static struct TableEntry *TableSearch(struct Table *Tbl, TConstRegStringPtr Key, int *AddAt)
+static TTableEntryPtr TableSearch(struct Table *Tbl, TConstRegStringPtr Key, int *AddAt)
 {
-    struct TableEntry *Entry;
+    TTableEntryPtr Entry;
     int HashValue = ((unsigned long)(CPtrWrapperBase::getPtr(Key))) % Tbl->Size;   /* shared strings have unique addresses so we don't need to hash them */
     
     for (Entry = Tbl->HashTable[HashValue]; Entry != NULL; Entry = Entry->Next)
@@ -50,7 +50,7 @@ static struct TableEntry *TableSearch(struct Table *Tbl, TConstRegStringPtr Key,
     }
     
     *AddAt = HashValue;    /* didn't find it in the chain */
-    return NULL;
+    return NILL;
 }
 
 /* set an identifier to a value. returns FALSE if it already exists. 
@@ -58,11 +58,11 @@ static struct TableEntry *TableSearch(struct Table *Tbl, TConstRegStringPtr Key,
 int TableSet(Picoc *pc, struct Table *Tbl, TConstRegStringPtr Key, TValuePtr Val, TConstRegStringPtr DeclFileName, int DeclLine, int DeclColumn)
 {
     int AddAt;
-    struct TableEntry *FoundEntry = TableSearch(Tbl, Key, &AddAt);
+    TTableEntryPtr FoundEntry = TableSearch(Tbl, Key, &AddAt);
     
     if (FoundEntry == NULL)
     {   /* add it to the table */
-        struct TableEntry *NewEntry = (struct TableEntry *)VariableAlloc(pc, NULL, sizeof(struct TableEntry), Tbl->OnHeap);
+        TTableEntryPtr NewEntry = allocMemVariable<struct TableEntry>(NILL, !Tbl->OnHeap);
 #ifndef DISABLE_TABLEENTRY_DECL
         NewEntry->DeclFileName = DeclFileName;
         NewEntry->DeclLine = DeclLine;
@@ -84,7 +84,7 @@ int TableSet(Picoc *pc, struct Table *Tbl, TConstRegStringPtr Key, TValuePtr Val
 int TableGet(struct Table *Tbl, TConstRegStringPtr Key, TValuePtrPtr Val, const char **DeclFileName, int *DeclLine, int *DeclColumn)
 {
     int AddAt;
-    struct TableEntry *FoundEntry = TableSearch(Tbl, Key, &AddAt);
+    TTableEntryPtr FoundEntry = TableSearch(Tbl, Key, &AddAt);
     if (FoundEntry == NULL)
         return FALSE;
     
@@ -105,17 +105,17 @@ int TableGet(struct Table *Tbl, TConstRegStringPtr Key, TValuePtrPtr Val, const 
 /* remove an entry from the table */
 TValuePtr TableDelete(Picoc *pc, struct Table *Tbl, const TRegStringPtr Key)
 {
-    struct TableEntry **EntryPtr;
+    TTableEntryPtrPtr EntryPtr;
     int HashValue = ((unsigned long)CPtrWrapperBase::getPtr(Key)) % Tbl->Size;   /* shared strings have unique addresses so we don't need to hash them */
     
-    for (EntryPtr = &Tbl->HashTable[HashValue]; *EntryPtr != NULL; EntryPtr = &(*EntryPtr)->Next)
+    for (EntryPtr = &Tbl->HashTable[HashValue]; *EntryPtr != NILL; EntryPtr = &(*EntryPtr)->Next)
     {
         if ((*EntryPtr)->p.v.Key == Key)
         {
-            struct TableEntry *DeleteEntry = *EntryPtr;
+            TTableEntryPtr DeleteEntry = *EntryPtr;
             TValuePtr Val = DeleteEntry->p.v.Val;
             *EntryPtr = DeleteEntry->Next;
-            HeapFreeMem(pc, DeleteEntry);
+            deallocMem(DeleteEntry);
 
             return Val;
         }
@@ -125,9 +125,9 @@ TValuePtr TableDelete(Picoc *pc, struct Table *Tbl, const TRegStringPtr Key)
 }
 
 /* check a hash table entry for an identifier */
-static struct TableEntry *TableSearchIdentifier(struct Table *Tbl, TConstRegStringPtr Key, int Len, int *AddAt)
+static TTableEntryPtr TableSearchIdentifier(struct Table *Tbl, TConstRegStringPtr Key, int Len, int *AddAt)
 {
-    struct TableEntry *Entry;
+    TTableEntryPtr Entry;
     int HashValue = TableHash(Key, Len) % Tbl->Size;
     
     for (Entry = Tbl->HashTable[HashValue]; Entry != NULL; Entry = Entry->Next)
@@ -137,14 +137,14 @@ static struct TableEntry *TableSearchIdentifier(struct Table *Tbl, TConstRegStri
     }
     
     *AddAt = HashValue;    /* didn't find it in the chain */
-    return NULL;
+    return NILL;
 }
 
 /* set an identifier and return the identifier. share if possible */
 TRegStringPtr TableSetIdentifier(Picoc *pc, struct Table *Tbl, TConstRegStringPtr Ident, int IdentLen)
 {
     int AddAt;
-    struct TableEntry *FoundEntry = TableSearchIdentifier(Tbl, Ident, IdentLen, &AddAt);
+    TTableEntryPtr FoundEntry = TableSearchIdentifier(Tbl, Ident, IdentLen, &AddAt);
 
     if (FoundEntry != NULL)
         return &FoundEntry->p.Key[0];
@@ -152,10 +152,10 @@ TRegStringPtr TableSetIdentifier(Picoc *pc, struct Table *Tbl, TConstRegStringPt
     {
 #ifndef WRAP_REGSTRINGS
         /* add it to the table - we economise by not allocating the whole structure here */
-        struct TableEntry *NewEntry = (struct TableEntry *)HeapAllocMem(pc, sizeof(struct TableEntry) - sizeof(union TableEntry::TableEntryPayload) + IdentLen + 1);
+        TTableEntryPtr NewEntry = allocMem<struct TableEntry>(false, sizeof(struct TableEntry) - sizeof(union TableEntry::TableEntryPayload) + IdentLen + 1);
 #else
         /* we have a slight bit of extra memory overhead for shared strings here */
-        struct TableEntry *NewEntry = (struct TableEntry *)HeapAllocMem(pc, sizeof(struct TableEntry) - sizeof(union TableEntry::TableEntryPayload) + sizeof(TRegStringPtr) + IdentLen + 1);
+        TTableEntryPtr NewEntry = allocMem<struct TableEntry>(false, sizeof(struct TableEntry) - sizeof(union TableEntry::TableEntryPayload) + sizeof(TRegStringPtr) + IdentLen + 1);
 #endif
 
         if (NewEntry == NULL)
@@ -197,8 +197,8 @@ TRegStringPtr TableStrRegister(Picoc *pc, TConstRegStringPtr Str)
 /* free all the strings */
 void TableStrFree(Picoc *pc)
 {
-    struct TableEntry *Entry;
-    struct TableEntry *NextEntry;
+    TTableEntryPtr Entry;
+    TTableEntryPtr NextEntry;
     int Count;
     
     for (Count = 0; Count < pc->StringTable.Size; Count++)
@@ -206,7 +206,7 @@ void TableStrFree(Picoc *pc)
         for (Entry = pc->StringTable.HashTable[Count]; Entry != NULL; Entry = NextEntry)
         {
             NextEntry = Entry->Next;
-            HeapFreeMem(pc, Entry);
+            deallocMem(Entry);
         }
     }
 }

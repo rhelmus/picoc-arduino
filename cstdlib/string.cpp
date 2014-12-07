@@ -5,135 +5,135 @@
 
 static int String_ZeroValue = 0;
 
-void StringStrcpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrcpy(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = strcpy((char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer);
 }
 
-void StringStrncpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrncpy(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = strncpy((char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
-void StringStrcmp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrcmp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = strcmp((const char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer);
 }
 
-void StringStrncmp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrncmp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = strncmp((const char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
-void StringStrcat(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrcat(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = strcat((char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer);
 }
 
-void StringStrncat(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrncat(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = strncat((char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
 #ifndef WIN32
-void StringIndex(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringIndex(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = (void *)index((const char *)Param[0]->Val->Pointer, Param[1]->Val->Integer);
 }
 
-void StringRindex(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringRindex(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = (void *)rindex((const char *)Param[0]->Val->Pointer, Param[1]->Val->Integer);
 }
 #endif
 
-void StringStrlen(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrlen(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = strlen((const char *)Param[0]->Val->Pointer);
 }
 
-void StringMemset(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringMemset(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = memset(Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer);
 }
 
-void StringMemcpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringMemcpy(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = memcpy(Param[0]->Val->Pointer, Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
-void StringMemcmp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringMemcmp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = memcmp(Param[0]->Val->Pointer, Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
-void StringMemmove(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringMemmove(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = memmove(Param[0]->Val->Pointer, Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
-void StringMemchr(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringMemchr(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = memchr(Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer);
 }
 
-void StringStrchr(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrchr(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = (void *)strchr((const char *)Param[0]->Val->Pointer, Param[1]->Val->Integer);
 }
 
-void StringStrrchr(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrrchr(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = (void *)strrchr((const char *)Param[0]->Val->Pointer, Param[1]->Val->Integer);
 }
 
-void StringStrcoll(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrcoll(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = strcoll((const char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer);
 }
 
-void StringStrerror(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrerror(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = (void *)strerror(Param[0]->Val->Integer);
 }
 
-void StringStrspn(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrspn(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = strspn((const char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer);
 }
 
-void StringStrcspn(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrcspn(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = strcspn((const char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer);
 }
 
-void StringStrpbrk(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrpbrk(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = (void *)strpbrk((const char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer);
 }
 
-void StringStrstr(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrstr(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = (void *)strstr((const char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer);
 }
 
-void StringStrtok(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrtok(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = (void *)strtok((char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer);
 }
 
-void StringStrxfrm(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrxfrm(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = strxfrm((char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
 #ifndef WIN32
-void StringStrdup(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrdup(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = (void *)strdup((const char *)Param[0]->Val->Pointer);
 }
 
-void StringStrtok_r(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void StringStrtok_r(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = (void *)strtok_r((char *)Param[0]->Val->Pointer, (const char *)Param[1]->Val->Pointer, (char **)Param[2]->Val->Pointer);
 }

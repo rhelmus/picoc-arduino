@@ -17,14 +17,14 @@ void LibraryInit(Picoc *pc)
     
     /* define the version number macro */
     pc->VersionString = TableStrRegister(pc, PICOC_VERSION);
-    VariableDefinePlatformVar(pc, NULL, "PICOC_VERSION", pc->CharPtrType, (TAnyValuePtr)&pc->VersionString, FALSE);
+    VariableDefinePlatformVar(pc, NILL, "PICOC_VERSION", pc->CharPtrType, (TAnyValuePtr)&pc->VersionString, FALSE);
 
     /* define endian-ness macros */
     BigEndian = ((*(char*)&__ENDIAN_CHECK__) == 0);
     LittleEndian = ((*(char*)&__ENDIAN_CHECK__) == 1);
 
-    VariableDefinePlatformVar(pc, NULL, "BIG_ENDIAN", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&BigEndian), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "LITTLE_ENDIAN", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&LittleEndian), FALSE);
+    VariableDefinePlatformVar(pc, NILL, "BIG_ENDIAN", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&BigEndian), FALSE);
+    VariableDefinePlatformVar(pc, NILL, "LITTLE_ENDIAN", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&LittleEndian), FALSE);
 }
 
 /* add a library */
@@ -43,11 +43,11 @@ void LibraryAdd(Picoc *pc, struct Table *GlobalTable, TConstRegStringPtr Library
     for (Count = 0; FuncList[Count].Prototype != NULL; Count++)
     {
         Tokens = LexAnalyse(pc, IntrinsicName, FuncList[Count].Prototype, strlen((char *)FuncList[Count].Prototype), NULL);
-        LexInitParser(&Parser, pc, FuncList[Count].Prototype, Tokens, IntrinsicName, NULL, TRUE, FALSE);
-        TypeParse(&Parser, &ReturnType, &Identifier, NULL);
-        NewValue = ParseFunctionDefinition(&Parser, ReturnType, Identifier);
+        LexInitParser(ptrWrap(&Parser), pc, FuncList[Count].Prototype, Tokens, IntrinsicName, NULL, TRUE, FALSE);
+        TypeParse(ptrWrap(&Parser), &ReturnType, &Identifier, NULL);
+        NewValue = ParseFunctionDefinition(ptrWrap(&Parser), ReturnType, Identifier);
         NewValue->Val->FuncDef.Intrinsic = FuncList[Count].Func;
-        NewValue->Val->FuncDef.Body = NULL;
+        NewValue->Val->FuncDef.Body = NILL;
         deallocMem(Tokens);
     }
 }
@@ -104,9 +104,9 @@ void BasicIOInit(Picoc *pc)
 void CLibraryInit(Picoc *pc)
 {
     /* define some constants */
-    VariableDefinePlatformVar(pc, NULL, "NULL", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&ZeroValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "TRUE", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&TRUEValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "FALSE", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&ZeroValue), FALSE);
+    VariableDefinePlatformVar(pc, NILL, "NULL", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&ZeroValue), FALSE);
+    VariableDefinePlatformVar(pc, NILL, "TRUE", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&TRUEValue), FALSE);
+    VariableDefinePlatformVar(pc, NILL, "FALSE", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&ZeroValue), FALSE);
 }
 
 /* stream for writing into strings */
@@ -234,7 +234,7 @@ void PrintFP(double Num, struct OutputStream *Stream)
 
 #ifndef NO_PRINTF
 /* intrinsic functions made available to the language */
-void GenericPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs, struct OutputStream *Stream)
+void GenericPrintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs, struct OutputStream *Stream)
 {
     TStdioCharPtr FPos;
     TValuePtr NextArg = Param[0];
@@ -336,7 +336,7 @@ void GenericPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPt
 }
 
 /* printf(): print to console output */
-void LibPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibPrintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     struct OutputStream ConsoleStream;
     
@@ -345,7 +345,7 @@ void LibPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
 }
 
 /* sprintf(): print to a string */
-void LibSPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibSPrintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     struct OutputStream StrStream;
     
@@ -360,7 +360,7 @@ void LibSPrintf(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr P
 #endif
 
 /* get a line of input. protected from buffer overrun */
-void LibGets(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibGets(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     // UNDONE: this function doesn't seem very safe? (how do we now the user supplies enough space?)
 
@@ -388,134 +388,134 @@ void LibGets(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Para
 #endif
 }
 
-void LibGetc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibGetc(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Integer = PlatformGetCharacter();
 }
 
-void LibExit(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibExit(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     PlatformExit(Parser->pc, Param[0]->Val->Integer);
 }
 
 #ifdef PICOC_LIBRARY
-void LibSin(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibSin(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = sin(Param[0]->Val->FP);
 }
 
-void LibCos(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibCos(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = cos(Param[0]->Val->FP);
 }
 
-void LibTan(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibTan(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = tan(Param[0]->Val->FP);
 }
 
-void LibAsin(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibAsin(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = asin(Param[0]->Val->FP);
 }
 
-void LibAcos(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibAcos(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = acos(Param[0]->Val->FP);
 }
 
-void LibAtan(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibAtan(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = atan(Param[0]->Val->FP);
 }
 
-void LibSinh(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibSinh(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = sinh(Param[0]->Val->FP);
 }
 
-void LibCosh(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibCosh(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = cosh(Param[0]->Val->FP);
 }
 
-void LibTanh(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibTanh(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = tanh(Param[0]->Val->FP);
 }
 
-void LibExp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibExp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = exp(Param[0]->Val->FP);
 }
 
-void LibFabs(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibFabs(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = fabs(Param[0]->Val->FP);
 }
 
-void LibLog(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibLog(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = log(Param[0]->Val->FP);
 }
 
-void LibLog10(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibLog10(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = log10(Param[0]->Val->FP);
 }
 
-void LibPow(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibPow(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = pow(Param[0]->Val->FP, Param[1]->Val->FP);
 }
 
-void LibSqrt(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibSqrt(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = sqrt(Param[0]->Val->FP);
 }
 
-void LibRound(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibRound(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = floor(Param[0]->Val->FP + 0.5);   /* XXX - fix for soft float */
 }
 
-void LibCeil(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibCeil(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = ceil(Param[0]->Val->FP);
 }
 
-void LibFloor(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibFloor(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->FP = floor(Param[0]->Val->FP);
 }
 #endif
 
 #ifndef NO_STRING_FUNCTIONS
-void LibMalloc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibMalloc(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = ptrWrap(malloc(Param[0]->Val->Integer));
 }
 
 #ifndef NO_CALLOC
-void LibCalloc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibCalloc(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = ptrWrap(calloc(Param[0]->Val->Integer, Param[1]->Val->Integer));
 }
 #endif
 
 #ifndef NO_REALLOC
-void LibRealloc(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibRealloc(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = ptrWrap(realloc(ptrUnwrap(Param[0]->Val->Pointer), Param[1]->Val->Integer));
 }
 #endif
 
-void LibFree(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibFree(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     free(ptrUnwrap(Param[0]->Val->Pointer));
 }
 
-void LibStrcpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibStrcpy(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     TAnyValueCharPointer To = (TAnyValueCharPointer)Param[0]->Val->Pointer;
     TAnyValueCharPointer From = (TAnyValueCharPointer)Param[1]->Val->Pointer;
@@ -526,7 +526,7 @@ void LibStrcpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
     *To = '\0';
 }
 
-void LibStrncpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibStrncpy(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     TAnyValueCharPointer To = (TAnyValueCharPointer)Param[0]->Val->Pointer;
     TAnyValueCharPointer From = (TAnyValueCharPointer)Param[1]->Val->Pointer;
@@ -539,7 +539,7 @@ void LibStrncpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr P
         *To = '\0';
 }
 
-void LibStrcmp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibStrcmp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     TAnyValueCharPointer Str1 = (TAnyValueCharPointer)Param[0]->Val->Pointer;
     TAnyValueCharPointer Str2 = (TAnyValueCharPointer)Param[1]->Val->Pointer;
@@ -554,7 +554,7 @@ void LibStrcmp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
     ReturnValue->Val->Integer = 0;
 }
 
-void LibStrncmp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibStrncmp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     TAnyValueCharPointer Str1 = (TAnyValueCharPointer)Param[0]->Val->Pointer;
     TAnyValueCharPointer Str2 = (TAnyValueCharPointer)Param[1]->Val->Pointer;
@@ -570,7 +570,7 @@ void LibStrncmp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr P
     ReturnValue->Val->Integer = 0;
 }
 
-void LibStrcat(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibStrcat(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     TAnyValueCharPointer To = (TAnyValueCharPointer)Param[0]->Val->Pointer;
     TAnyValueCharPointer From = (TAnyValueCharPointer)Param[1]->Val->Pointer;
@@ -584,7 +584,7 @@ void LibStrcat(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
     *To = '\0';
 }
 
-void LibIndex(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibIndex(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     TAnyValueCharPointer Pos = (TAnyValueCharPointer)Param[0]->Val->Pointer;
     int SearchChar = Param[1]->Val->Integer;
@@ -598,7 +598,7 @@ void LibIndex(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Par
         ReturnValue->Val->Pointer = Pos;
 }
 
-void LibRindex(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibRindex(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     TAnyValueCharPointer Pos = (TAnyValueCharPointer)Param[0]->Val->Pointer;
     int SearchChar = Param[1]->Val->Integer;
@@ -611,7 +611,7 @@ void LibRindex(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
     }
 }
 
-void LibStrlen(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibStrlen(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     TAnyValueCharPointer Pos = (TAnyValueCharPointer)Param[0]->Val->Pointer;
     int Len;
@@ -622,19 +622,19 @@ void LibStrlen(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
     ReturnValue->Val->Integer = Len;
 }
 
-void LibMemset(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibMemset(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     /* we can use the system memset() */
     memset(Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer);
 }
 
-void LibMemcpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibMemcpy(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     /* we can use the system memcpy() */
     memcpy(Param[0]->Val->Pointer, Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
-void LibMemcmp(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
+void LibMemcmp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     TAnyValueUCharPointer Mem1 = (TAnyValueUCharPointer)Param[0]->Val->Pointer;
     TAnyValueUCharPointer Mem2 = (TAnyValueUCharPointer)Param[1]->Val->Pointer;
