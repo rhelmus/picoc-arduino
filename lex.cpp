@@ -756,14 +756,14 @@ enum LexToken LexGetRawToken(TParseStatePtr Parser, TValuePtrPtr Value, int IncP
                 char LineBuffer[LINEBUFFER_MAX];
                 TLexBufPtr LineTokens;
                 int LineBytes;
-                struct TokenLine *LineNode;
+                TTokenLinePtr LineNode;
 
                 if (!LexGetMoreSource(Parser, LineBuffer, LINEBUFFER_MAX))
                     return TokenEOF;
 
                 /* put the new line at the end of the linked list of interactive lines */        
                 LineTokens = LexAnalyse(pc, pc->StrEmpty, &LineBuffer[0], strlen(LineBuffer), &LineBytes);
-                LineNode = (struct TokenLine *)VariableAlloc(pc, Parser, sizeof(struct TokenLine), TRUE);
+                LineNode = allocMemVariable<struct TokenLine>(Parser, false);
                 LineNode->Tokens = LineTokens;
                 LineNode->NumBytes = LineBytes;
                 if (pc->InteractiveHead == NULL)
@@ -1029,7 +1029,7 @@ TLexBufPtr LexCopyTokens(TParseStatePtr Parser, const TLexBufPtr &StartParserPos
     TLexBufPtr Pos = StartParserPos;
     TLexBufPtr NewTokens;
     TLexBufPtr NewTokenPos;
-    struct TokenLine *ILine;
+    TTokenLinePtr ILine;
     Picoc *pc = Parser->pc;
     
     if (pc->InteractiveHead == NULL)
@@ -1087,7 +1087,7 @@ void LexInteractiveClear(Picoc *pc, TParseStatePtr Parser)
 {
     while (pc->InteractiveHead != NULL)
     {
-        struct TokenLine *NextLine = pc->InteractiveHead->Next;
+        TTokenLinePtr NextLine = pc->InteractiveHead->Next;
         
         deallocMem(pc->InteractiveHead->Tokens);
         deallocMem(pc->InteractiveHead);
@@ -1097,7 +1097,7 @@ void LexInteractiveClear(Picoc *pc, TParseStatePtr Parser)
     if (Parser != NILL)
         Parser->Pos = NILL;
         
-    pc->InteractiveTail = NULL;
+    pc->InteractiveTail = NILL;
 }
 
 /* indicate that we've completed up to this point in the interactive input and free expired tokens */
@@ -1106,7 +1106,7 @@ void LexInteractiveCompleted(Picoc *pc, TParseStatePtr Parser)
     while (pc->InteractiveHead != NULL && !(Parser->Pos >= &pc->InteractiveHead->Tokens[0] && Parser->Pos < &pc->InteractiveHead->Tokens[pc->InteractiveHead->NumBytes]))
     { 
         /* this token line is no longer needed - free it */
-        struct TokenLine *NextLine = pc->InteractiveHead->Next;
+        TTokenLinePtr NextLine = pc->InteractiveHead->Next;
         
         deallocMem(pc->InteractiveHead->Tokens);
         deallocMem(pc->InteractiveHead);
@@ -1116,7 +1116,7 @@ void LexInteractiveCompleted(Picoc *pc, TParseStatePtr Parser)
         { 
             /* we've emptied the list */
             Parser->Pos = NILL;
-            pc->InteractiveTail = NULL;
+            pc->InteractiveTail = NILL;
         }
     }
 }

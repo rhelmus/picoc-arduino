@@ -365,7 +365,7 @@ struct CleanupTokenNode
 /* linked list of lexical tokens used in interactive mode */
 struct TokenLine
 {
-    struct TokenLine *Next;
+    TTokenLinePtr Next;
     TLexBufPtr Tokens;
     int NumBytes;
 };
@@ -394,9 +394,9 @@ struct Picoc_Struct
     TTableEntryPtr GlobalHashTable[GLOBAL_TABLE_SIZE];
     
     /* lexer global data */
-    struct TokenLine *InteractiveHead;
-    struct TokenLine *InteractiveTail;
-    struct TokenLine *InteractiveCurrentLine;
+    TTokenLinePtr InteractiveHead;
+    TTokenLinePtr InteractiveTail;
+    TTokenLinePtr InteractiveCurrentLine;
     int LexUseStatementPrompt;
     union AnyValue LexAnyValue;
     struct Value LexValue;
