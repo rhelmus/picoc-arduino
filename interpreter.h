@@ -359,7 +359,7 @@ struct CleanupTokenNode
 {
     TLexBufPtr Tokens;
     const char *SourceText;
-    CPtrWrapper<struct CleanupTokenNode> Next;
+    TCleanupNodePtr Next;
 };
 
 /* linked list of lexical tokens used in interactive mode */
@@ -599,8 +599,10 @@ void VariableScopeEnd(TParseStatePtr  Parser, int ScopeID, int16_t PrevScopeID);
 void BasicIOInit(Picoc *pc);
 void LibraryInit(Picoc *pc);
 void LibraryAdd(Picoc *pc, TTablePtr GlobalTable, TConstRegStringPtr LibraryName, const struct LibraryFunction *FuncList);
+#ifdef USE_VIRTMEM
 inline void LibraryAdd(Picoc *pc, TTablePtr GlobalTable, const char *LibraryName, const struct LibraryFunction *FuncList)
 { return LibraryAdd(pc, GlobalTable, ptrWrap(LibraryName), FuncList); }
+#endif
 void CLibraryInit(Picoc *pc);
 void PrintCh(char OutCh, IOFILE *Stream);
 void PrintSimpleInt(long Num, IOFILE *Stream);

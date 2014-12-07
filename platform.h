@@ -2,6 +2,8 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+#define USE_VIRTMEM
+
 #include "util.hpp"
 
 #ifdef ARDUINO
@@ -40,6 +42,7 @@
 #define INTERACTIVE_PROMPT_STATEMENT "picoc> "
 #define INTERACTIVE_PROMPT_LINE "     > "
 
+#ifdef USE_VIRTMEM
 typedef CPtrWrapper<struct CleanupTokenNode> TCleanupNodePtr;
 typedef CPtrWrapper<unsigned char> TLexBufPtr;
 typedef CPtrWrapper<struct Value> TValuePtr;
@@ -48,6 +51,7 @@ typedef CPtrWrapper<union AnyValue> TAnyValuePtr;
 typedef CPtrWrapper<char> TRegStringPtr;
 typedef CPtrWrapper<const char> TConstRegStringPtr;
 typedef CPtrWrapper<TRegStringPtr> TRegStringPtrPtr;
+typedef CPtrWrapper<struct ReservedWord> TReservedWordPtr;
 typedef CPtrWrapper<char> TValueCharPointer;
 typedef CPtrWrapperBase TAnyValueVoidPointer;
 typedef CPtrWrapper<int> TAnyValueIntPointer;
@@ -71,10 +75,37 @@ typedef CPtrWrapper<struct TokenLine> TTokenLinePtr;
 #define WRAP_REGSTRINGS
 #define WRAP_ANYVALUE
 #define MAX_INC_FILENAME 128
-//typedef struct Value * TValuePtr;
-//typedef struct Value ** TValuePtrPtr;
-//typedef unsigned char * TLexBuf;
 
+#else
+typedef struct CleanupTokenNode *TCleanupNodePtr;
+typedef unsigned char *TLexBufPtr;
+typedef struct Value *TValuePtr;
+typedef TValuePtr *TValuePtrPtr;
+typedef union AnyValue *TAnyValuePtr;
+typedef char *TRegStringPtr;
+typedef const char *TConstRegStringPtr;
+typedef TRegStringPtr *TRegStringPtrPtr;
+typedef struct ReservedWord *TReservedWordPtr;
+typedef char *TValueCharPointer;
+typedef void *TAnyValueVoidPointer;
+typedef int *TAnyValueIntPointer;
+typedef float *TAnyValueFloatPointer;
+typedef char *TAnyValueCharPointer;
+typedef unsigned char *TAnyValueUCharPointer;
+typedef char *TStdioCharPtr;
+typedef const char *TStdioConstCharPtr;
+typedef struct ValueType *TValueTypePtr;
+typedef TValueTypePtr *TValueTypePtrPtr;
+typedef struct TableEntry *TTableEntryPtr;
+typedef TTableEntryPtr *TTableEntryPtrPtr;
+typedef struct Table *TTablePtr;
+typedef char *TTableCharPtr;
+typedef struct IncludeLibrary *TIncludeLibraryPtr;
+typedef struct ParseState *TParseStatePtr;
+typedef struct ExpressionStack *TExpressionStackPtr;
+typedef TExpressionStackPtr *TExpressionStackPtrPtr;
+typedef struct TokenLine *TTokenLinePtr;
+#endif
 /* host platform includes */
 #ifdef UNIX_HOST
 # undef USE_MALLOC_STACK                   /* stack is allocated using malloc() */

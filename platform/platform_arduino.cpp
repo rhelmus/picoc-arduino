@@ -1,9 +1,7 @@
 #include <Arduino.h>
 
-extern "C" {
 #include "../picoc.h"
 #include "../interpreter.h"
-}
 
 namespace {
 

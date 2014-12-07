@@ -459,11 +459,13 @@ void VariableGet(Picoc *pc, TParseStatePtr Parser, TConstRegStringPtr Ident, TVa
     }
 }
 
+#ifdef USE_VIRTMEM
 /* define a global variable shared with a platform global. Ident will be registered */
 void VariableDefinePlatformVar(Picoc *pc, TParseStatePtr Parser, const char *Ident, TValueTypePtr Typ, TAnyValuePtr FromValue, int IsWritable)
 {
     return VariableDefinePlatformVar(pc, Parser, ptrWrap(Ident), Typ, FromValue, IsWritable);
 }
+#endif
 
 void VariableDefinePlatformVar(Picoc *pc, TParseStatePtr Parser, TConstRegStringPtr Ident, TValueTypePtr Typ, TAnyValuePtr FromValue, int IsWritable)
 {

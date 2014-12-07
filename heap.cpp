@@ -73,6 +73,8 @@ void *HeapAllocStack(Picoc *pc, int Size)
 #endif
     if (NewTop > (char *)pc->HeapBottom)
         return NULL;
+
+//    printf("Stack used: %ld\n", ((intptr_t)NewTop - (intptr_t)pc->HeapMemory));
         
     pc->HeapStackTop = (void *)NewTop;
     memset((void *)NewMem, '\0', Size);
@@ -101,6 +103,8 @@ int HeapPopStack(Picoc *pc, void *Addr, int Size)
     pc->HeapStackTop = (void *)((char *)pc->HeapStackTop - ToLose);
     assert(Addr == NULL || pc->HeapStackTop == Addr);
     
+//    printf("Stack used: %ld\n", ((intptr_t)pc->HeapStackTop - (intptr_t)pc->HeapMemory));
+
     return TRUE;
 }
 

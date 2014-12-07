@@ -41,7 +41,7 @@ void TableInitTable(TTablePtr Tbl, TTableEntryPtrPtr HashTable, int Size, int On
 static TTableEntryPtr TableSearch(TTablePtr Tbl, TConstRegStringPtr Key, int *AddAt)
 {
     TTableEntryPtr Entry;
-    int HashValue = ((unsigned long)(CPtrWrapperBase::getPtr(Key))) % Tbl->Size;   /* shared strings have unique addresses so we don't need to hash them */
+    int HashValue = ((unsigned long)(getNumPtr(Key))) % Tbl->Size;   /* shared strings have unique addresses so we don't need to hash them */
     
     for (Entry = Tbl->HashTable[HashValue]; Entry != NULL; Entry = Entry->Next)
     {
@@ -106,7 +106,7 @@ int TableGet(TTablePtr Tbl, TConstRegStringPtr Key, TValuePtrPtr Val, const char
 TValuePtr TableDelete(Picoc *pc, TTablePtr Tbl, const TRegStringPtr Key)
 {
     TTableEntryPtrPtr EntryPtr;
-    int HashValue = ((unsigned long)CPtrWrapperBase::getPtr(Key)) % Tbl->Size;   /* shared strings have unique addresses so we don't need to hash them */
+    int HashValue = ((unsigned long)getNumPtr(Key)) % Tbl->Size;   /* shared strings have unique addresses so we don't need to hash them */
     
     for (EntryPtr = &Tbl->HashTable[HashValue]; *EntryPtr != NILL; EntryPtr = &(*EntryPtr)->Next)
     {
@@ -179,20 +179,24 @@ TRegStringPtr TableStrRegister2(Picoc *pc, const char *Str, int Len)
     return TableSetIdentifier(pc, ptrWrap(&pc->StringTable), ptrWrap(Str), Len);
 }
 
+#ifdef USE_VIRTMEM
 TRegStringPtr TableStrRegister2(Picoc *pc, TConstRegStringPtr Str, int Len)
 {
     return TableSetIdentifier(pc, ptrWrap(&pc->StringTable), Str, Len);
 }
+#endif
 
 TRegStringPtr TableStrRegister(Picoc *pc, const char *Str)
 {
     return TableStrRegister2(pc, Str, strlen((char *)Str));
 }
 
+#ifdef USE_VIRTMEM
 TRegStringPtr TableStrRegister(Picoc *pc, TConstRegStringPtr Str)
 {
     return TableStrRegister2(pc, Str, strlen(Str));
 }
+#endif
 
 /* free all the strings */
 void TableStrFree(Picoc *pc)

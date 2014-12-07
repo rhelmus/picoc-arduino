@@ -9,7 +9,11 @@
 template <typename T> class CPtrWrapper;
 struct Picoc_Struct;
 typedef struct Picoc_Struct Picoc;
+#ifdef USE_VIRTMEM
 typedef CPtrWrapper<struct ParseState> TParseStatePtr;
+#else
+typedef struct ParseState *TParseStatePtr;
+#endif
 
 void *HeapAllocMem(Picoc *pc, int Size);
 void HeapFreeMem(Picoc *pc, void *Mem);
@@ -54,16 +58,11 @@ class CPtrWrapperBase
     friend inline int strcmp(const CPtrWrapper<const char> &s1, const CPtrWrapper<const char> &s2);
     friend inline int strcmp(const char *s1, const CPtrWrapper<const char> &s2);
     friend inline size_t strlen(const CPtrWrapper<const char> &s);
-    template <typename T1, typename T2> friend inline CPtrWrapper<T1> pointerCast(const T2 &p);
     friend intptr_t getNumPtr(const CPtrWrapperBase &pwb);
     friend void setPtrFromNum(CPtrWrapperBase &pwb, intptr_t ip);
     template <typename M> friend inline CPtrWrapperBase getMembrPtr(void *, const CPtrWrapper<M> &m);
     template <typename M> friend inline CPtrWrapper<M> getMembrPtr(const CPtrWrapperBase &c, const M *m);
     template <typename M> friend inline CPtrWrapper<M> getMembrPtr(const CPtrWrapperBase &c, const CPtrWrapper<M> &m);
-    template <typename T2> friend inline CPtrWrapper<T2> ptrWrap(const T2 *p) { CPtrWrapper<T2> ret; ret.ptr = (void *)p; return ret; }
-    friend inline CPtrWrapperBase ptrWrap(void *p) { CPtrWrapperBase ret; ret.ptr = (void *)p; return ret; }
-    template <typename T2> friend inline T2 *ptrUnwrap(const CPtrWrapper<T2> &p) { return static_cast<T2 *>(p.ptr); } // UNDONE
-    friend inline void *ptrUnwrap(const CPtrWrapperBase &p) { return p.ptr; } // UNDONE
     friend class CPtrWrapLock;
 
 protected:
@@ -71,7 +70,10 @@ protected:
 
 public:
     static void setPicoc(Picoc *p) { pc = p; }
-    static void *getPtr(const CPtrWrapperBase &p) { return p.ptr; } // UNDONE
+    template <typename T2> static inline CPtrWrapper<T2> ptrWrap(const T2 *p) { CPtrWrapper<T2> ret; ret.ptr = (void *)p; return ret; }
+    static inline CPtrWrapperBase ptrWrap(void *p) { CPtrWrapperBase ret; ret.ptr = (void *)p; return ret; }
+    template<typename T2> static inline T2 *ptrUnwrap(const CPtrWrapper<T2> &p) { return static_cast<T2 *>(p.ptr); } // UNDONE
+    static inline void *ptrUnwrap(const CPtrWrapperBase &p) { return p.ptr; } // UNDONE
 
     // HACK: this allows constructing CPtrWrapper objects from CPtrWrapperBase variables, similar to
     // initializing non void pointers with a void pointer
@@ -258,6 +260,7 @@ inline size_t strlen(const CPtrWrapper<const char> &s) { return strlen((const ch
 inline intptr_t getNumPtr(const CPtrWrapperBase &pwb) { return reinterpret_cast<intptr_t>(pwb.ptr); }
 inline intptr_t getNumPtr(const void *p) { return reinterpret_cast<intptr_t>(p); }
 inline void setPtrFromNum(CPtrWrapperBase &pwb, intptr_t ip) { pwb.ptr = reinterpret_cast<void *>(ip); }
+inline void setPtrFromNum(void *p, intptr_t ip) { p = reinterpret_cast<void *>(ip); }
 
 inline intptr_t getMembrPtrDiff(const void *c, const void *m) { return (const char *)m - (const char *)c; }
 template <typename M> inline M *getMembrPtr(void *, M *m) { return m; }
@@ -273,11 +276,19 @@ class CPtrWrapLock
     CPtrWrapperBase ptrWrap;
 
 public:
-    CPtrWrapLock(const CPtrWrapperBase &w) : ptrWrap(w) { ++locks; printf("locks: %d\n", locks); }
+    CPtrWrapLock(const CPtrWrapperBase &w) : ptrWrap(w) { ++locks; /*printf("locks: %d\n", locks);*/ }
     ~CPtrWrapLock(void) { unlock(); }
 
-    void unlock(void) { --locks; printf("locks: %d\n", locks); }
+    void unlock(void) { --locks; /*printf("locks: %d\n", locks);*/ }
     void *operator &(void) { return ptrWrap.ptr; }
 };
+
+#ifdef USE_VIRTMEM
+#define ptrWrap CPtrWrapperBase::ptrWrap
+#define ptrUnwrap CPtrWrapperBase::ptrUnwrap
+#else
+#define ptrWrap /* empty */
+#define ptrUnwrap /* empty */
+#endif
 
 #endif // UTIL_HPP

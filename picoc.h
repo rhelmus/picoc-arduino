@@ -52,8 +52,10 @@ void PicocFreeCharBuffer(Picoc *pc, char *buf);
 
 /* parse.c */
 void PicocParse(Picoc *pc, TConstRegStringPtr FileName, const char *Source, int SourceLen, int RunIt, int CleanupNow, int CleanupSource, int EnableDebugger);
+#ifdef USE_VIRTMEM
 inline void PicocParse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int RunIt, int CleanupNow, int CleanupSource, int EnableDebugger)
 { return PicocParse(pc, ptrWrap(FileName), Source, SourceLen, RunIt, CleanupNow, CleanupSource, EnableDebugger); }
+#endif
 void PicocParseInteractive(Picoc *pc);
 void PicocParseLineByLine(Picoc *pc, const char *FileName, void *FilePointer, int EnableDebugger);
 

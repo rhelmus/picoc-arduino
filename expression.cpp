@@ -1386,7 +1386,7 @@ void ExpressionParseMacroCall(TParseStatePtr Parser, TExpressionStackPtrPtr Stac
 #ifndef NO_FP
         ExpressionStackPushValueByType(Parser, StackTop, ptrWrap(&Parser->pc->FPType));  /* largest return type there is */
 #else
-        ExpressionStackPushValueByType(Parser, StackTop, &Parser->pc->IntType);  /* largest return type there is */
+        ExpressionStackPushValueByType(Parser, StackTop, ptrWrap(&Parser->pc->IntType));  /* largest return type there is */
 #endif
         ReturnValue = (*StackTop)->Val;
         HeapPushStackFrame(Parser->pc);

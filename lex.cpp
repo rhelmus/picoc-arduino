@@ -220,11 +220,7 @@ enum LexToken LexCheckReservedWord(Picoc *pc, TConstRegStringPtr Word)
     TValuePtr val;
     
     if (TableGet(ptrWrap(&pc->ReservedWordTable), Word, &val, NULL, NULL, NULL))
-#ifdef WRAP_REGSTRINGS
-        return ((CPtrWrapper<struct ReservedWord>)val)->Token;
-#else
-        return (pointerCast<struct ReservedWord>(val))->Token;
-#endif
+        return ((TReservedWordPtr)(val))->Token;
     else
         return TokenNone;
 }

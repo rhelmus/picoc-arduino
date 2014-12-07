@@ -24,6 +24,8 @@ $COPY "${PWD}"/platform.cpp "${DEST}/"
 $COPY "${PWD}"/platform.h "${DEST}/"
 $COPY "${PWD}"/table.cpp "${DEST}/"
 $COPY "${PWD}"/type.cpp "${DEST}/"
+$COPY "${PWD}"/util.cpp "${DEST}/"
+$COPY "${PWD}"/util.hpp "${DEST}/"
 $COPY "${PWD}"/variable.cpp "${DEST}/"
 $COPY "${PWD}"/README "${DEST}/"
 

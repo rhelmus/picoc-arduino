@@ -129,12 +129,14 @@ void PrintStr(const char *Str, struct OutputStream *Stream)
         PrintCh(*Str++, Stream);
 }
 
+#ifdef USE_VIRTMEM
 /* print a string to a stream without using printf/sprintf */
 void PrintStr(TConstRegStringPtr Str, struct OutputStream *Stream)
 {
     while (*Str != 0)
         PrintCh(*Str++, Stream);
 }
+#endif
 
 /* print a single character a given number of times */
 void PrintRepeatedChar(char ShowChar, int Length, struct OutputStream *Stream)

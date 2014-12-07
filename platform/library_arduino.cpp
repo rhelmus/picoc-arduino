@@ -1,8 +1,6 @@
 #include <Arduino.h>
 
-extern "C" {
 #include "../interpreter.h"
-}
 
 namespace {
 
@@ -25,11 +23,11 @@ typedef signed long int32_t;\
 
 void ArduinoSetupFunc(Picoc *pc)
 {
-    VariableDefinePlatformVar(pc, NULL, "HIGH", &pc->CharType, ptrWrap(&HIGHValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "LOW", &pc->CharType, ptrWrap(&LOWValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "INPUT", &pc->CharType, ptrWrap(&INPUTValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "OUTPUT", &pc->CharType, ptrWrap(&OUTPUTValue), FALSE);
-    VariableDefinePlatformVar(pc, NULL, "INPUT_PULLUP", &pc->CharType, ptrWrap(&INPUT_PULLUPValue), FALSE);
+    VariableDefinePlatformVar(pc, NILL, "HIGH", ptrWrap(&pc->CharType), (TAnyValuePtr)ptrWrap(&HIGHValue), FALSE);
+    VariableDefinePlatformVar(pc, NILL, "LOW", ptrWrap(&pc->CharType), (TAnyValuePtr)ptrWrap(&LOWValue), FALSE);
+    VariableDefinePlatformVar(pc, NILL, "INPUT", ptrWrap(&pc->CharType), (TAnyValuePtr)ptrWrap(&INPUTValue), FALSE);
+    VariableDefinePlatformVar(pc, NILL, "OUTPUT", ptrWrap(&pc->CharType), (TAnyValuePtr)ptrWrap(&OUTPUTValue), FALSE);
+    VariableDefinePlatformVar(pc, NILL, "INPUT_PULLUP", ptrWrap(&pc->CharType), (TAnyValuePtr)ptrWrap(&INPUT_PULLUPValue), FALSE);
 }
 
 void CpinMode(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
