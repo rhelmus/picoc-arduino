@@ -9,7 +9,7 @@
 /* initialise the debugger by clearing the breakpoint table */
 void DebugInit(Picoc *pc)
 {
-    TableInitTable(&pc->BreakpointTable, &pc->BreakpointHashTable[0], BREAKPOINT_TABLE_SIZE, TRUE);
+    TableInitTable(ptrWrap(&pc->BreakpointTable), &pc->BreakpointHashTable[0], BREAKPOINT_TABLE_SIZE, TRUE);
     pc->BreakpointCount = 0;
 }
 

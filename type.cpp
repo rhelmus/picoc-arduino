@@ -17,7 +17,7 @@ TValueTypePtr TypeAdd(Picoc *pc, TParseStatePtr Parser, TValueTypePtr ParentType
     NewType->Sizeof = Sizeof;
     NewType->AlignBytes = AlignBytes;
     NewType->Identifier = Identifier;
-    NewType->Members = NULL;
+    NewType->Members = NILL;
     NewType->FromType = ParentType;
     NewType->DerivedTypeList = NILL;
     NewType->Flags |= FlagOnHeap;
@@ -117,7 +117,7 @@ void TypeAddBaseType(Picoc *pc, TValueTypePtr TypeNode, enum BaseType Base, int 
     TypeNode->Sizeof = Sizeof;
     TypeNode->AlignBytes = AlignBytes;
     TypeNode->Identifier = pc->StrEmpty;
-    TypeNode->Members = NULL;
+    TypeNode->Members = NILL;
     TypeNode->FromType = NILL;
     TypeNode->DerivedTypeList = NILL;
     TypeNode->Flags &= ~FlagOnHeap;
@@ -182,7 +182,7 @@ void TypeCleanupNode(Picoc *pc, TValueTypePtr Typ)
             if (SubType->Members != NULL)
             {
                 VariableTableCleanup(pc, SubType->Members);
-                HeapFreeMem(pc, SubType->Members);
+                deallocMem(SubType->Members);
             }
 
             /* free this node */
@@ -240,9 +240,9 @@ void TypeParseStruct(TParseStatePtr Parser, TValueTypePtrPtr Typ, int IsStruct)
         ProgramFail(Parser, "struct/union definitions can only be globals");
         
     LexGetToken(Parser, NILL, TRUE);
-    (*Typ)->Members = (struct Table *)VariableAlloc(pc, Parser, sizeof(struct Table) + STRUCT_TABLE_SIZE * sizeof(struct TableEntry), TRUE);
-    (*Typ)->Members->HashTable = (TTableEntryPtrPtr)ptrWrap((char *)(*Typ)->Members + sizeof(struct Table));
-    TableInitTable((*Typ)->Members, (TTableEntryPtrPtr)ptrWrap((char *)(*Typ)->Members + sizeof(struct Table)), STRUCT_TABLE_SIZE, TRUE);
+    (*Typ)->Members = allocMemVariable<struct Table>(Parser, false, sizeof(struct Table) + STRUCT_TABLE_SIZE * sizeof(struct TableEntry));
+    (*Typ)->Members->HashTable = (TTableEntryPtrPtr)((TTableCharPtr)(*Typ)->Members + sizeof(struct Table));
+    TableInitTable((*Typ)->Members, (TTableEntryPtrPtr)((TTableCharPtr)(*Typ)->Members + sizeof(struct Table)), STRUCT_TABLE_SIZE, TRUE);
     
     do {
         TypeParse(Parser, &MemberType, &MemberIdentifier, NULL);
@@ -296,9 +296,9 @@ TValueTypePtr TypeCreateOpaqueStruct(Picoc *pc, TParseStatePtr Parser, TConstReg
     TValueTypePtr Typ = TypeGetMatching(pc, Parser, ptrWrap(&pc->UberType), TypeStruct, 0, StructName, FALSE);
     
     /* create the (empty) table */
-    Typ->Members = (struct Table *)VariableAlloc(pc, Parser, sizeof(struct Table) + STRUCT_TABLE_SIZE * sizeof(struct TableEntry), TRUE);
-    Typ->Members->HashTable = (TTableEntryPtrPtr)ptrWrap((char *)Typ->Members + sizeof(struct Table));
-    TableInitTable(Typ->Members, (TTableEntryPtrPtr)ptrWrap((char *)Typ->Members + sizeof(struct Table)), STRUCT_TABLE_SIZE, TRUE);
+    Typ->Members = allocMemVariable<struct Table>(Parser, false, sizeof(struct Table) + STRUCT_TABLE_SIZE * sizeof(struct TableEntry));
+    Typ->Members->HashTable = (TTableEntryPtrPtr)((TTableCharPtr)Typ->Members + sizeof(struct Table));
+    TableInitTable(Typ->Members, (TTableEntryPtrPtr)((TTableCharPtr)Typ->Members + sizeof(struct Table)), STRUCT_TABLE_SIZE, TRUE);
     Typ->Sizeof = Size;
     
     return Typ;
@@ -342,7 +342,7 @@ void TypeParseEnum(TParseStatePtr Parser, TValueTypePtrPtr Typ)
         ProgramFail(Parser, "enum definitions can only be globals");
         
     LexGetToken(Parser, NILL, TRUE);
-    (*Typ)->Members = &pc->GlobalTable;
+    (*Typ)->Members = ptrWrap(&pc->GlobalTable);
     memset((void *)&InitValue, '\0', sizeof(struct Value));
     InitValue.Typ = ptrWrap(&pc->IntType);
     InitValue.Val = (TAnyValuePtr)ptrWrap(&EnumValue);

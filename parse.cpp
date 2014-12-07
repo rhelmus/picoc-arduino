@@ -156,19 +156,19 @@ TValuePtr ParseFunctionDefinition(TParseStatePtr Parser, TValueTypePtr ReturnTyp
         FuncValue->Val->FuncDef.Body->Pos = LexCopyTokens(FuncBody, FuncBody->Pos, Parser->Pos);
 
         /* is this function already in the global table? */
-        if (TableGet(&pc->GlobalTable, Identifier, &OldFuncValue, NULL, NULL, NULL))
+        if (TableGet(ptrWrap(&pc->GlobalTable), Identifier, &OldFuncValue, NULL, NULL, NULL))
         {
             if (OldFuncValue->Val->FuncDef.Body == NULL)
             {
                 /* override an old function prototype */
-                VariableFree(pc, TableDelete(pc, &pc->GlobalTable, Identifier));
+                VariableFree(pc, TableDelete(pc, ptrWrap(&pc->GlobalTable), Identifier));
             }
             else
                 ProgramFail(Parser, "'%s' is already defined", Identifier);
         }
     }
 
-    if (!TableSet(pc, &pc->GlobalTable, Identifier, FuncValue, Parser->FileName, Parser->Line, Parser->CharacterPos))
+    if (!TableSet(pc, ptrWrap(&pc->GlobalTable), Identifier, FuncValue, Parser->FileName, Parser->Line, Parser->CharacterPos))
         ProgramFail(Parser, "'%s' is already defined", Identifier);
         
     return FuncValue;
@@ -431,7 +431,7 @@ void ParseMacroDefinition(TParseStatePtr Parser)
     LexToEndOfLine(Parser);
     MacroValue->Val->MacroDef.Body.Pos = LexCopyTokens(Parser, MacroValue->Val->MacroDef.Body.Pos, Parser->Pos); // UNDONE: switched MacroDef.Body to Parser, shouldn't matter
     
-    if (!TableSet(Parser->pc, &Parser->pc->GlobalTable, MacroNameStr, MacroValue, Parser->FileName, Parser->Line, Parser->CharacterPos))
+    if (!TableSet(Parser->pc, ptrWrap(&Parser->pc->GlobalTable), MacroNameStr, MacroValue, Parser->FileName, Parser->Line, Parser->CharacterPos))
         ProgramFail(Parser, "'%s' is already defined", MacroNameStr);
 }
 
@@ -918,7 +918,7 @@ enum ParseResult ParseStatement(TParseStatePtr Parser, int CheckTrailingSemicolo
             if (Parser->Mode == RunModeRun)
             { 
                 /* delete this variable or function */
-                CValue = TableDelete(Parser->pc, &Parser->pc->GlobalTable, LexerValue->Val->Identifier);
+                CValue = TableDelete(Parser->pc, ptrWrap(&Parser->pc->GlobalTable), LexerValue->Val->Identifier);
 
                 if (CValue == NULL)
                     ProgramFail(Parser, "'%s' is not defined", LexerValue->Val->Identifier);

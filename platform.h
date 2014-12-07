@@ -60,6 +60,8 @@ typedef CPtrWrapper<struct ValueType> TValueTypePtr;
 typedef CPtrWrapper<TValueTypePtr> TValueTypePtrPtr;
 typedef CPtrWrapper<struct TableEntry> TTableEntryPtr;
 typedef CPtrWrapper<TTableEntryPtr> TTableEntryPtrPtr;
+typedef CPtrWrapper<struct Table> TTablePtr;
+typedef CPtrWrapper<char> TTableCharPtr;
 typedef CPtrWrapper<struct IncludeLibrary> TIncludeLibraryPtr;
 typedef CPtrWrapper<struct ParseState> TParseStatePtr;
 

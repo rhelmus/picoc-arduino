@@ -88,11 +88,11 @@ void LexInit(Picoc *pc)
 {
     unsigned int Count;
     
-    TableInitTable(&pc->ReservedWordTable, &pc->ReservedWordHashTable[0], sizeof(ReservedWords) / sizeof(struct ReservedWord) * 2, TRUE);
+    TableInitTable(ptrWrap(&pc->ReservedWordTable), &pc->ReservedWordHashTable[0], sizeof(ReservedWords) / sizeof(struct ReservedWord) * 2, TRUE);
 
     for (Count = 0; Count < sizeof(ReservedWords) / sizeof(struct ReservedWord); Count++)
     {
-        TableSet(pc, &pc->ReservedWordTable, TableStrRegister(pc, ReservedWords[Count].Word), (TValuePtr)ptrWrap((void *)&ReservedWords[Count]), NILL, 0, 0);
+        TableSet(pc, ptrWrap(&pc->ReservedWordTable), TableStrRegister(pc, ReservedWords[Count].Word), (TValuePtr)ptrWrap((void *)&ReservedWords[Count]), NILL, 0, 0);
     }
     
     pc->LexValue.Typ = NILL;
@@ -109,7 +109,7 @@ void LexCleanup(Picoc *pc)
     LexInteractiveClear(pc, NILL);
 
     for (Count = 0; Count < sizeof(ReservedWords) / sizeof(struct ReservedWord); Count++)
-        TableDelete(pc, &pc->ReservedWordTable, TableStrRegister(pc, ReservedWords[Count].Word));
+        TableDelete(pc, ptrWrap(&pc->ReservedWordTable), TableStrRegister(pc, ReservedWords[Count].Word));
 }
 
 /* used in interactive mode / line by line mode to get more source text from user/file input */
@@ -219,7 +219,7 @@ enum LexToken LexCheckReservedWord(Picoc *pc, TConstRegStringPtr Word)
 {
     TValuePtr val;
     
-    if (TableGet(&pc->ReservedWordTable, Word, &val, NULL, NULL, NULL))
+    if (TableGet(ptrWrap(&pc->ReservedWordTable), Word, &val, NULL, NULL, NULL))
 #ifdef WRAP_REGSTRINGS
         return ((CPtrWrapper<struct ReservedWord>)val)->Token;
 #else
@@ -861,7 +861,7 @@ void LexHashIfdef(TParseStatePtr Parser, int IfNot)
         ProgramFail(Parser, "identifier expected");
     
     /* is the identifier defined? */
-    IsDefined = TableGet(&Parser->pc->GlobalTable, IdentValue->Val->Identifier, &SavedValue, NULL, NULL, NULL);
+    IsDefined = TableGet(ptrWrap(&Parser->pc->GlobalTable), IdentValue->Val->Identifier, &SavedValue, NULL, NULL, NULL);
     if (Parser->HashIfEvaluateToLevel == Parser->HashIfLevel && ( (IsDefined && !IfNot) || (!IsDefined && IfNot)) )
     {
         /* #if is active, evaluate to this new level */
@@ -883,7 +883,7 @@ void LexHashIf(TParseStatePtr Parser)
     if (Token == TokenIdentifier)
     {
         /* look up a value from a macro definition */
-        if (!TableGet(&Parser->pc->GlobalTable, IdentValue->Val->Identifier, &SavedValue, NULL, NULL, NULL))
+        if (!TableGet(ptrWrap(&Parser->pc->GlobalTable), IdentValue->Val->Identifier, &SavedValue, NULL, NULL, NULL))
             ProgramFail(Parser, "'%s' is undefined", IdentValue->Val->Identifier);
         
         if (SavedValue->Typ->Base != TypeMacro)

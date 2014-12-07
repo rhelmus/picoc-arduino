@@ -89,7 +89,7 @@ void IncludeFile(Picoc *pc, TRegStringPtr FileName, int LineByLine)
                 
                 /* set up the library functions */
                 if (LInclude->FuncList != NULL)
-                    LibraryAdd(pc, &pc->GlobalTable, FileName, LInclude->FuncList);
+                    LibraryAdd(pc, ptrWrap(&pc->GlobalTable), FileName, LInclude->FuncList);
             }
             
             return;

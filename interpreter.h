@@ -186,7 +186,7 @@ struct ValueType
     TValueTypePtr FromType;     /* the type we're derived from (or NULL) */
     TValueTypePtr DerivedTypeList;  /* first in a list of types derived from this one */
     TValueTypePtr Next;         /* next item in the derived type list */
-    struct Table *Members;          /* members of a struct or union */
+    TTablePtr Members;          /* members of a struct or union */
     uint8_t Flags;
 };
 
@@ -500,11 +500,11 @@ TRegStringPtr TableStrRegister(Picoc *pc, const char *Str);
 TRegStringPtr TableStrRegister(Picoc *pc, TConstRegStringPtr Str);
 TRegStringPtr TableStrRegister2(Picoc *pc, const char *Str, int Len);
 TRegStringPtr TableStrRegister2(Picoc *pc, TConstRegStringPtr Str, int Len);
-void TableInitTable(struct Table *Tbl, TTableEntryPtrPtr HashTable, int Size, int OnHeap);
-int TableSet(Picoc *pc, struct Table *Tbl, TConstRegStringPtr Key, TValuePtr Val, TConstRegStringPtr DeclFileName, int DeclLine, int DeclColumn);
-int TableGet(struct Table *Tbl, TConstRegStringPtr Key, TValuePtrPtr Val, const char **DeclFileName, int *DeclLine, int *DeclColumn);
-TValuePtr TableDelete(Picoc *pc, struct Table *Tbl, const TRegStringPtr Key);
-TRegStringPtr TableSetIdentifier(Picoc *pc, struct Table *Tbl, TConstRegStringPtr Ident, int IdentLen);
+void TableInitTable(TTablePtr Tbl, TTableEntryPtrPtr HashTable, int Size, int OnHeap);
+int TableSet(Picoc *pc, TTablePtr Tbl, TConstRegStringPtr Key, TValuePtr Val, TConstRegStringPtr DeclFileName, int DeclLine, int DeclColumn);
+int TableGet(TTablePtr Tbl, TConstRegStringPtr Key, TValuePtrPtr Val, const char **DeclFileName, int *DeclLine, int *DeclColumn);
+TValuePtr TableDelete(Picoc *pc, TTablePtr Tbl, const TRegStringPtr Key);
+TRegStringPtr TableSetIdentifier(Picoc *pc, TTablePtr Tbl, TConstRegStringPtr Ident, int IdentLen);
 void TableStrFree(Picoc *pc);
 
 /* lex.c */
@@ -571,7 +571,7 @@ void HeapFreeMem(Picoc *pc, void *Mem);
 void VariableInit(Picoc *pc);
 void VariableCleanup(Picoc *pc);
 void VariableFree(Picoc *pc, TValuePtr Val);
-void VariableTableCleanup(Picoc *pc, struct Table *HashTable);
+void VariableTableCleanup(Picoc *pc, TTablePtr HashTable);
 void *VariableAlloc(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap);
 void VariableStackPop(TParseStatePtr Parser, TValuePtr Var);
 TValuePtr VariableAllocValueAndData(Picoc *pc, TParseStatePtr Parser, int DataSize, int IsLValue, TValuePtr LValueFrom, int OnHeap);
@@ -598,8 +598,8 @@ void VariableScopeEnd(TParseStatePtr  Parser, int ScopeID, int16_t PrevScopeID);
 /* clibrary.c */
 void BasicIOInit(Picoc *pc);
 void LibraryInit(Picoc *pc);
-void LibraryAdd(Picoc *pc, struct Table *GlobalTable, TConstRegStringPtr LibraryName, const struct LibraryFunction *FuncList);
-inline void LibraryAdd(Picoc *pc, struct Table *GlobalTable, const char *LibraryName, const struct LibraryFunction *FuncList)
+void LibraryAdd(Picoc *pc, TTablePtr GlobalTable, TConstRegStringPtr LibraryName, const struct LibraryFunction *FuncList);
+inline void LibraryAdd(Picoc *pc, TTablePtr GlobalTable, const char *LibraryName, const struct LibraryFunction *FuncList)
 { return LibraryAdd(pc, GlobalTable, ptrWrap(LibraryName), FuncList); }
 void CLibraryInit(Picoc *pc);
 void PrintCh(char OutCh, IOFILE *Stream);

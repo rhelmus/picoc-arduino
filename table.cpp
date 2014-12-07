@@ -6,7 +6,7 @@
 /* initialise the shared string system */
 void TableInit(Picoc *pc)
 {
-    TableInitTable(&pc->StringTable, &pc->StringHashTable[0], STRING_TABLE_SIZE, TRUE);
+    TableInitTable(ptrWrap(&pc->StringTable), &pc->StringHashTable[0], STRING_TABLE_SIZE, TRUE);
     pc->StrEmpty = TableStrRegister(pc, "");
 }
 
@@ -29,7 +29,7 @@ static unsigned int TableHash(TConstRegStringPtr Key, int Len)
 }
 
 /* initialise a table */
-void TableInitTable(struct Table *Tbl, TTableEntryPtrPtr HashTable, int Size, int OnHeap)
+void TableInitTable(TTablePtr Tbl, TTableEntryPtrPtr HashTable, int Size, int OnHeap)
 {
     Tbl->Size = Size;
     Tbl->OnHeap = OnHeap;
@@ -38,7 +38,7 @@ void TableInitTable(struct Table *Tbl, TTableEntryPtrPtr HashTable, int Size, in
 }
 
 /* check a hash table entry for a key */
-static TTableEntryPtr TableSearch(struct Table *Tbl, TConstRegStringPtr Key, int *AddAt)
+static TTableEntryPtr TableSearch(TTablePtr Tbl, TConstRegStringPtr Key, int *AddAt)
 {
     TTableEntryPtr Entry;
     int HashValue = ((unsigned long)(CPtrWrapperBase::getPtr(Key))) % Tbl->Size;   /* shared strings have unique addresses so we don't need to hash them */
@@ -55,7 +55,7 @@ static TTableEntryPtr TableSearch(struct Table *Tbl, TConstRegStringPtr Key, int
 
 /* set an identifier to a value. returns FALSE if it already exists. 
  * Key must be a shared string from TableStrRegister() */
-int TableSet(Picoc *pc, struct Table *Tbl, TConstRegStringPtr Key, TValuePtr Val, TConstRegStringPtr DeclFileName, int DeclLine, int DeclColumn)
+int TableSet(Picoc *pc, TTablePtr Tbl, TConstRegStringPtr Key, TValuePtr Val, TConstRegStringPtr DeclFileName, int DeclLine, int DeclColumn)
 {
     int AddAt;
     TTableEntryPtr FoundEntry = TableSearch(Tbl, Key, &AddAt);
@@ -81,7 +81,7 @@ int TableSet(Picoc *pc, struct Table *Tbl, TConstRegStringPtr Key, TValuePtr Val
 
 /* find a value in a table. returns FALSE if not found. 
  * Key must be a shared string from TableStrRegister() */
-int TableGet(struct Table *Tbl, TConstRegStringPtr Key, TValuePtrPtr Val, const char **DeclFileName, int *DeclLine, int *DeclColumn)
+int TableGet(TTablePtr Tbl, TConstRegStringPtr Key, TValuePtrPtr Val, const char **DeclFileName, int *DeclLine, int *DeclColumn)
 {
     int AddAt;
     TTableEntryPtr FoundEntry = TableSearch(Tbl, Key, &AddAt);
@@ -103,7 +103,7 @@ int TableGet(struct Table *Tbl, TConstRegStringPtr Key, TValuePtrPtr Val, const 
 }
 
 /* remove an entry from the table */
-TValuePtr TableDelete(Picoc *pc, struct Table *Tbl, const TRegStringPtr Key)
+TValuePtr TableDelete(Picoc *pc, TTablePtr Tbl, const TRegStringPtr Key)
 {
     TTableEntryPtrPtr EntryPtr;
     int HashValue = ((unsigned long)CPtrWrapperBase::getPtr(Key)) % Tbl->Size;   /* shared strings have unique addresses so we don't need to hash them */
@@ -125,7 +125,7 @@ TValuePtr TableDelete(Picoc *pc, struct Table *Tbl, const TRegStringPtr Key)
 }
 
 /* check a hash table entry for an identifier */
-static TTableEntryPtr TableSearchIdentifier(struct Table *Tbl, TConstRegStringPtr Key, int Len, int *AddAt)
+static TTableEntryPtr TableSearchIdentifier(TTablePtr Tbl, TConstRegStringPtr Key, int Len, int *AddAt)
 {
     TTableEntryPtr Entry;
     int HashValue = TableHash(Key, Len) % Tbl->Size;
@@ -141,7 +141,7 @@ static TTableEntryPtr TableSearchIdentifier(struct Table *Tbl, TConstRegStringPt
 }
 
 /* set an identifier and return the identifier. share if possible */
-TRegStringPtr TableSetIdentifier(Picoc *pc, struct Table *Tbl, TConstRegStringPtr Ident, int IdentLen)
+TRegStringPtr TableSetIdentifier(Picoc *pc, TTablePtr Tbl, TConstRegStringPtr Ident, int IdentLen)
 {
     int AddAt;
     TTableEntryPtr FoundEntry = TableSearchIdentifier(Tbl, Ident, IdentLen, &AddAt);
@@ -176,12 +176,12 @@ TRegStringPtr TableSetIdentifier(Picoc *pc, struct Table *Tbl, TConstRegStringPt
 /* register a string in the shared string store */
 TRegStringPtr TableStrRegister2(Picoc *pc, const char *Str, int Len)
 {
-    return TableSetIdentifier(pc, &pc->StringTable, ptrWrap(Str), Len);
+    return TableSetIdentifier(pc, ptrWrap(&pc->StringTable), ptrWrap(Str), Len);
 }
 
 TRegStringPtr TableStrRegister2(Picoc *pc, TConstRegStringPtr Str, int Len)
 {
-    return TableSetIdentifier(pc, &pc->StringTable, Str, Len);
+    return TableSetIdentifier(pc, ptrWrap(&pc->StringTable), Str, Len);
 }
 
 TRegStringPtr TableStrRegister(Picoc *pc, const char *Str)

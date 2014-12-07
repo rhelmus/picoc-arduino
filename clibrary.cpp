@@ -28,7 +28,7 @@ void LibraryInit(Picoc *pc)
 }
 
 /* add a library */
-void LibraryAdd(Picoc *pc, struct Table *GlobalTable, TConstRegStringPtr LibraryName, const struct LibraryFunction *FuncList)
+void LibraryAdd(Picoc *pc, TTablePtr GlobalTable, TConstRegStringPtr LibraryName, const struct LibraryFunction *FuncList)
 {
     struct ParseState Parser;
     int Count;

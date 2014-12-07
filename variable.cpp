@@ -44,8 +44,8 @@ uint8_t StrHash(const char *Str)
 /* initialise the variable system */
 void VariableInit(Picoc *pc)
 {
-    TableInitTable(&(pc->GlobalTable), &(pc->GlobalHashTable)[0], GLOBAL_TABLE_SIZE, TRUE);
-    TableInitTable(&pc->StringLiteralTable, &pc->StringLiteralHashTable[0], STRING_LITERAL_TABLE_SIZE, TRUE);
+    TableInitTable(ptrWrap(&(pc->GlobalTable)), &(pc->GlobalHashTable)[0], GLOBAL_TABLE_SIZE, TRUE);
+    TableInitTable(ptrWrap(&pc->StringLiteralTable), &pc->StringLiteralHashTable[0], STRING_LITERAL_TABLE_SIZE, TRUE);
     pc->TopStackFrame = NULL;
 }
 
@@ -77,7 +77,7 @@ void VariableFree(Picoc *pc, TValuePtr Val)
 }
 
 /* deallocate the global table and the string literal table */
-void VariableTableCleanup(Picoc *pc, struct Table *HashTable)
+void VariableTableCleanup(Picoc *pc, TTablePtr HashTable)
 {
     TTableEntryPtr Entry;
     TTableEntryPtr NextEntry;
@@ -98,8 +98,8 @@ void VariableTableCleanup(Picoc *pc, struct Table *HashTable)
 
 void VariableCleanup(Picoc *pc)
 {
-    VariableTableCleanup(pc, &pc->GlobalTable);
-    VariableTableCleanup(pc, &pc->StringLiteralTable);
+    VariableTableCleanup(pc, ptrWrap(&pc->GlobalTable));
+    VariableTableCleanup(pc, ptrWrap(&pc->StringLiteralTable));
 }
 
 int varmemused = 0;
@@ -240,7 +240,7 @@ int VariableScopeBegin(TParseStatePtr  Parser, int16_t* OldScopeID)
     int FirstPrint = 0;
     #endif
     
-    struct Table * HashTable = (pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable;
+    TTablePtr HashTable = ptrWrap((pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable);
 
     if (Parser->ScopeID == -1) return -1;
 
@@ -284,7 +284,7 @@ void VariableScopeEnd(TParseStatePtr  Parser, int ScopeID, int16_t PrevScopeID)
     int FirstPrint = 0;
     #endif
 
-    struct Table * HashTable = (pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable;
+    TTablePtr HashTable = ptrWrap((pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable);
 
     if (ScopeID == -1) return;
 
@@ -314,7 +314,7 @@ int VariableDefinedAndOutOfScope(Picoc * pc, TConstRegStringPtr Ident)
     TTableEntryPtr Entry;
     int Count;
 
-    struct Table * HashTable = (pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable;
+    TTablePtr HashTable = ptrWrap((pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable);
     for (Count = 0; Count < HashTable->Size; Count++)
     {
         for (Entry = HashTable->HashTable[Count]; Entry != NULL; Entry = Entry->Next)
@@ -330,7 +330,7 @@ int VariableDefinedAndOutOfScope(Picoc * pc, TConstRegStringPtr Ident)
 TValuePtr VariableDefine(Picoc *pc, TParseStatePtr Parser, TRegStringPtr Ident, TValuePtr InitValue, TValueTypePtr Typ, int MakeWritable)
 {
     TValuePtr AssignValue;
-    struct Table * currentTable = (pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable;
+    TTablePtr currentTable = ptrWrap((pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable);
     
     int16_t ScopeID = Parser ? Parser->ScopeID : -1;
 #ifdef VAR_SCOPE_DEBUG
@@ -394,11 +394,11 @@ TValuePtr VariableDefineButIgnoreIdentical(TParseStatePtr Parser, TRegStringPtr 
         RegisteredMangledName = TableStrRegister(pc, MangledName);
         
         /* is this static already defined? */
-        if (!TableGet(&pc->GlobalTable, RegisteredMangledName, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn))
+        if (!TableGet(ptrWrap(&pc->GlobalTable), RegisteredMangledName, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn))
         {
             /* define the mangled-named static variable store in the global scope */
             ExistingValue = VariableAllocValueFromType(Parser->pc, Parser, Typ, TRUE, NILL, TRUE);
-            TableSet(pc, &pc->GlobalTable, RegisteredMangledName, ExistingValue, Parser->FileName, Parser->Line, Parser->CharacterPos);
+            TableSet(pc, ptrWrap(&pc->GlobalTable), RegisteredMangledName, ExistingValue, Parser->FileName, Parser->Line, Parser->CharacterPos);
             *FirstVisit = TRUE;
         }
 
@@ -408,7 +408,7 @@ TValuePtr VariableDefineButIgnoreIdentical(TParseStatePtr Parser, TRegStringPtr 
     }
     else
     {
-        if (Parser->Line != 0 && TableGet((pc->TopStackFrame == NULL) ? &pc->GlobalTable : &pc->TopStackFrame->LocalTable, Ident, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn))
+        if (Parser->Line != 0 && TableGet((pc->TopStackFrame == NULL) ? ptrWrap(&pc->GlobalTable) : ptrWrap(&pc->TopStackFrame->LocalTable), Ident, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn))
         {
 #ifndef DISABLE_TABLEENTRY_DECL
             if (DeclFileName == Parser->FileName && DeclLine == Parser->Line && DeclColumn == Parser->CharacterPos)
@@ -421,7 +421,7 @@ TValuePtr VariableDefineButIgnoreIdentical(TParseStatePtr Parser, TRegStringPtr 
 
         return VariableDefine(Parser->pc, Parser, Ident, NILL, Typ, TRUE);
 #if 0
-        if (Parser->Line != 0 && TableGet((pc->TopStackFrame == NULL) ? &pc->GlobalTable : &pc->TopStackFrame->LocalTable, Ident, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn)
+        if (Parser->Line != 0 && TableGet((pc->TopStackFrame == NULL) ? ptrWrap(&pc->GlobalTable) : &pc->TopStackFrame->LocalTable, Ident, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn)
                 && DeclFileName == Parser->FileName && DeclLine == Parser->Line && DeclColumn == Parser->CharacterPos)
             return ExistingValue;
         else
@@ -435,9 +435,9 @@ int VariableDefined(Picoc *pc, TConstRegStringPtr Ident)
 {
     TValuePtr FoundValue;
     
-    if (pc->TopStackFrame == NULL || !TableGet(&pc->TopStackFrame->LocalTable, Ident, &FoundValue, NULL, NULL, NULL))
+    if (pc->TopStackFrame == NULL || !TableGet(ptrWrap(&pc->TopStackFrame->LocalTable), Ident, &FoundValue, NULL, NULL, NULL))
     {
-        if (!TableGet(&pc->GlobalTable, Ident, &FoundValue, NULL, NULL, NULL))
+        if (!TableGet(ptrWrap(&pc->GlobalTable), Ident, &FoundValue, NULL, NULL, NULL))
             return FALSE;
     }
 
@@ -447,9 +447,9 @@ int VariableDefined(Picoc *pc, TConstRegStringPtr Ident)
 /* get the value of a variable. must be defined. Ident must be registered */
 void VariableGet(Picoc *pc, TParseStatePtr Parser, TConstRegStringPtr Ident, TValuePtrPtr LVal)
 {
-    if (pc->TopStackFrame == NULL || !TableGet(&pc->TopStackFrame->LocalTable, Ident, LVal, NULL, NULL, NULL))
+    if (pc->TopStackFrame == NULL || !TableGet(ptrWrap(&pc->TopStackFrame->LocalTable), Ident, LVal, NULL, NULL, NULL))
     {
-        if (!TableGet(&pc->GlobalTable, Ident, LVal, NULL, NULL, NULL))
+        if (!TableGet(ptrWrap(&pc->GlobalTable), Ident, LVal, NULL, NULL, NULL))
         {
             if (VariableDefinedAndOutOfScope(pc, Ident))
                 ProgramFail(Parser, "'%s' is out of scope", Ident);
@@ -471,7 +471,7 @@ void VariableDefinePlatformVar(Picoc *pc, TParseStatePtr Parser, TConstRegString
     SomeValue->Typ = Typ;
     SomeValue->Val = FromValue;
     
-    if (!TableSet(pc, (pc->TopStackFrame == NULL) ? &pc->GlobalTable : &pc->TopStackFrame->LocalTable, TableStrRegister(pc, Ident), SomeValue, Parser ? Parser->FileName : NILL, Parser ? Parser->Line : 0, Parser ? Parser->CharacterPos : 0))
+    if (!TableSet(pc, (pc->TopStackFrame == NULL) ? ptrWrap(&pc->GlobalTable) : ptrWrap(&pc->TopStackFrame->LocalTable), TableStrRegister(pc, Ident), SomeValue, Parser ? Parser->FileName : NILL, Parser ? Parser->Line : 0, Parser ? Parser->CharacterPos : 0))
         ProgramFail(Parser, "'%s' is already defined", Ident);
 }
 
@@ -514,7 +514,7 @@ void VariableStackFrameAdd(TParseStatePtr Parser, TConstRegStringPtr FuncName, i
     ParserCopy(ptrWrap(&NewFrame->ReturnParser), Parser);
     NewFrame->FuncName = FuncName;
     NewFrame->Parameter = (NumParams > 0) ? /*((TValuePtrPtr)((char *)NewFrame + sizeof(struct StackFrame))) UNDONE*/ (TValuePtrPtr)ptrWrap((char *)NewFrame + sizeof(struct StackFrame)) : NILL;
-    TableInitTable(&NewFrame->LocalTable, &NewFrame->LocalHashTable[0], LOCAL_TABLE_SIZE, FALSE);
+    TableInitTable(ptrWrap(&NewFrame->LocalTable), &NewFrame->LocalHashTable[0], LOCAL_TABLE_SIZE, FALSE);
     NewFrame->PreviousStackFrame = Parser->pc->TopStackFrame;
     Parser->pc->TopStackFrame = NewFrame;
 }
@@ -535,7 +535,7 @@ TValuePtr VariableStringLiteralGet(Picoc *pc, TRegStringPtr Ident)
 {
     TValuePtr LVal = NILL;
 
-    if (TableGet(&pc->StringLiteralTable, Ident, &LVal, NULL, NULL, NULL))
+    if (TableGet(ptrWrap(&pc->StringLiteralTable), Ident, &LVal, NULL, NULL, NULL))
         return LVal;
     else
         return NILL;
@@ -544,7 +544,7 @@ TValuePtr VariableStringLiteralGet(Picoc *pc, TRegStringPtr Ident)
 /* define a string literal. assumes that Ident is already registered */
 void VariableStringLiteralDefine(Picoc *pc, TRegStringPtr Ident, TValuePtr Val)
 {
-    TableSet(pc, &pc->StringLiteralTable, Ident, Val, NILL, 0, 0);
+    TableSet(pc, ptrWrap(&pc->StringLiteralTable), Ident, Val, NILL, 0, 0);
 }
 
 /* check a pointer for validity and dereference it for use */
