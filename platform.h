@@ -64,6 +64,8 @@ typedef CPtrWrapper<struct Table> TTablePtr;
 typedef CPtrWrapper<char> TTableCharPtr;
 typedef CPtrWrapper<struct IncludeLibrary> TIncludeLibraryPtr;
 typedef CPtrWrapper<struct ParseState> TParseStatePtr;
+typedef CPtrWrapper<struct ExpressionStack> TExpressionStackPtr;
+typedef CPtrWrapper<TExpressionStackPtr> TExpressionStackPtrPtr;
 
 #define WRAP_REGSTRINGS
 #define WRAP_ANYVALUE
