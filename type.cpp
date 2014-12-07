@@ -99,6 +99,16 @@ int TypeSize(struct ValueType *Typ, int ArraySize, int Compact)
 #endif
 }
 
+/* memory used by a variable given its type and array size (without extra mem used for arrays) */
+int SizeOf(struct ValueType *Typ, int ArraySize, int Compact)
+{
+#ifdef WRAP_ANYVALUE
+    if (Typ->Base == TypeArray)
+        return TypeSize(Typ, ArraySize, Compact) - sizeof(TAnyValueCharPointer);
+#endif
+    return TypeSize(Typ, ArraySize, Compact);
+}
+
 /* add a base type */
 void TypeAddBaseType(Picoc *pc, struct ValueType *TypeNode, enum BaseType Base, int Sizeof, int AlignBytes)
 {

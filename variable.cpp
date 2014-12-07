@@ -164,10 +164,7 @@ TValuePtr VariableAllocValueFromType(Picoc *pc, struct ParseState *Parser, struc
 
 #ifdef WRAP_ANYVALUE
     if (Typ->Base == TypeArray)
-    {
         NewValue->Val->ArrayMem = (TAnyValueCharPointer)(&NewValue->Val->ArrayMem) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
-        printf("size: %d\n", Size);
-    }
 #endif
 
     return NewValue;
@@ -249,11 +246,13 @@ int VariableScopeBegin(struct ParseState * Parser, int16_t* OldScopeID)
 
     /* XXX dumb hash, let's hope for no collisions... */
     *OldScopeID = Parser->ScopeID;
-    /*Parser->ScopeID = (int)(intptr_t)(Parser->SourceText) * ((int)(intptr_t)(Parser->Pos) / sizeof(char*));*/
+    //Parser->ScopeID = (int)getNumPtr(Parser->SourceText) * ((int)getNumPtr(Parser->Pos) / sizeof(char*));
     /* or maybe a more human-readable hash for debugging? */
-    /*Parser->ScopeID = Parser->Line * 0x10000 + Parser->CharacterPos;*/
-    Parser->ScopeID = (Parser->SourceText) ? StrHash(Parser->SourceText) : 0 + Parser->Line * 0x100 + Parser->CharacterPos;
-    
+    //Parser->ScopeID = Parser->Line * 0x10000 + Parser->CharacterPos;
+    Parser->ScopeID = ((Parser->SourceText) ? StrHash(Parser->SourceText) : 0) + Parser->Line * 0x100 + Parser->CharacterPos;
+//    Parser->ScopeID = ((Parser->SourceText) ? StrHash(Parser->SourceText) : 0) + Parser->Line * 0x100 + (getNumPtr(Parser->Pos) / sizeof(char*));
+//    printf("ScopeID: %d/%d/%d\n", Parser->ScopeID, StrHash(Parser->SourceText), getNumPtr(Parser->Pos) / sizeof(char*));
+
     for (Count = 0; Count < HashTable->Size; Count++)
     {
         for (Entry = HashTable->HashTable[Count]; Entry != NULL; Entry = NextEntry)
@@ -334,7 +333,7 @@ TValuePtr VariableDefine(Picoc *pc, struct ParseState *Parser, TRegStringPtr Ide
     struct Table * currentTable = (pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable;
     
     int16_t ScopeID = Parser ? Parser->ScopeID : -1;
-#if 1//def VAR_SCOPE_DEBUG
+#ifdef VAR_SCOPE_DEBUG
     if (Parser) fprintf(stderr, "def %s %x (%s:%d:%d)\n", ptrUnwrap(Ident), ScopeID, ptrUnwrap(Parser->FileName), Parser->Line, Parser->CharacterPos);
 #endif
 

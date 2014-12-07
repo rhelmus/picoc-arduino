@@ -216,11 +216,8 @@ int ParseArrayInitialiser(struct ParseState *Parser, TValuePtr NewVariable, int 
             if (Parser->Mode == RunModeRun && DoAssignment)
             {
                 SubArraySize = TypeSize(NewVariable->Typ->FromType, NewVariable->Typ->FromType->ArraySize, TRUE);
-#ifdef WRAP_ANYVALUE
-                SubArray = VariableAllocValueFromExistingData(Parser, NewVariable->Typ->FromType, (TAnyValuePtr)((TAnyValueCharPointer)&NewVariable->Val->ArrayMem + SubArraySize * ArrayIndex), TRUE, NewVariable);
-#else
                 SubArray = VariableAllocValueFromExistingData(Parser, NewVariable->Typ->FromType, (TAnyValuePtr)(&NewVariable->Val->ArrayMem[0] + SubArraySize * ArrayIndex), TRUE, NewVariable);
-#endif
+
                 #ifdef DEBUG_ARRAY_INITIALIZER
                 int FullArraySize = TypeSize(NewVariable->Typ, NewVariable->Typ->ArraySize, TRUE);
                 PRINT_SOURCE_POS;
@@ -254,15 +251,11 @@ int ParseArrayInitialiser(struct ParseState *Parser, TValuePtr NewVariable, int 
                         break;
                 }
                 ElementSize = TypeSize(ElementType, ElementType->ArraySize, TRUE);
-#if 0//def WRAP_ANYVALUE
-                if (ElementType->Base == TypeArray)
-                    ElementSize -= sizeof(TAnyValueCharPointer);
-#endif
+
                 #ifdef DEBUG_ARRAY_INITIALIZER
                 PRINT_SOURCE_POS;
-                #endif
                 printf("[%d/%d] element size: %d (x%d) \n", ArrayIndex, TotalSize, ElementSize, ElementType->ArraySize);
-
+                #endif
 
                 if (ArrayIndex >= TotalSize)
                     ProgramFail(Parser, "too many array elements");

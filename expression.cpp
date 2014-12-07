@@ -547,9 +547,9 @@ void ExpressionPrefixOperator(struct ParseState *Parser, struct ExpressionStack 
         case TokenSizeof:
             /* return the size of the argument */
             if (TopValue->Typ == &Parser->pc->TypeType)
-                ExpressionPushInt(Parser, StackTop, TypeSize(TopValue->Val->Typ, TopValue->Val->Typ->ArraySize, TRUE));
+                ExpressionPushInt(Parser, StackTop, SizeOf(TopValue->Val->Typ, TopValue->Val->Typ->ArraySize, TRUE));
             else
-                ExpressionPushInt(Parser, StackTop, TypeSize(TopValue->Typ, TopValue->Typ->ArraySize, TRUE));
+                ExpressionPushInt(Parser, StackTop, SizeOf(TopValue->Typ, TopValue->Typ->ArraySize, TRUE));
             break;
         
         default:

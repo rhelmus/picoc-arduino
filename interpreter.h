@@ -547,6 +547,7 @@ double ExpressionCoerceFP(TValuePtr Val);
 void TypeInit(Picoc *pc);
 void TypeCleanup(Picoc *pc);
 int TypeSize(struct ValueType *Typ, int ArraySize, int Compact);
+int SizeOf(struct ValueType *Typ, int ArraySize, int Compact);
 int TypeSizeValue(TValuePtr Val, int Compact);
 int TypeStackSizeValue(TValuePtr Val);
 int TypeLastAccessibleOffset(Picoc *pc, TValuePtr Val);
