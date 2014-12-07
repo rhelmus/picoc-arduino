@@ -43,6 +43,7 @@ class CPtrWrapperBase
     friend CPtrWrapperBase memcpy(CPtrWrapperBase &dest, const CPtrWrapperBase &src, size_t n);
     friend CPtrWrapperBase memcpy(CPtrWrapperBase &dest, const void *src, size_t n);
     friend void *memcpy(void *dest, const CPtrWrapperBase &src, size_t n);
+    friend inline CPtrWrapperBase memset(CPtrWrapperBase &s, int c, size_t n);
     friend inline char *strncpy(CPtrWrapper<char> dest, const char *src, size_t n);
     friend inline char *strncpy(CPtrWrapper<char> dest, const CPtrWrapper<const char> &src, size_t n);
     friend inline char *strncpy(char *dest, const CPtrWrapper<const char> &src, size_t n);
@@ -241,6 +242,7 @@ template <> struct SVoidPtr<CPtrWrapperBase>
 inline CPtrWrapperBase memcpy(CPtrWrapperBase &dest, const CPtrWrapperBase &src, size_t n) { memcpy(dest.ptr, src.ptr, n); return dest; }
 inline CPtrWrapperBase memcpy(CPtrWrapperBase &dest, const void *src, size_t n) { memcpy(dest.ptr, src, n); return dest; }
 inline void *memcpy(void *dest, const CPtrWrapperBase &src, size_t n) { return memcpy(dest, src.ptr, n); }
+inline CPtrWrapperBase memset(CPtrWrapperBase &s, int c, size_t n) { memset(s.ptr, c, n); return s; }
 inline char *strncpy(CPtrWrapper<char> dest, const char *src, size_t n) { return strncpy((char *)dest.ptr, src, n); }
 inline char *strncpy(CPtrWrapper<char> dest, const CPtrWrapper<const char> &src, size_t n) { return strncpy((char *)dest.ptr, (const char *)src.ptr, n); }
 inline char *strncpy(char *dest, const CPtrWrapper<const char> &src, size_t n) { return strncpy(dest, (const char *)src.ptr, n); }

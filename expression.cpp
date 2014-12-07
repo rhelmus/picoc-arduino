@@ -457,7 +457,6 @@ void ExpressionAssign(struct ParseState *Parser, TValuePtr DestValue, TValuePtr 
                 fprintf(stderr, "char[%d] from char* (len=%d)\n", DestValue->Typ->ArraySize, strlen((TAnyValueCharPointer)SourceValue->Val->Pointer));
                 #endif
 #ifdef WRAP_ANYVALUE
-                printf("hmm: %p/%p/%p\n", ptrUnwrap(DestValue->Val), ptrUnwrap(DestValue->Val->ArrayMem), ptrUnwrap(&DestValue->Val->ArrayMem));
                 memcpy(DestValue->Val->ArrayMem, SourceValue->Val->Pointer, TypeSizeValue(DestValue, FALSE) - sizeof(TAnyValueCharPointer));
 #else
                 memcpy(DestValue->Val, SourceValue->Val->Pointer, TypeSizeValue(DestValue, FALSE));

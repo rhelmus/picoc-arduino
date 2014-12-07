@@ -625,7 +625,7 @@ void LibStrlen(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
 void LibMemset(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     /* we can use the system memset() */
-    memset(ptrUnwrap(Param[0]->Val->Pointer), Param[1]->Val->Integer, Param[2]->Val->Integer);
+    memset(Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer);
 }
 
 void LibMemcpy(struct ParseState *Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)

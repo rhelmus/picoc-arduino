@@ -261,7 +261,6 @@ int ParseArrayInitialiser(struct ParseState *Parser, TValuePtr NewVariable, int 
                     ProgramFail(Parser, "too many array elements");
 
                 ArrayElement = VariableAllocValueFromExistingData(Parser, ElementType, (TAnyValuePtr)(&NewVariable->Val->ArrayMem[0] + ElementSize * ArrayIndex), TRUE, NewVariable);
-                assert(ElementType->Base != TypeArray || ptrUnwrap(ArrayElement->Val->ArrayMem) != 0);
             }
 
             /* this is a normal expression initialiser */
