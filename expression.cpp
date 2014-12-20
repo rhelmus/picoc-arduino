@@ -329,7 +329,7 @@ void ExpressionStackPushDereference(TParseStatePtr Parser, TExpressionStackPtrPt
     if (DerefDataLoc == NULL)
         ProgramFail(Parser, "NULL pointer dereference");
 
-    ValueLoc = VariableAllocValueFromExistingData(Parser, DerefType, (TAnyValuePtr)DerefDataLoc, DerefIsLValue, DerefVal); // UNDONE
+    ValueLoc = VariableAllocValueFromExistingData(Parser, DerefType, (TAnyValuePtr)DerefDataLoc, DerefIsLValue, DerefVal);
     ExpressionStackPushValueNode(Parser, StackTop, ValueLoc);
 }
 
@@ -376,7 +376,7 @@ void ExpressionAssignToPointer(TParseStatePtr Parser, TValuePtr ToValue, TValueP
     else if (AllowPointerCoercion && IS_NUMERIC_COERCIBLE(FromValue))
     {
         /* assign integer to native pointer */
-        ToValue->Val->Pointer = ptrWrap((void *)(unsigned long)ExpressionCoerceUnsignedInteger(FromValue)); // UNDONE
+        setPtrFromNum(ToValue->Val->Pointer, (unsigned long)ExpressionCoerceUnsignedInteger(FromValue)); // UNDONE: verify
     }
     else if (AllowPointerCoercion && FromValue->Typ->Base == TypePointer)
     {
@@ -1066,7 +1066,7 @@ void ExpressionGetStructElement(TParseStatePtr Parser, TExpressionStackPtrPtr St
 
         /* if we're doing '->' dereference the struct pointer first */
         if (Token == TokenArrow)
-            DerefDataLoc = (TAnyValueCharPointer)(VariableDereferencePointer(Parser, ParamVal, &StructVal, NULL, &StructType, NULL)); // UNDONE
+            DerefDataLoc = (TAnyValueCharPointer)(VariableDereferencePointer(Parser, ParamVal, &StructVal, NULL, &StructType, NULL));
         
         if (StructType->Base != TypeStruct && StructType->Base != TypeUnion)
             ProgramFail(Parser, "can't use '%s' on something that's not a struct or union %s : it's a %t", (Token == TokenDot) ? "." : "->", (Token == TokenArrow) ? "pointer" : "", ParamVal->Typ);

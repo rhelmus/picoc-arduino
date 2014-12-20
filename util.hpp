@@ -27,6 +27,8 @@ void *VariableAlloc(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap);
 #define EXPLICIT
 #endif
 
+class CNILL;
+
 template <typename T, bool VA> class CAllocProxy;
 
 class CPtrWrapperBase
@@ -85,6 +87,8 @@ public:
     inline bool operator==(const SNull *) const { return ptr == 0; }
     friend inline bool operator==(const SNull *, const CPtrWrapperBase &pw) { return pw.ptr == 0; }
     inline bool operator!=(const SNull *) const { return ptr != 0; }
+    inline bool operator==(const CNILL &) const { return ptr == 0; }
+    friend inline bool operator==(const CNILL &, const CPtrWrapperBase &pw) { return pw.ptr == 0; }
     inline operator TSafeBool (void) const { return ptr == 0 ? 0 : &SDummy::nonNull; }
 
     inline bool operator==(const CPtrWrapperBase &pb) const { return ptr == pb.ptr; }
@@ -121,11 +125,12 @@ public:
         const T operator->(void) const { return *ptr; }
 
 //        inline bool operator==(const T &v) const { return *ptr == v; }
-        inline bool operator==(const class CNILL &) const { return *ptr == 0; }
+//        friend inline bool operator==(const T &v, const CValueWrapper &vw) { return vw.operator ==(v); }
+//        inline bool operator==(const class CNILL &) const { return *ptr == 0; }
         template <typename T2> inline bool operator==(const T2 &v) const { return *ptr == v; }
-//        inline bool operator!=(const T &v) const { return *ptr != v; }
+        inline bool operator!=(const T &v) const { return *ptr != v; }
         template <typename T2> inline bool operator!=(const T2 &v) const { return *ptr != v; }
-        inline T operator-(const T &v) const { return *ptr - v; }
+//        inline T operator-(const T &v) const { return *ptr - v; }
     };
 
     // C style malloc/free
@@ -213,7 +218,6 @@ public:
     template <typename T> inline operator CPtrWrapper<T>(void) const { return CPtrWrapper<T>(); }
     inline operator CPtrWrapperBase(void) const { return CPtrWrapperBase(); }
     template <typename T> inline operator typename CPtrWrapper<T>::CValueWrapper(void) const { return CPtrWrapper<T>::CValueWrapper(0); }
-
 } extern const NILL;
 
 template <typename T> inline CAllocProxy<T, false> allocMem(bool st, size_t size=sizeof(T))
