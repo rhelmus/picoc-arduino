@@ -1,0 +1,108 @@
+#ifndef VMEM_UTILS_H
+#define VMEM_UTILS_H
+
+#include "virtmem.h"
+#include "stdioalloc.h"
+
+#include <inttypes.h>
+
+typedef CStdioVirtMemAlloc<> TVirtAlloc;
+
+struct Picoc_Struct;
+typedef struct Picoc_Struct Picoc;
+#ifdef USE_VIRTMEM
+#define TVirtPtr TStdioVirtPtr
+typedef TVirtPtr<struct ParseState>::type TParseStatePtr;
+typedef TVirtPtr<uint8_t>::type TVarAllocRet;
+TVarAllocRet VariableAllocVirt(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap);
+#else
+typedef struct ParseState *TParseStatePtr;
+#endif
+
+void *HeapAllocMem(Picoc *pc, int Size);
+void HeapFreeMem(Picoc *pc, void *Mem);
+void *HeapAllocStack(Picoc *pc, int Size);
+int HeapPopStack(Picoc *pc, void *Addr, int Size);
+void *VariableAlloc(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap);
+
+template <typename T> class CAllocProxy;
+
+template <typename T> inline CAllocProxy<T> allocMem(bool st, size_t size=sizeof(T));
+template <typename T> inline CAllocProxy<T> allocMemVariable(TParseStatePtr p, bool st, size_t size=sizeof(T));
+
+extern Picoc *globalPicoc;
+
+// Proxy class for memory allocation: automatically determines whether we want to allocate for a
+// raw pointer or CPtrWrapper
+template <typename T> class CAllocProxy
+{
+    size_t size;
+    TParseStatePtr ps;
+    bool stack, varalloc;
+    bool didSomething;
+
+    CAllocProxy(size_t s, TParseStatePtr p, bool st, bool va) : size(s), ps(p), stack(st), varalloc(va), didSomething(false) { }
+    CAllocProxy(const CAllocProxy &);
+
+    friend CAllocProxy<T> allocMem<>(bool st, size_t size);
+    friend CAllocProxy<T> allocMemVariable<>(TParseStatePtr p, bool st, size_t size);
+
+public:
+    inline operator T*(void)
+    {
+        didSomething = true;
+
+        if (varalloc)
+            return static_cast<T *>(VariableAlloc(globalPicoc, ps, size, !stack));
+        if (stack)
+            return static_cast<T *>(HeapAllocStack(globalPicoc, size));
+        return static_cast<T *>(HeapAllocMem(globalPicoc, size));
+    }
+#ifdef USE_VIRTMEM
+    inline operator CVirtPtr<T, TVirtAlloc>(void)
+    { return CVirtPtr<T, TVirtAlloc>::wrap(operator T*()); // UNDONE
+        if (varalloc)
+            return static_cast<CVirtPtr<T, TVirtAlloc> >(VariableAllocVirt(globalPicoc, ps, size, !stack));
+        else if (stack)
+            return CVirtPtr<T, TVirtAlloc>::wrap((T *)HeapAllocStack(globalPicoc, size)); // UNDONE
+        return CVirtPtr<T, TVirtAlloc>::alloc(size);
+    }
+#endif
+    ~CAllocProxy(void) { assert(didSomething); }
+};
+
+template <typename T> inline CAllocProxy<T> allocMem(bool st, size_t size=sizeof(T))
+{ return CAllocProxy<T>(size, NILL, st, false); }
+template <typename T> inline CAllocProxy<T> allocMemVariable(TParseStatePtr p, bool st, size_t size=sizeof(T))
+{ return CAllocProxy<T>(size, p, st, true); }
+
+inline CVirtPtrBase::TPtrNum getNumPtr(const CVirtPtrBase &pwb) { return pwb.getRawNum(); }
+inline intptr_t getNumPtr(const void *p) { return reinterpret_cast<intptr_t>(p); }
+inline void setPtrFromNum(CVirtPtrBase &pwb, CVirtPtrBase::TPtrNum ip) { pwb.setRawNum(ip); }
+inline void setPtrFromNum(void *p, intptr_t ip) { p = reinterpret_cast<void *>(ip); }
+
+template <typename M> inline M *getMembrPtr(void *, M *m) { return m; }
+//template <typename M> inline CPtrWrapperBase getMembrPtr(void *, const CPtrWrapper<M> &m) { return m; }
+template <typename C, typename M> inline CVirtPtr<M, TVirtAlloc> getMembrPtr(const CVirtPtr<C, TVirtAlloc> &c, const M *m)
+{ assert(m == c.getMembrPtr(m).unwrap()); return c.getMembrPtr(m); }
+template <typename C, typename M>
+inline CVirtPtr<CVirtPtr<M, TVirtAlloc>, TVirtAlloc> getMembrPtr(const CVirtPtr<C, TVirtAlloc> &c,
+                                                                 const CVirtPtr<CVirtPtr<M, TVirtAlloc>, TVirtAlloc> &m)
+{ assert(m.unwrap() == c.getMembrPtr(m).unwrap()); return c.getMembrPtr(m); }
+
+inline void deallocMem(void *ptr) { HeapFreeMem(globalPicoc, ptr); }
+template <typename T> inline void deallocMem(CVirtPtr<T, TVirtAlloc> &p) { assert(p.isWrapped()); /*p.free(p);*/deallocMem(p.unwrap()); } // UNDONE
+inline int popStack(void *ptr, int size) { return HeapPopStack(globalPicoc, ptr, size); }
+// UNDONE
+template <typename T> inline int popStack(CVirtPtr<T, TVirtAlloc> &p, int size) { return HeapPopStack(globalPicoc, p.unwrap(), size); }
+
+#ifdef USE_VIRTMEM
+template <typename T> CVirtPtr<T, TVirtAlloc> ptrWrap(T *p) { return CVirtPtr<T, TVirtAlloc>::wrap(p); }
+template <typename T> T *ptrUnwrap(CVirtPtr<T, TVirtAlloc> p) { return p.unwrap(); }
+inline void *ptrUnwrap(CVirtPtrBase p) { return p.unwrap(); }
+#else
+#define ptrWrap /* empty */
+#define ptrUnwrap /* empty */
+#endif
+
+#endif // VMEM_UTILS_H

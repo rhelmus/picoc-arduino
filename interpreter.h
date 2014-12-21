@@ -6,7 +6,7 @@
 #define INTERPRETER_H
 
 #include "platform.h"
-#include "util.hpp"
+#include "vmem_utils.h"
 
 /* handy definitions */
 #ifndef TRUE
@@ -573,6 +573,9 @@ void VariableCleanup(Picoc *pc);
 void VariableFree(Picoc *pc, TValuePtr Val);
 void VariableTableCleanup(Picoc *pc, TTablePtr HashTable);
 void *VariableAlloc(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap);
+#ifdef USE_VIRTMEM
+TVarAllocRet VariableAllocVirt(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap);
+#endif
 void VariableStackPop(TParseStatePtr Parser, TValuePtr Var);
 TValuePtr VariableAllocValueAndData(Picoc *pc, TParseStatePtr Parser, int DataSize, int IsLValue, TValuePtr LValueFrom, int OnHeap);
 TValuePtr VariableAllocValueAndCopy(Picoc *pc, TParseStatePtr Parser, TValuePtr FromValue, int OnHeap);

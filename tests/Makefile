@@ -26,14 +26,14 @@ TESTS=	00_assignment.test \
 	19_pointer_arithmetic.test \
 	20_pointer_comparison.test \
 	21_char_array.test \
-	23_type_coercion.test \
-	25_quicksort.test \
+        23_type_coercion.test \
+        25_quicksort.test \
 	26_character_constants.test \
 	28_strings.test \
 	29_array_address.test \
 	30_hanoi.test \
-	31_args.test \
-	32_led.test \
+        31_args.test \
+        32_led.test \
 	33_ternary_op.test \
 	34_array_assignment.test \
 	35_sizeof.test \

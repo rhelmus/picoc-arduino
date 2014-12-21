@@ -17,7 +17,7 @@
 #endif
 
 #include "interpreter.h"
-#include "util.hpp"
+#include "vmem_utils.h"
 
 
 #if defined(UNIX_HOST) || defined(WIN32)

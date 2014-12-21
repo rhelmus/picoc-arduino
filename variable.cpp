@@ -130,6 +130,34 @@ void *VariableAlloc(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap)
     return NewValue;
 }
 
+#ifdef USE_VIRTMEM
+/* allocate some memory, either on the heap or the stack and check if we've run out */
+TVarAllocRet VariableAllocVirt(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap)
+{
+    TVarAllocRet NewValue;
+
+    if (OnHeap)
+        varmemused += Size;
+
+    if (OnHeap)
+        NewValue = TVarAllocRet::alloc(Size);
+    else
+        NewValue = TVarAllocRet::wrap(HeapAllocStack(pc, Size)); // UNDONE
+
+    if (NewValue == NULL)
+        ProgramFail(Parser, "out of memory");
+
+#ifdef DEBUG_HEAP
+    if (!OnHeap)
+        printf("pushing %d at 0x%lx\n", Size, (unsigned long)NewValue);
+#endif
+
+    debugline("VariableAlloc: %d\n", Size);
+
+    return NewValue;
+}
+#endif
+
 /* allocate a value either on the heap or the stack using space dependent on what type we want */
 TValuePtr VariableAllocValueAndData(Picoc *pc, TParseStatePtr Parser, int DataSize, int IsLValue, TValuePtr LValueFrom, int OnHeap)
 {
@@ -164,7 +192,7 @@ TValuePtr VariableAllocValueFromType(Picoc *pc, TParseStatePtr Parser, TValueTyp
 
 #ifdef WRAP_ANYVALUE
     if (Typ->Base == TypeArray)
-        NewValue->Val->ArrayMem = (TAnyValueCharPointer)(&NewValue->Val->ArrayMem) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
+        NewValue->Val->ArrayMem = (TAnyValueCharPointer)(getMembrPtr(NewValue->Val, &NewValue->Val->ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
 #endif
 
     return NewValue;
@@ -200,7 +228,7 @@ TValuePtr VariableAllocValueFromExistingData(TParseStatePtr Parser, TValueTypePt
 
 #ifdef WRAP_ANYVALUE
     if (Typ->Base == TypeArray)
-        NewValue->Val->ArrayMem = (TAnyValueCharPointer)(&NewValue->Val->ArrayMem) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
+        NewValue->Val->ArrayMem = (TAnyValueCharPointer)(getMembrPtr(NewValue->Val, &NewValue->Val->ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
 #endif
 
     return NewValue;
@@ -225,7 +253,7 @@ void VariableRealloc(TParseStatePtr Parser, TValuePtr FromValue, int NewSize)
     FromValue->Val = allocMemVariable<AnyValue>(Parser, false, NewSize);
 #ifdef WRAP_ANYVALUE
     if (Typ->Base == TypeArray)
-        FromValue->Val->ArrayMem = (TAnyValueCharPointer)(&FromValue->Val->ArrayMem) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
+        FromValue->Val->ArrayMem = (TAnyValueCharPointer)(getMembrPtr(FromValue->Val, &FromValue->Val->ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
 #endif
     FromValue->Flags |= FlagAnyValOnHeap;
 }

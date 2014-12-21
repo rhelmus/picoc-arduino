@@ -667,9 +667,10 @@ TLexBufPtr LexTokenise(Picoc *pc, struct LexState *Lexer, int *TokenLen)
     } while (Token != TokenEOF);
     
     HeapMem = allocMem<unsigned char>(false, MemUsed);
+
     if (HeapMem == NULL)
         LexFail(pc, Lexer, "out of memory");
-        
+
     assert(ReserveSpace >= MemUsed);
     memcpy(HeapMem, TokenSpace, MemUsed);
     HeapPopStack(pc, TokenSpace, ReserveSpace);
@@ -682,6 +683,7 @@ TLexBufPtr LexTokenise(Picoc *pc, struct LexState *Lexer, int *TokenLen)
         printf("\n");
     }
 #endif
+
     if (TokenLen)
         *TokenLen = MemUsed;
     
@@ -720,6 +722,7 @@ void LexInitParser(TParseStatePtr Parser, Picoc *pc, const char *SourceText, TLe
     Parser->CharacterPos = 0;
     Parser->SourceText = SourceText;
     Parser->DebugMode = EnableDebugger;
+    Parser->ScopeID = 0; // UNDONE: is this a good default? it was left uninitialized
 }
 
 /* get the next token, without pre-processing */
@@ -932,7 +935,7 @@ void LexHashEndif(TParseStatePtr Parser)
 #if 0 /* useful for debug */
 void LexPrintToken(enum LexToken Token)
 {
-    char* TokenNames[] = {
+    const char* TokenNames[] = {
         /* 0x00 */ "None", 
         /* 0x01 */ "Comma",
         /* 0x02 */ "Assign", "AddAssign", "SubtractAssign", "MultiplyAssign", "DivideAssign", "ModulusAssign",
@@ -963,6 +966,7 @@ void LexPrintToken(enum LexToken Token)
         /* 0x5c */ "EOF", "EndOfLine", "EndOfFunction"
     };
     printf("{%s}", TokenNames[Token]);
+    fflush(stdout);
 }
 #endif
 

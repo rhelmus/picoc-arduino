@@ -77,13 +77,13 @@ TValuePtr ParseFunctionDefinition(TParseStatePtr Parser, TValueTypePtr ReturnTyp
     if (ParamCount > PARAMETER_MAX)
         ProgramFail(Parser, "too many parameters (%d allowed)", PARAMETER_MAX);
     
-    FuncValue = VariableAllocValueAndData(pc, Parser, sizeof(struct FuncDef) + sizeof(TValueTypePtr ) * ParamCount + sizeof(const char *) * ParamCount, FALSE, NILL, TRUE);
+    FuncValue = VariableAllocValueAndData(pc, Parser, sizeof(struct FuncDef) + sizeof(TValueTypePtr) * ParamCount + sizeof(TRegStringPtr) * ParamCount, FALSE, NILL, TRUE);
     FuncValue->Typ = ptrWrap(&pc->FunctionType);
     FuncValue->Val->FuncDef.ReturnType = ReturnType;
     FuncValue->Val->FuncDef.NumParams = ParamCount;
     FuncValue->Val->FuncDef.VarArgs = FALSE;
     FuncValue->Val->FuncDef.ParamType = (TValueTypePtrPtr)((TValueCharPointer)(FuncValue->Val) + sizeof(struct FuncDef));
-    FuncValue->Val->FuncDef.ParamName = (TRegStringPtrPtr)((TValueCharPointer)(FuncValue->Val->FuncDef.ParamType) + sizeof(TValueTypePtr ) * ParamCount);
+    FuncValue->Val->FuncDef.ParamName = (TRegStringPtrPtr)((TValueCharPointer)(FuncValue->Val->FuncDef.ParamType) + sizeof(TValueTypePtr) * ParamCount);
     FuncValue->Val->FuncDef.Body = NILL;
    
     for (ParamCount = 0; ParamCount < FuncValue->Val->FuncDef.NumParams; ParamCount++)
@@ -395,7 +395,7 @@ void ParseMacroDefinition(TParseStatePtr Parser)
         
         ParserCopy(ptrWrap(&ParamParser), Parser);
         NumParams = ParseCountParams(ptrWrap(&ParamParser));
-        MacroValue = VariableAllocValueAndData(Parser->pc, Parser, sizeof(struct MacroDef) + sizeof(const char *) * NumParams, FALSE, NILL, TRUE);
+        MacroValue = VariableAllocValueAndData(Parser->pc, Parser, sizeof(struct MacroDef) + sizeof(TRegStringPtr) * NumParams, FALSE, NILL, TRUE);
         MacroValue->Val->MacroDef.NumParams = NumParams;
         MacroValue->Val->MacroDef.ParamName = (TRegStringPtrPtr)((TAnyValueCharPointer)(MacroValue->Val) + sizeof(struct MacroDef));
 

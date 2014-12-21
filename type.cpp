@@ -47,7 +47,7 @@ TValueTypePtr TypeGetMatching(Picoc *pc, TParseStatePtr Parser, TValueTypePtr Pa
         
     switch (Base)
     {
-        case TypePointer:   Sizeof = sizeof(void *); AlignBytes = PointerAlignBytes; break;
+        case TypePointer:   Sizeof = sizeof(TAnyValueVoidPointer); AlignBytes = PointerAlignBytes; break;
 #ifdef WRAP_ANYVALUE
         case TypeArray:     Sizeof = sizeof(TAnyValueCharPointer) + ArraySize * ParentType->Sizeof; AlignBytes = ParentType->AlignBytes; break;
 #else
@@ -135,7 +135,7 @@ void TypeInit(Picoc *pc)
 #ifndef NO_FP
     struct DoubleAlign { char x; double y; } da;
 #endif
-    struct PointerAlign { char x; void *y; } pa;
+    struct PointerAlign { char x; TAnyValueVoidPointer y; } pa;
     
     IntAlignBytes = (char *)&ia.y - &ia.x;
     PointerAlignBytes = (char *)&pa.y - &pa.x;
@@ -155,14 +155,22 @@ void TypeInit(Picoc *pc)
     TypeAddBaseType(pc, ptrWrap(&pc->GotoLabelType), TypeGotoLabel, 0, 1);
 #ifndef NO_FP
     TypeAddBaseType(pc, ptrWrap(&pc->FPType), TypeFP, sizeof(double), (char *)&da.y - &da.x);
-    TypeAddBaseType(pc, ptrWrap(&pc->TypeType), Type_Type, sizeof(double), (char *)&da.y - &da.x);  /* must be large enough to cast to a double */
+#ifdef USE_VIRTMEM
+    if (sizeof(double) > sizeof(TValueTypePtr))
+        TypeAddBaseType(pc, ptrWrap(&pc->TypeType), Type_Type, sizeof(double), (char *)&da.y - &da.x);  /* must be large enough to cast to a double */
+    else
+        TypeAddBaseType(pc, ptrWrap(&pc->TypeType), Type_Type, sizeof(TValueTypePtr), PointerAlignBytes);
 #else
-    TypeAddBaseType(pc, ptrWrap(&pc->TypeType), Type_Type, sizeof(TValueTypePtr ), PointerAlignBytes);
+    TypeAddBaseType(pc, ptrWrap(&pc->TypeType), Type_Type, sizeof(double), (char *)&da.y - &da.x);  /* must be large enough to cast to a double */
+#endif
+
+#else
+    TypeAddBaseType(pc, ptrWrap(&pc->TypeType), Type_Type, sizeof(TValueTypePtr), PointerAlignBytes);
 #endif
     pc->CharArrayType = TypeAdd(pc, NILL, ptrWrap(&pc->CharType), TypeArray, 0, pc->StrEmpty, sizeof(char), (char *)&ca.y - &ca.x);
-    pc->CharPtrType = TypeAdd(pc, NILL, ptrWrap(&pc->CharType), TypePointer, 0, pc->StrEmpty, sizeof(void *), PointerAlignBytes);
-    pc->CharPtrPtrType = TypeAdd(pc, NILL, pc->CharPtrType, TypePointer, 0, pc->StrEmpty, sizeof(void *), PointerAlignBytes);
-    pc->VoidPtrType = TypeAdd(pc, NILL, ptrWrap(&pc->VoidType), TypePointer, 0, pc->StrEmpty, sizeof(void *), PointerAlignBytes);
+    pc->CharPtrType = TypeAdd(pc, NILL, ptrWrap(&pc->CharType), TypePointer, 0, pc->StrEmpty, sizeof(TAnyValueVoidPointer), PointerAlignBytes);
+    pc->CharPtrPtrType = TypeAdd(pc, NILL, pc->CharPtrType, TypePointer, 0, pc->StrEmpty, sizeof(TAnyValueVoidPointer), PointerAlignBytes);
+    pc->VoidPtrType = TypeAdd(pc, NILL, ptrWrap(&pc->VoidType), TypePointer, 0, pc->StrEmpty, sizeof(TAnyValueVoidPointer), PointerAlignBytes);
 }
 
 /* deallocate heap-allocated types */
@@ -499,7 +507,7 @@ void TypeParseIdentPart(TParseStatePtr Parser, TValueTypePtr BasicTyp, TValueTyp
     int Done = FALSE;
     *Typ = BasicTyp;
     *Identifier = Parser->pc->StrEmpty;
-    
+
     while (!Done)
     {
         ParserCopy(ptrWrap(&Before), Parser);

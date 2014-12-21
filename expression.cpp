@@ -3,6 +3,8 @@
  
 #include "interpreter.h"
 
+//#define DEBUG_EXPRESSIONS
+
 /* whether evaluation is left to right for a given precedence level */
 #define IS_LEFT_TO_RIGHT(p) ((p) != 2 && (p) != 14)
 #define BRACKET_PRECEDENCE 20
@@ -81,14 +83,14 @@ void ExpressionParseFunctionCall(TParseStatePtr Parser, TExpressionStackPtrPtr S
 /* show the contents of the expression stack */
 void ExpressionStackShow(Picoc *pc, TExpressionStackPtr StackTop)
 {
-    printf("Expression stack [0x%lx,0x%lx]: ", (long)pc->HeapStackTop, (long)StackTop);
+    printf("Expression stack [0x%lx,0x%lx]: ", (long)pc->HeapStackTop, (long)StackTop.unwrap());
     
     while (StackTop != NULL)
     {
         if (StackTop->Order == OrderNone)
         { 
             /* it's a value */
-            if (StackTop->Val->IsLValue)
+            if (StackTop->Val->Flags & FlagIsLValue)
                 printf("lvalue=");
             else
                 printf("value=");
@@ -104,24 +106,24 @@ void ExpressionStackShow(Picoc *pc, TExpressionStackPtr StackTop)
                 case TypeUnsignedInt: printf("%d:unsigned int", StackTop->Val->Val->UnsignedInteger); break;
                 case TypeUnsignedLong: printf("%ld:unsigned long", StackTop->Val->Val->UnsignedLongInteger); break;
                 case TypeFP:        printf("%f:fp", StackTop->Val->Val->FP); break;
-                case TypeFunction:  printf("%s:function", StackTop->Val->Val->Identifier); break;
-                case TypeMacro:     printf("%s:macro", StackTop->Val->Val->Identifier); break;
+                case TypeFunction:  printf("%s:function", StackTop->Val->Val->Identifier.unwrap()); break;
+                case TypeMacro:     printf("%s:macro", StackTop->Val->Val->Identifier.unwrap()); break;
                 case TypePointer:
                     if (StackTop->Val->Val->Pointer == NULL)
                         printf("ptr(NULL)");
                     else if (StackTop->Val->Typ->FromType->Base == TypeChar)
-                        printf("\"%s\":string", (char *)StackTop->Val->Val->Pointer);
+                        printf("\"%s\":string", (char *)StackTop->Val->Val->Pointer.unwrap());
                     else
-                        printf("ptr(0x%lx)", (long)StackTop->Val->Val->Pointer); 
+                        printf("ptr(0x%lx)", (long)StackTop->Val->Val->Pointer.unwrap());
                     break;
                 case TypeArray:     printf("array"); break;
-                case TypeStruct:    printf("%s:struct", StackTop->Val->Val->Identifier); break;
-                case TypeUnion:     printf("%s:union", StackTop->Val->Val->Identifier); break;
-                case TypeEnum:      printf("%s:enum", StackTop->Val->Val->Identifier); break;
+                case TypeStruct:    printf("%s:struct", StackTop->Val->Val->Identifier.unwrap()); break;
+                case TypeUnion:     printf("%s:union", StackTop->Val->Val->Identifier.unwrap()); break;
+                case TypeEnum:      printf("%s:enum", StackTop->Val->Val->Identifier.unwrap()); break;
                 case Type_Type:     PrintType(StackTop->Val->Val->Typ, pc->CStdOut); printf(":type"); break;
                 default:            printf("unknown"); break;
             }
-            printf("[0x%lx,0x%lx]", (long)StackTop, (long)StackTop->Val);
+            printf("[0x%lx,0x%lx]", (long)StackTop.unwrap(), (long)StackTop->Val.unwrap());
         }
         else
         { 
@@ -129,7 +131,7 @@ void ExpressionStackShow(Picoc *pc, TExpressionStackPtr StackTop)
             printf("op='%s' %s %d", OperatorPrecedence[(int)StackTop->Op].Name, 
                 (StackTop->Order == OrderPrefix) ? "prefix" : ((StackTop->Order == OrderPostfix) ? "postfix" : "infix"), 
                 StackTop->Precedence);
-            printf("[0x%lx]", (long)StackTop);
+            printf("[0x%lx]", (long)StackTop.unwrap());
         }
         
         StackTop = StackTop->Next;
@@ -457,7 +459,7 @@ void ExpressionAssign(TParseStatePtr Parser, TValuePtr DestValue, TValuePtr Sour
                 fprintf(stderr, "char[%d] from char* (len=%d)\n", DestValue->Typ->ArraySize, strlen((TAnyValueCharPointer)SourceValue->Val->Pointer));
                 #endif
 #ifdef WRAP_ANYVALUE
-                memcpy(DestValue->Val->ArrayMem, SourceValue->Val->Pointer, TypeSizeValue(DestValue, FALSE) - sizeof(TAnyValueCharPointer));
+                memcpy(DestValue->Val->ArrayMem, (TAnyValueCharPointer)SourceValue->Val->Pointer, TypeSizeValue(DestValue, FALSE) - sizeof(TAnyValueCharPointer));
 #else
                 memcpy(DestValue->Val, SourceValue->Val->Pointer, TypeSizeValue(DestValue, FALSE));
 #endif
@@ -710,7 +712,7 @@ void ExpressionInfixOperator(TParseStatePtr Parser, TExpressionStackPtrPtr Stack
         switch (BottomValue->Typ->Base)
         {
 #ifdef WRAP_ANYVALUE
-            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)((TAnyValueCharPointer)&BottomValue->Val->ArrayMem + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
+            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)((TAnyValueCharPointer)getMembrPtr(BottomValue->Val, &BottomValue->Val->ArrayMem) + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
 #else
             case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)(&BottomValue->Val->ArrayMem[0] + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
 #endif
@@ -1369,7 +1371,7 @@ int ExpressionParse(TParseStatePtr Parser, TValuePtrPtr Result)
 /* do a parameterised macro call */
 void ExpressionParseMacroCall(TParseStatePtr Parser, TExpressionStackPtrPtr StackTop, TConstRegStringPtr MacroName,
 #ifdef WRAP_ANYVALUE
-                              CPtrWrapper<struct MacroDef> MDef)
+                              TVirtPtr<struct MacroDef>::type MDef)
 #else
                               struct MacroDef *MDef)
 #endif

@@ -162,7 +162,7 @@ TRegStringPtr TableSetIdentifier(Picoc *pc, TTablePtr Tbl, TConstRegStringPtr Id
             ProgramFailNoParser(pc, "out of memory");
 
 #ifdef WRAP_REGSTRINGS
-        NewEntry->p.Key = (TRegStringPtr)(&NewEntry->p.Key) + sizeof(TRegStringPtr); // point just past pointer
+        NewEntry->p.Key = (TRegStringPtr)(getMembrPtr(NewEntry, &NewEntry->p.Key)) + sizeof(TRegStringPtr); // point just past pointer
 #endif
 
         strncpy((TRegStringPtr)&NewEntry->p.Key[0], Ident, IdentLen);

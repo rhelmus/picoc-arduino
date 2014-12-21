@@ -367,7 +367,7 @@ void LibGets(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, i
     // UNDONE: this function doesn't seem very safe? (how do we now the user supplies enough space?)
 
 #ifdef WRAP_ANYVALUE
-    CPtrWrapLock l(Param[0]->Val->Pointer);
+    CPtrWrapLock<TAnyValueCharPointer> l = makePtrWrapLock((TAnyValueCharPointer)Param[0]->Val->Pointer);
 
     if (PlatformGetLine((char *)&l, GETS_BUF_MAX, NULL) != NULL)
     {
@@ -627,13 +627,13 @@ void LibStrlen(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param,
 void LibMemset(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     /* we can use the system memset() */
-    memset(Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer);
+    memset((TAnyValueCharPointer)Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer);
 }
 
 void LibMemcpy(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     /* we can use the system memcpy() */
-    memcpy(Param[0]->Val->Pointer, Param[1]->Val->Pointer, Param[2]->Val->Integer);
+    memcpy((TAnyValueCharPointer)Param[0]->Val->Pointer, (TAnyValueCharPointer)Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
 void LibMemcmp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)

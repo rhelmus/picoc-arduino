@@ -4,11 +4,15 @@
 #include "picoc.h"
 #include "interpreter.h"
 
+Picoc *globalPicoc;
+CStdioVirtMemAlloc<> virtalloc;
+
 /* initialise everything */
 void PicocInitialise(Picoc *pc, int StackSize)
 {
     memset(pc, '\0', sizeof(*pc));
-    CPtrWrapperBase::setPicoc(pc); /* UNDONE: this effectively limits one Picoc struct per program, is this a problem? */
+    globalPicoc = pc; /* UNDONE: this effectively limits one Picoc struct per program, is this a problem? */
+    virtalloc.start();
     PlatformInit(pc);
     BasicIOInit(pc);
     HeapInit(pc, StackSize);
@@ -42,6 +46,7 @@ void PicocCleanup(Picoc *pc)
     TableStrFree(pc);
     HeapCleanup(pc);
     PlatformCleanup(pc);
+    virtalloc.stop();
 }
 
 /* platform-dependent code for running programs */

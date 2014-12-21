@@ -1,7 +1,7 @@
-CC=gcc
+CPPFLAGS=-I../../virtmem/src -D__STDC_FORMAT_MACROS
 CXX=g++
-CXXFLAGS=-Wall -pedantic -g3 -DVER=\"`git rev-parse --short HEAD`\" -std=gnu++11
-LIBS=-lm -lreadline
+CXXFLAGS=-Wall -pedantic -g3 -DVER=\"`git rev-parse --short HEAD`\" -std=gnu++11 -m32
+LIBS=-lm -lreadline -L../../virtmem/src -lvirtmem
 
 TARGET	= picoc
 SRCS	= picoc.cpp table.cpp lex.cpp parse.cpp expression.cpp heap.cpp type.cpp \

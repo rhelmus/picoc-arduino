@@ -4,7 +4,7 @@
 
 #define USE_VIRTMEM
 
-#include "util.hpp"
+#include "vmem_utils.h"
 
 #ifdef ARDUINO
 #define ARDUINO_HOST
@@ -43,34 +43,34 @@
 #define INTERACTIVE_PROMPT_LINE "     > "
 
 #ifdef USE_VIRTMEM
-typedef CPtrWrapper<struct CleanupTokenNode> TCleanupNodePtr;
-typedef CPtrWrapper<unsigned char> TLexBufPtr;
-typedef CPtrWrapper<struct Value> TValuePtr;
-typedef CPtrWrapper<TValuePtr> TValuePtrPtr;
-typedef CPtrWrapper<union AnyValue> TAnyValuePtr;
-typedef CPtrWrapper<char> TRegStringPtr;
-typedef CPtrWrapper<const char> TConstRegStringPtr;
-typedef CPtrWrapper<TRegStringPtr> TRegStringPtrPtr;
-typedef CPtrWrapper<struct ReservedWord> TReservedWordPtr;
-typedef CPtrWrapper<char> TValueCharPointer;
-typedef CPtrWrapperBase TAnyValueVoidPointer;
-typedef CPtrWrapper<int> TAnyValueIntPointer;
-typedef CPtrWrapper<float> TAnyValueFloatPointer;
-typedef CPtrWrapper<char> TAnyValueCharPointer;
-typedef CPtrWrapper<unsigned char> TAnyValueUCharPointer;
-typedef CPtrWrapper<char> TStdioCharPtr;
-typedef CPtrWrapper<const char> TStdioConstCharPtr;
-typedef CPtrWrapper<struct ValueType> TValueTypePtr;
-typedef CPtrWrapper<TValueTypePtr> TValueTypePtrPtr;
-typedef CPtrWrapper<struct TableEntry> TTableEntryPtr;
-typedef CPtrWrapper<TTableEntryPtr> TTableEntryPtrPtr;
-typedef CPtrWrapper<struct Table> TTablePtr;
-typedef CPtrWrapper<char> TTableCharPtr;
-typedef CPtrWrapper<struct IncludeLibrary> TIncludeLibraryPtr;
-typedef CPtrWrapper<struct ParseState> TParseStatePtr;
-typedef CPtrWrapper<struct ExpressionStack> TExpressionStackPtr;
-typedef CPtrWrapper<TExpressionStackPtr> TExpressionStackPtrPtr;
-typedef CPtrWrapper<struct TokenLine> TTokenLinePtr;
+typedef TVirtPtr<struct CleanupTokenNode>::type TCleanupNodePtr;
+typedef TVirtPtr<unsigned char>::type TLexBufPtr;
+typedef TVirtPtr<struct Value>::type TValuePtr;
+typedef TVirtPtr<TValuePtr>::type TValuePtrPtr;
+typedef TVirtPtr<union AnyValue>::type TAnyValuePtr;
+typedef TVirtPtr<char>::type TRegStringPtr;
+typedef TVirtPtr<const char>::type TConstRegStringPtr;
+typedef TVirtPtr<TRegStringPtr>::type TRegStringPtrPtr;
+typedef TVirtPtr<struct ReservedWord>::type TReservedWordPtr;
+typedef TVirtPtr<char>::type TValueCharPointer;
+typedef CVirtPtrBase TAnyValueVoidPointer;
+typedef TVirtPtr<int>::type TAnyValueIntPointer;
+typedef TVirtPtr<char>::type TAnyValueCharPointer;
+typedef TVirtPtr<unsigned char>::type TAnyValueUCharPointer;
+typedef TVirtPtr<char>::type TStdioCharPtr;
+typedef TVirtPtr<const char>::type TStdioConstCharPtr;
+typedef TVirtPtr<struct ValueType>::type TValueTypePtr;
+typedef TVirtPtr<TValueTypePtr>::type TValueTypePtrPtr;
+typedef TVirtPtr<struct TableEntry>::type TTableEntryPtr;
+typedef TVirtPtr<TTableEntryPtr>::type TTableEntryPtrPtr;
+typedef TVirtPtr<struct Table>::type TTablePtr;
+typedef TVirtPtr<char>::type TTableCharPtr;
+typedef TVirtPtr<struct IncludeLibrary>::type TIncludeLibraryPtr;
+typedef TVirtPtr<struct ParseState>::type TParseStatePtr;
+typedef TVirtPtr<struct ExpressionStack>::type TExpressionStackPtr;
+typedef TVirtPtr<TExpressionStackPtr>::type TExpressionStackPtrPtr;
+typedef TVirtPtr<struct TokenLine>::type TTokenLinePtr;
+typedef TVirtPtr<uint8_t>::type TVarAllocRet;
 
 #define WRAP_REGSTRINGS
 #define WRAP_ANYVALUE
@@ -89,7 +89,6 @@ typedef struct ReservedWord *TReservedWordPtr;
 typedef char *TValueCharPointer;
 typedef void *TAnyValueVoidPointer;
 typedef int *TAnyValueIntPointer;
-typedef float *TAnyValueFloatPointer;
 typedef char *TAnyValueCharPointer;
 typedef unsigned char *TAnyValueUCharPointer;
 typedef char *TStdioCharPtr;
@@ -108,8 +107,8 @@ typedef struct TokenLine *TTokenLinePtr;
 #endif
 /* host platform includes */
 #ifdef UNIX_HOST
-# undef USE_MALLOC_STACK                   /* stack is allocated using malloc() */
-# undef USE_MALLOC_HEAP                    /* heap is allocated using malloc() */
+# define USE_MALLOC_STACK                   /* stack is allocated using malloc() */
+# define USE_MALLOC_HEAP                    /* heap is allocated using malloc() */
 # define HEAP_SIZE (4096*1024)
 # define BUILTIN_MINI_STDLIB
 # define debugline /*printf*/
