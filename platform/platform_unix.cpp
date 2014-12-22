@@ -163,7 +163,7 @@ void PicocPlatformScanFileByLine(Picoc *pc, const char *FileName)
 /* exit the program */
 void PlatformExit(Picoc *pc, int RetVal)
 {
-    assert(false);
+//    assert(false);
     pc->PicocExitValue = RetVal;
     longjmp(pc->PicocExitBuf, 1);
 }

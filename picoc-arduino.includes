@@ -2,3 +2,4 @@
 tests
 platform
 ../../virtmem/src
+../virtmem/src

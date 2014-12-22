@@ -613,7 +613,7 @@ int LexTokenSize(enum LexToken Token)
 {
     switch (Token)
     {
-        case TokenIdentifier: case TokenStringConstant: return sizeof(char *);
+        case TokenIdentifier: case TokenStringConstant: return sizeof(TRegStringPtr);
         case TokenIntegerConstant: return sizeof(long);
         case TokenCharacterConstant: return sizeof(unsigned char);
         case TokenFPConstant: return sizeof(double);
@@ -722,7 +722,7 @@ void LexInitParser(TParseStatePtr Parser, Picoc *pc, const char *SourceText, TLe
     Parser->CharacterPos = 0;
     Parser->SourceText = SourceText;
     Parser->DebugMode = EnableDebugger;
-    Parser->ScopeID = 0; // UNDONE: is this a good default? it was left uninitialized
+//    Parser->ScopeID = 0; // UNDONE: is this a good default? it was left uninitialized
 }
 
 /* get the next token, without pre-processing */
