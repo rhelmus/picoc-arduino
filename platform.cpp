@@ -73,7 +73,7 @@ void PicocCallMain(Picoc *pc, int argc, char **argv)
     {
         /* define the arguments */
         VariableDefinePlatformVar(pc, NILL, "__argc", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&argc), FALSE);
-        VariableDefinePlatformVar(pc, NILL, "__argv", pc->CharPtrPtrType, (TAnyValuePtr)ptrWrap(&argv), FALSE);
+        VariableDefinePlatformVar(pc, NILL, "__argv", pc->CharPtrPtrType, (TAnyValuePtr)ptrWrap(&argv), FALSE); // UNDONE
     }
 
     if (FuncValue->Val->FuncDef.ReturnType == ptrWrap(&pc->VoidType))
