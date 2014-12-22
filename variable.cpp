@@ -497,20 +497,8 @@ void VariableDefinePlatformVar(Picoc *pc, TParseStatePtr Parser, const char *Ide
 
 void VariableDefinePlatformVar(Picoc *pc, TParseStatePtr Parser, TConstRegStringPtr Ident, TValueTypePtr Typ, TAnyValuePtr FromValue, int IsWritable)
 {
-    // UNDONE: should this be here?
-#ifdef WRAP_ANYVALUE
-    TValuePtr SomeValue = VariableAllocValueAndData(pc, NILL, (Typ->Base == TypePointer) ? sizeof(TAnyValueVoidPointer) : 0,
-                                                    IsWritable, NILL, TRUE);
-#else
     TValuePtr SomeValue = VariableAllocValueAndData(pc, NILL, 0, IsWritable, NILL, TRUE);
-#endif
     SomeValue->Typ = Typ;
-
-#ifdef WRAP_ANYVALUE
-    if (Typ->Base == TypePointer)
-        SomeValue->Val->Pointer = FromValue;
-    else
-#endif
     SomeValue->Val = FromValue;
     
     if (!TableSet(pc, (pc->TopStackFrame == NULL) ? ptrWrap(&pc->GlobalTable) : ptrWrap(&pc->TopStackFrame->LocalTable), TableStrRegister(pc, Ident), SomeValue, Parser ? Parser->FileName : NILL, Parser ? Parser->Line : 0, Parser ? Parser->CharacterPos : 0))

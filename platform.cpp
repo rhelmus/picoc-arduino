@@ -73,7 +73,11 @@ void PicocCallMain(Picoc *pc, int argc, char **argv)
     {
         /* define the arguments */
         VariableDefinePlatformVar(pc, NILL, "__argc", ptrWrap(&pc->IntType), (TAnyValuePtr)ptrWrap(&argc), FALSE);
-        VariableDefinePlatformVar(pc, NILL, "__argv", pc->CharPtrPtrType, (TAnyValuePtr)ptrWrap(&argv), FALSE); // UNDONE
+#ifdef WRAP_ANYVALUE
+        PlatformCreatePtrArray(pc, NILL, "__argv", pc->CharPtrPtrType, (void **)argv, argc, sizeof(char *), FALSE);
+#else
+        VariableDefinePlatformVar(pc, NILL, "__argv", pc->CharPtrPtrType, (TAnyValuePtr)ptrWrap(&argv), FALSE);
+#endif
     }
 
     if (FuncValue->Val->FuncDef.ReturnType == ptrWrap(&pc->VoidType))
@@ -252,3 +256,25 @@ TRegStringPtr PlatformMakeTempName(Picoc *pc, char *TempNameBuffer)
 
     return TableStrRegister(pc, TempNameBuffer);
 }
+
+#ifdef WRAP_ANYVALUE
+// UNDONE: test this for other types than char **?
+void PlatformCreatePtrArray(Picoc *pc, TParseStatePtr Parser, const char *Ident, TValueTypePtr Typ, void **Array, int Elements, int ElementSizeof, int IsWritable)
+{
+    int i;
+    int ElementSize = TypeSize(Typ, Elements, FALSE);
+
+    TValuePtr ArrayValue = VariableAllocValueAndData(pc, NILL, ElementSize * Elements + sizeof(TAnyValueVoidPointer), IsWritable, NILL, TRUE);
+    ArrayValue->Typ = Typ;
+    ArrayValue->Val->Pointer = (TAnyValueCharPointer)ArrayValue->Val + sizeof(TAnyValueVoidPointer);
+
+    for (i=0; i<Elements; ++i)
+    {
+        TAnyValuePtr val = (TAnyValuePtr)((TAnyValueCharPointer)ArrayValue->Val->Pointer + i * ElementSize);
+        val->Pointer = (TAnyValueVoidPointer)ptrWrap(*(char **)((char *)Array + i * ElementSizeof));
+    }
+
+    if (!TableSet(pc, (pc->TopStackFrame == NULL) ? ptrWrap(&pc->GlobalTable) : ptrWrap(&pc->TopStackFrame->LocalTable), TableStrRegister(pc, Ident), ArrayValue, Parser ? Parser->FileName : NILL, Parser ? Parser->Line : 0, Parser ? Parser->CharacterPos : 0))
+        ProgramFail(Parser, "'%s' is already defined", Ident);
+}
+#endif

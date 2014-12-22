@@ -642,6 +642,7 @@ void PlatformPrintf(IOFILE *Stream, const char *Format, ...);
 void PlatformVPrintf(IOFILE *Stream, const char *Format, va_list Args);
 void PlatformExit(Picoc *pc, int ExitVal);
 TRegStringPtr PlatformMakeTempName(Picoc *pc, char *TempNameBuffer);
+void PlatformCreatePtrArray(Picoc *pc, TParseStatePtr Parser, const char *Ident, TValueTypePtr Typ, void **Array, int Elements, int ElementSizeof, int IsWritable);
 void PlatformLibraryInit(Picoc *pc);
 
 /* include.c */

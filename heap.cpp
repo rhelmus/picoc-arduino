@@ -5,7 +5,7 @@
 /* stack grows up from the bottom and heap grows down from the top of heap space */
 #include "interpreter.h"
 
-//#define NVALGRIND
+#define NVALGRIND
 //#define USE_MALLOC_FOR_STACK
 
 #ifndef NVALGRIND
