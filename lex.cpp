@@ -27,6 +27,7 @@
 
 #define MAX_CHAR_VALUE 255      /* maximum value which can be represented by a "char" data type */
 
+void LexPrintToken(enum LexToken Token);
 
 struct ReservedWord
 {
@@ -645,6 +646,7 @@ TLexBufPtr LexTokenise(Picoc *pc, struct LexState *Lexer, int *TokenLen)
 #ifdef DEBUG_LEXER
         printf("Token: %02x\n", Token);
 #endif
+
         *(unsigned char *)TokenPos = Token;
         TokenPos++;
         MemUsed++;
@@ -763,6 +765,7 @@ enum LexToken LexGetRawToken(TParseStatePtr Parser, TValuePtrPtr Value, int IncP
                 /* put the new line at the end of the linked list of interactive lines */        
                 LineTokens = LexAnalyse(pc, pc->StrEmpty, &LineBuffer[0], strlen(LineBuffer), &LineBytes);
                 LineNode = allocMemVariable<struct TokenLine>(Parser, false);
+                LineNode->Next = NILL; // FIX: this was kept unset
                 LineNode->Tokens = LineTokens;
                 LineNode->NumBytes = LineBytes;
                 if (pc->InteractiveHead == NULL)
@@ -888,7 +891,7 @@ void LexHashIf(TParseStatePtr Parser)
         if (SavedValue->Typ->Base != TypeMacro)
             ProgramFail(Parser, "value expected");
         
-        ParserCopy(ptrWrap(&MacroParser), getMembrPtr(SavedValue->Val, &SavedValue->Val->MacroDef.Body));
+        ParserCopy(ptrWrap(&MacroParser), getMembrPtr(SavedValue->Val, &AnyValue::MacroDef, &MacroDef::Body));
         Token = LexGetRawToken(ptrWrap(&MacroParser), &IdentValue, TRUE);
     }
     
@@ -996,7 +999,7 @@ enum LexToken LexGetToken(TParseStatePtr Parser, TValuePtrPtr Value, int IncPos)
         TryNextToken = (Parser->HashIfEvaluateToLevel < Parser->HashIfLevel && Token != TokenEOF) || WasPreProcToken;
         if (!IncPos && TryNextToken)
             LexGetRawToken(Parser, NILL, TRUE);
-            
+
     } while (TryNextToken);
     
     return Token;
@@ -1031,10 +1034,11 @@ TLexBufPtr LexCopyTokens(TParseStatePtr Parser, const TLexBufPtr &StartParserPos
     TLexBufPtr NewTokenPos;
     TTokenLinePtr ILine;
     Picoc *pc = Parser->pc;
-    
+
     if (pc->InteractiveHead == NULL)
     { 
         /* non-interactive mode - copy the tokens */
+        assert(EndParserPos >= StartParserPos);
         MemSize = EndParserPos - StartParserPos;
         NewTokens = allocMemVariable<unsigned char>(Parser, FALSE, MemSize + TOKEN_DATA_OFFSET);
         memcpy(NewTokens, StartParserPos, MemSize);
@@ -1078,7 +1082,7 @@ TLexBufPtr LexCopyTokens(TParseStatePtr Parser, const TLexBufPtr &StartParserPos
     }
     
     NewTokens[MemSize] = (unsigned char)TokenEndOfFunction;
-        
+
     return NewTokens;
 }
 

@@ -85,6 +85,7 @@ TValuePtr ParseFunctionDefinition(TParseStatePtr Parser, TValueTypePtr ReturnTyp
     FuncValue->Val->FuncDef.ParamType = (TValueTypePtrPtr)((TValueCharPointer)(FuncValue->Val) + sizeof(struct FuncDef));
     FuncValue->Val->FuncDef.ParamName = (TRegStringPtrPtr)((TValueCharPointer)(FuncValue->Val->FuncDef.ParamType) + sizeof(TValueTypePtr) * ParamCount);
     FuncValue->Val->FuncDef.Body = NILL;
+    FuncValue->Val->FuncDef.Intrinsic = NILL; // FIX: that was kept uninitialized
    
     for (ParamCount = 0; ParamCount < FuncValue->Val->FuncDef.NumParams; ParamCount++)
     { 
@@ -426,7 +427,7 @@ void ParseMacroDefinition(TParseStatePtr Parser)
     }
     
     /* copy the body of the macro to execute later */
-    ParserCopy(getMembrPtr(MacroValue->Val, &MacroValue->Val->MacroDef.Body), Parser);
+    ParserCopy(getMembrPtr(MacroValue->Val, &AnyValue::MacroDef, &MacroDef::Body), Parser);
     MacroValue->Typ = ptrWrap(&Parser->pc->MacroType);
     LexToEndOfLine(Parser);
     MacroValue->Val->MacroDef.Body.Pos = LexCopyTokens(Parser, MacroValue->Val->MacroDef.Body.Pos, Parser->Pos); // UNDONE: switched MacroDef.Body to Parser, shouldn't matter
@@ -591,7 +592,7 @@ enum ParseResult ParseStatement(TParseStatePtr Parser, int CheckTrailingSemicolo
     /* take note of where we are and then grab a token to see what statement we have */   
     ParserCopy(ptrWrap(&PreState), Parser);
     Token = LexGetToken(Parser, &LexerValue, TRUE);
-    
+
     switch (Token)
     {
         case TokenEOF:

@@ -135,7 +135,15 @@ void PrintSourceTextErrorLine(IOFILE *Stream, TConstRegStringPtr FileName, const
         for (CCount = 0; CCount < CharacterPos + (int)strlen(INTERACTIVE_PROMPT_STATEMENT); CCount++)
             PrintCh(' ', Stream);
     }
+
+#ifdef WRAP_REGSTRINGS
+    char buf[128];
+    strncpy(buf, FileName, 127);
+    buf[127] = 0;
+    PlatformPrintf(Stream, "^\n%s:%d:%d ", buf, Line, CharacterPos);
+#else
     PlatformPrintf(Stream, "^\n%s:%d:%d ", FileName, Line, CharacterPos);
+#endif
     
 }
 

@@ -192,7 +192,7 @@ TValuePtr VariableAllocValueFromType(Picoc *pc, TParseStatePtr Parser, TValueTyp
 
 #ifdef WRAP_ANYVALUE
     if (Typ->Base == TypeArray)
-        NewValue->Val->ArrayMem = (TAnyValueCharPointer)(getMembrPtr(NewValue->Val, &NewValue->Val->ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
+        NewValue->Val->ArrayMem = (TAnyValueCharPointer)(getMembrPtr(NewValue->Val, &AnyValue::ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
 #endif
 
     return NewValue;
@@ -228,7 +228,7 @@ TValuePtr VariableAllocValueFromExistingData(TParseStatePtr Parser, TValueTypePt
 
 #ifdef WRAP_ANYVALUE
     if (Typ->Base == TypeArray)
-        NewValue->Val->ArrayMem = (TAnyValueCharPointer)(getMembrPtr(NewValue->Val, &NewValue->Val->ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
+        NewValue->Val->ArrayMem = (TAnyValueCharPointer)(getMembrPtr(NewValue->Val, &AnyValue::ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
 #endif
 
     return NewValue;
@@ -253,7 +253,7 @@ void VariableRealloc(TParseStatePtr Parser, TValuePtr FromValue, int NewSize)
     FromValue->Val = allocMemVariable<AnyValue>(Parser, false, NewSize);
 #ifdef WRAP_ANYVALUE
     if (Typ->Base == TypeArray)
-        FromValue->Val->ArrayMem = (TAnyValueCharPointer)(getMembrPtr(FromValue->Val, &FromValue->Val->ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
+        FromValue->Val->ArrayMem = (TAnyValueCharPointer)(getMembrPtr(FromValue->Val, &AnyValue::ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
 #endif
     FromValue->Flags |= FlagAnyValOnHeap;
 }
@@ -479,10 +479,20 @@ void VariableGet(Picoc *pc, TParseStatePtr Parser, TConstRegStringPtr Ident, TVa
     {
         if (!TableGet(ptrWrap(&pc->GlobalTable), Ident, LVal, NULL, NULL, NULL))
         {
+#ifdef WRAP_REGSTRINGS
+            char buf[128];
+            strncpy(buf, Ident, 127);
+            buf[127] = 0;
+            if (VariableDefinedAndOutOfScope(pc, Ident))
+                ProgramFail(Parser, "'%s' is out of scope", buf);
+            else
+                ProgramFail(Parser, "'%s' is undefined", buf);
+#else
             if (VariableDefinedAndOutOfScope(pc, Ident))
                 ProgramFail(Parser, "'%s' is out of scope", Ident);
             else
                 ProgramFail(Parser, "'%s' is undefined", Ident);
+#endif
         }
     }
 }

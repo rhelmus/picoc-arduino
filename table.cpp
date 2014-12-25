@@ -42,7 +42,7 @@ static TTableEntryPtr TableSearch(TTablePtr Tbl, TConstRegStringPtr Key, int *Ad
 {
     TTableEntryPtr Entry;
     int HashValue = ((unsigned long)(getNumPtr(Key))) % Tbl->Size;   /* shared strings have unique addresses so we don't need to hash them */
-    
+
     for (Entry = Tbl->HashTable[HashValue]; Entry != NULL; Entry = Entry->Next)
     {
         if (Entry->p.v.Key == Key)
@@ -162,7 +162,7 @@ TRegStringPtr TableSetIdentifier(Picoc *pc, TTablePtr Tbl, TConstRegStringPtr Id
             ProgramFailNoParser(pc, "out of memory");
 
 #ifdef WRAP_REGSTRINGS
-        NewEntry->p.Key = (TRegStringPtr)(getMembrPtr(NewEntry, &NewEntry->p.Key)) + sizeof(TRegStringPtr); // point just past pointer
+        NewEntry->p.Key = (TRegStringPtr)(getMembrPtr(NewEntry, &TableEntry::p, &TableEntry::TableEntryPayload::Key)) + sizeof(TRegStringPtr); // point just past pointer
 #endif
 
         strncpy((TRegStringPtr)&NewEntry->p.Key[0], Ident, IdentLen);
@@ -188,7 +188,7 @@ TRegStringPtr TableStrRegister2(Picoc *pc, TConstRegStringPtr Str, int Len)
 
 TRegStringPtr TableStrRegister(Picoc *pc, const char *Str)
 {
-    return TableStrRegister2(pc, Str, strlen((char *)Str));
+    return TableStrRegister2(pc, Str, strlen(Str));
 }
 
 #ifdef USE_VIRTMEM

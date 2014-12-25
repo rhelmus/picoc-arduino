@@ -712,7 +712,7 @@ void ExpressionInfixOperator(TParseStatePtr Parser, TExpressionStackPtrPtr Stack
         switch (BottomValue->Typ->Base)
         {
 #ifdef WRAP_ANYVALUE
-            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)((TAnyValueCharPointer)getMembrPtr(BottomValue->Val, &BottomValue->Val->ArrayMem) + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
+            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)((TAnyValueCharPointer)getMembrPtr(BottomValue->Val, &AnyValue::ArrayMem) + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
 #else
             case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)(&BottomValue->Val->ArrayMem[0] + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
 #endif
@@ -1276,7 +1276,7 @@ int ExpressionParse(TParseStatePtr Parser, TValuePtrPtr Result)
                         struct ParseState MacroParser;
                         TValuePtr MacroResult;
                         
-                        ParserCopy(ptrWrap(&MacroParser), getMembrPtr(VariableValue->Val, &VariableValue->Val->MacroDef.Body));
+                        ParserCopy(ptrWrap(&MacroParser), getMembrPtr(VariableValue->Val, &AnyValue::MacroDef, &MacroDef::Body));
                         MacroParser.Mode = Parser->Mode;
                         if (VariableValue->Val->MacroDef.NumParams != 0)
                             ProgramFail(ptrWrap(&MacroParser), "macro arguments missing");
@@ -1440,7 +1440,7 @@ void ExpressionParseMacroCall(TParseStatePtr Parser, TExpressionStackPtrPtr Stac
         if (MDef->Body.Pos == NULL)
             ProgramFail(Parser, "'%s' is undefined", MacroName);
         
-        ParserCopy(ptrWrap(&MacroParser), getMembrPtr(MDef, &MDef->Body));
+        ParserCopy(ptrWrap(&MacroParser), getMembrPtr(MDef, &MacroDef::Body));
         MacroParser.Mode = Parser->Mode;
         VariableStackFrameAdd(Parser, MacroName, 0);
         Parser->pc->TopStackFrame->NumParams = ArgCount;
@@ -1467,17 +1467,17 @@ void ExpressionParseFunctionCall(TParseStatePtr Parser, TExpressionStackPtrPtr S
     enum RunMode OldMode = Parser->Mode;
     
     if (RunIt)
-    { 
+    {
         /* get the function definition */
         VariableGet(Parser->pc, Parser, FuncName, &FuncValue);
         
         if (FuncValue->Typ->Base == TypeMacro)
         {
             /* this is actually a macro, not a function */
-            ExpressionParseMacroCall(Parser, StackTop, FuncName, getMembrPtr(FuncValue->Val, &FuncValue->Val->MacroDef));
+            ExpressionParseMacroCall(Parser, StackTop, FuncName, getMembrPtr(FuncValue->Val, &AnyValue::MacroDef));
             return;
         }
-        
+
         if (FuncValue->Typ->Base != TypeFunction)
             ProgramFail(Parser, "%t is not a function - can't call", FuncValue->Typ);
     
@@ -1493,7 +1493,7 @@ void ExpressionParseFunctionCall(TParseStatePtr Parser, TExpressionStackPtrPtr S
         ExpressionPushInt(Parser, StackTop, 0);
         Parser->Mode = RunModeSkip;
     }
-        
+
     /* parse arguments */
     ArgCount = 0;
     do {
