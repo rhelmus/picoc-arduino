@@ -77,7 +77,7 @@ int DebugClearBreakpoint(TParseStatePtr Parser)
     Picoc *pc = Parser->pc;
     int HashValue = BREAKPOINT_HASH(Parser) % pc->BreakpointTable.Size;
     
-    for (EntryPtr = &pc->BreakpointHashTable[HashValue]; *EntryPtr != NILL; EntryPtr = &(*EntryPtr)->Next)
+    for (EntryPtr = &pc->BreakpointHashTable[HashValue]; *EntryPtr != NILL; EntryPtr = getMembrPtr((TTableEntryPtr)(*EntryPtr), &TableEntry::Next))
     {
         TTableEntryPtr DeleteEntry = *EntryPtr;
         if (DeleteEntry->p.b.FileName == Parser->FileName && DeleteEntry->p.b.Line == Parser->Line && DeleteEntry->p.b.CharacterPos == Parser->CharacterPos)

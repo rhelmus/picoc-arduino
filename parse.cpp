@@ -12,8 +12,13 @@ void ParseCleanup(Picoc *pc)
         
         deallocMem(pc->CleanupTokenList->Tokens);
         if (pc->CleanupTokenList->SourceText != NULL)
+        {
+#if defined(USE_MALLOC_HEAP) && defined(UNIX_HOST) // FIX: PlatformReadFile on unix uses malloc
+            free((void *)pc->CleanupTokenList->SourceText);
+#else
             HeapFreeMem(pc, (void *)pc->CleanupTokenList->SourceText);
-            
+#endif
+        }
         deallocMem(pc->CleanupTokenList);
         pc->CleanupTokenList = Next;
     }

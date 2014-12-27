@@ -108,7 +108,7 @@ TValuePtr TableDelete(Picoc *pc, TTablePtr Tbl, const TRegStringPtr Key)
     TTableEntryPtrPtr EntryPtr;
     int HashValue = ((unsigned long)getNumPtr(Key)) % Tbl->Size;   /* shared strings have unique addresses so we don't need to hash them */
     
-    for (EntryPtr = &Tbl->HashTable[HashValue]; *EntryPtr != NILL; EntryPtr = &(*EntryPtr)->Next)
+    for (EntryPtr = &Tbl->HashTable[HashValue]; *EntryPtr != NILL; EntryPtr = getMembrPtr((TTableEntryPtr)(*EntryPtr), &TableEntry::Next))
     {
         if ((*EntryPtr)->p.v.Key == Key)
         {

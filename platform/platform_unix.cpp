@@ -135,7 +135,6 @@ void PicocPlatformScanFile(Picoc *pc, const char *FileName)
     }
 
     PicocParse(pc, FileName, SourceStr, strlen(SourceStr), TRUE, FALSE, FALSE, TRUE);
-    free(SourceStr); /* cleanup manually (not within PicoParse): doesn't work otherwise if own allocator is used */
 }
 
 /* read and scan a file for definitions */
