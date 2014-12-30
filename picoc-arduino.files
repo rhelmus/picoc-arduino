@@ -216,6 +216,4 @@ Makefile
 tests/Makefile
 arduinofy.sh
 platform/library_arduino.cpp
-util.hpp
-util.cpp
 vmem_utils.h
