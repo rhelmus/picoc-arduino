@@ -2,7 +2,7 @@
 #define VMEM_UTILS_H
 
 #include "virtmem.h"
-#include "stdioalloc.h"
+#include "stdio_alloc.h"
 
 #include <inttypes.h>
 

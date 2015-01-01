@@ -367,9 +367,10 @@ void LibGets(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, i
     // UNDONE: this function doesn't seem very safe? (how do we now the user supplies enough space?)
 
 #ifdef WRAP_ANYVALUE
-    CPtrWrapLock<TAnyValueCharPointer> l = makeVirtPtrLock((TAnyValueCharPointer)Param[0]->Val->Pointer);
+    TVirtPageSize size = GETS_BUF_MAX;
+    CPtrWrapLock<TAnyValueCharPointer> l = makeVirtPtrLock((TAnyValueCharPointer)Param[0]->Val->Pointer, size, false);
 
-    if (PlatformGetLine((char *)&l, GETS_BUF_MAX, NULL) != NULL)
+    if (PlatformGetLine((char *)*l, size, NULL) != NULL)
     {
         char *EOLPos = strchr((char *)&l, '\n');
         if (EOLPos != NULL)
