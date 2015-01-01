@@ -6,6 +6,8 @@
 
 #include <inttypes.h>
 
+using namespace virtmem;
+
 typedef CStdioVirtMemAlloc<> TVirtAlloc;
 
 struct Picoc_Struct;
