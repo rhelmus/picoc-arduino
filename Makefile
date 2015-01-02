@@ -1,7 +1,8 @@
 CPPFLAGS=-I../../virtmem/src -I../virtmem/src -D__STDC_FORMAT_MACROS
 CXX=g++
-CXXFLAGS=-Wall -pedantic -g3 -DVER=\"`git rev-parse --short HEAD`\" -std=gnu++11 -m32
+CXXFLAGS=-Wall -pedantic -DVER=\"`git rev-parse --short HEAD`\" -std=gnu++11 -m32 -Os -ffunction-sections -fdata-sections
 LIBS=-lm -lreadline -L../../virtmem/src -lvirtmem -L../virtmem/src
+LDFLAGS=-Wl,--gc-sections
 
 TARGET	= picoc
 SRCS	= picoc.cpp table.cpp lex.cpp parse.cpp expression.cpp heap.cpp type.cpp \
@@ -15,7 +16,7 @@ OBJS	:= $(SRCS:%.cpp=%.o)
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LIBS) $(LDFLAGS)
 
 test:	all
 	(cd tests; make test)
