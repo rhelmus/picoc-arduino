@@ -6,10 +6,12 @@
 
 Picoc *globalPicoc;
 
+#ifdef USE_VIRTMEM
 #ifdef ARDUINO_HOST
 TVirtAlloc virtalloc(9); // UNDONE
 #else
 TVirtAlloc virtalloc;
+#endif
 #endif
 
 /* initialise everything */
@@ -17,7 +19,9 @@ void PicocInitialise(Picoc *pc, int StackSize)
 {
     memset(pc, '\0', sizeof(*pc));
     globalPicoc = pc; /* UNDONE: this effectively limits one Picoc struct per program, is this a problem? */
+#ifdef USE_VIRTMEM
     virtalloc.start();
+#endif
     PlatformInit(pc);
     BasicIOInit(pc);
     HeapInit(pc, StackSize);
@@ -51,7 +55,9 @@ void PicocCleanup(Picoc *pc)
     TableStrFree(pc);
     HeapCleanup(pc);
     PlatformCleanup(pc);
+#ifdef USE_VIRTMEM
     virtalloc.stop();
+#endif
 }
 
 /* platform-dependent code for running programs */

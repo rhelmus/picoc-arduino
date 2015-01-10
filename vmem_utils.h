@@ -2,6 +2,7 @@
 #define VMEM_UTILS_H
 
 #include <inttypes.h>
+#include <stdlib.h>
 
 struct Picoc_Struct;
 typedef struct Picoc_Struct Picoc;
@@ -28,6 +29,7 @@ typedef TVirtPtr<uint8_t>::type TVarAllocRet;
 TVarAllocRet VariableAllocVirt(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap);
 #else
 typedef struct ParseState *TParseStatePtr;
+#define NILL NULL
 #endif
 
 #ifdef USE_VIRTSTACK
@@ -98,16 +100,20 @@ template <typename T> inline CAllocProxy<T> allocMem(bool st, size_t size=sizeof
 template <typename T> inline CAllocProxy<T> allocMemVariable(TParseStatePtr p, bool st, size_t size=sizeof(T))
 { return CAllocProxy<T>(size, p, st, true); }
 
+#ifdef USE_VIRTMEM
 inline CVirtPtrBase::TPtrNum getNumPtr(const CVirtPtrBase &pwb) { return pwb.getRawNum(); }
-inline intptr_t getNumPtr(const void *p) { return reinterpret_cast<intptr_t>(p); }
 inline void setPtrFromNum(CVirtPtrBase &pwb, CVirtPtrBase::TPtrNum ip) { pwb.setRawNum(ip); }
-inline void setPtrFromNum(void *&p, intptr_t ip) { p = reinterpret_cast<void *>(ip); }
+#endif
+inline intptr_t getNumPtr(const void *p) { return reinterpret_cast<intptr_t>(p); }
+template <typename T> inline void setPtrFromNum(T *&p, intptr_t ip) { p = reinterpret_cast<T *>(ip); }
 
 inline void deallocMem(void *ptr) { HeapFreeMem(globalPicoc, ptr); }
-template <typename T> inline void deallocMem(CVirtPtr<T, TVirtAlloc> &p) { p.free(p); } // UNDONE
+#ifdef USE_VIRTMEM
+template <typename T> inline void deallocMem(CVirtPtr<T, TVirtAlloc> &p) { p.free(p); }
+#endif
 inline int popStack(TStackVoidPtr ptr, int size) { return HeapPopStack(globalPicoc, ptr, size); }
 
-#ifndef USE_VIRTSTACK
+#if !defined(USE_VIRTSTACK) && defined(USE_VIRTMEM)
 template <typename T> inline int popStack(CVirtPtr<T, TVirtAlloc> &p, int size) { return HeapPopStack(globalPicoc, p.unwrap(), size); }
 #endif
 
@@ -118,6 +124,8 @@ inline void *ptrUnwrap(CVirtPtrBase p) { return p.unwrap(); }
 #else
 #define ptrWrap /* empty */
 #define ptrUnwrap /* empty */
+template <typename C, typename M> M *getMembrPtr(C *c, M C::*m) { return &(c->*m); }
+template <typename C, typename M, typename NC, typename NM> NM *getMembrPtr(C *c, M C::*m, NM NC::*nm) { return &(c->*m.*nm); }
 #endif
 
 #endif // VMEM_UTILS_H
