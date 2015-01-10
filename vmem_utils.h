@@ -57,7 +57,7 @@ template <typename T> class CAllocProxy
     TParseStatePtr ps;
     bool stack, varalloc;
 
-    CAllocProxy(size_t s, TParseStatePtr p, bool st, bool va) : size(s), ps(p), stack(st), varalloc(va), done(false) { }
+    CAllocProxy(size_t s, TParseStatePtr p, bool st, bool va) : size(s), ps(p), stack(st), varalloc(va) { }
     CAllocProxy(const CAllocProxy &);
     CAllocProxy &operator=(const CAllocProxy &);
 
