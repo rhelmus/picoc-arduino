@@ -338,7 +338,7 @@ enum LexToken LexGetNumber(Picoc *pc, struct LexState *Lexer, TValuePtr Value)
 /* get a reserved word or identifier - used while scanning */
 enum LexToken LexGetWord(Picoc *pc, struct LexState *Lexer, TValuePtr Value)
 {
-    const char *StartPos = Lexer->Pos;
+    TLexConstCharPtr StartPos = Lexer->Pos;
     enum LexToken Token;
     
     do {
@@ -366,7 +366,7 @@ enum LexToken LexGetWord(Picoc *pc, struct LexState *Lexer, TValuePtr Value)
 }
 
 /* unescape a character from an octal character constant */
-unsigned char LexUnEscapeCharacterConstant(const char **From, const char *End, unsigned char FirstChar, int Base)
+unsigned char LexUnEscapeCharacterConstant(TLexConstCharPtrPtr From, TLexConstCharPtr End, unsigned char FirstChar, int Base)
 {
     unsigned char Total = GET_BASE_DIGIT(FirstChar);
     int CCount;
@@ -377,11 +377,11 @@ unsigned char LexUnEscapeCharacterConstant(const char **From, const char *End, u
 }
 
 /* unescape a character from a string or character constant */
-unsigned char LexUnEscapeCharacter(const char **From, const char *End)
+unsigned char LexUnEscapeCharacter(TLexConstCharPtrPtr From, TLexConstCharPtr End)
 {
     unsigned char ThisChar;
-    
-    while ( *From != End && **From == '\\' && 
+
+    while ( *From != End && **From == '\\' &&
             &(*From)[1] != End && (*From)[1] == '\n' )
         (*From) += 2;       /* skip escaped end of lines with LF line termination */
     
@@ -425,10 +425,10 @@ unsigned char LexUnEscapeCharacter(const char **From, const char *End)
 enum LexToken LexGetStringConstant(Picoc *pc, struct LexState *Lexer, TValuePtr Value, char EndChar)
 {
     int Escape = FALSE;
-    const char *StartPos = Lexer->Pos;
-    const char *EndPos;
-    char *EscBuf;
-    char *EscBufPos;
+    TLexConstCharPtr StartPos = Lexer->Pos;
+    TLexConstCharPtr EndPos;
+    TLexCharPtr EscBuf;
+    TLexCharPtr EscBufPos;
     TRegStringPtr RegString;
     TValuePtr ArrayValue;
 
@@ -457,7 +457,8 @@ enum LexToken LexGetStringConstant(Picoc *pc, struct LexState *Lexer, TValuePtr 
     }
     EndPos = Lexer->Pos;
     
-    EscBuf = (char *)HeapAllocStack(pc, EndPos - StartPos);
+    EscBuf = allocMem<char>(true, EndPos - StartPos);
+
     if (EscBuf == NULL)
         LexFail(pc, Lexer, "out of memory");
     
@@ -466,7 +467,7 @@ enum LexToken LexGetStringConstant(Picoc *pc, struct LexState *Lexer, TValuePtr 
     
     /* try to find an existing copy of this string literal */
     RegString = TableStrRegister2(pc, EscBuf, EscBufPos - EscBuf);
-    HeapPopStack(pc, EscBuf, EndPos - StartPos);
+    popStack(EscBuf, EndPos - StartPos);
     ArrayValue = VariableStringLiteralGet(pc, RegString);
     if (ArrayValue == NULL)
     {
@@ -572,7 +573,7 @@ enum LexToken LexScanGetToken(Picoc *pc, struct LexState *Lexer, TValuePtrPtr Va
         if (isdigit((int)ThisChar))
             return LexGetNumber(pc, Lexer, *Value);
         
-        NextChar = (Lexer->Pos+1 != Lexer->End) ? *(Lexer->Pos+1) : 0;
+        NextChar = (Lexer->Pos+1 != Lexer->End) ? (char)*(Lexer->Pos+1) : 0;
         LEXER_INC(Lexer);
         switch (ThisChar)
         {
@@ -630,9 +631,15 @@ TLexBufPtr LexTokenise(Picoc *pc, struct LexState *Lexer, int *TokenLen)
     TValuePtr GotValue;
     int MemUsed = 0;
     int ValueSize;
+#ifdef USE_VIRTMEM
+    // due to the possibly larger ptr size (on x86/x86-64), we seem to need a bit more now
+    // (where was this based on??)
+    int ReserveSpace = (Lexer->End - Lexer->Pos) * sizeof(TLexBufPtr) + 16;
+#else
     int ReserveSpace = (Lexer->End - Lexer->Pos) * 4 + 16;
-    void *TokenSpace = HeapAllocStack(pc, ReserveSpace);
-    char *TokenPos = (char *)TokenSpace;
+#endif
+    TLexBufPtr TokenSpace = allocMem<unsigned char>(true, ReserveSpace);
+    TLexBufPtr TokenPos = TokenSpace;
     int LastCharacterPos = 0;
 
     if (TokenSpace == NULL)
@@ -647,11 +654,11 @@ TLexBufPtr LexTokenise(Picoc *pc, struct LexState *Lexer, int *TokenLen)
         printf("Token: %02x\n", Token);
 #endif
 
-        *(unsigned char *)TokenPos = Token;
+        *TokenPos = Token;
         TokenPos++;
         MemUsed++;
 
-        *(unsigned char *)TokenPos = (unsigned char)LastCharacterPos;
+        *TokenPos = (unsigned char)LastCharacterPos;
         TokenPos++;
         MemUsed++;
 
@@ -659,7 +666,7 @@ TLexBufPtr LexTokenise(Picoc *pc, struct LexState *Lexer, int *TokenLen)
         if (ValueSize > 0)
         { 
             /* store a value as well */
-            memcpy((void *)TokenPos, GotValue->Val, ValueSize);
+            memcpy(TokenPos, GotValue->Val, ValueSize);
             TokenPos += ValueSize;
             MemUsed += ValueSize;
         }
@@ -675,7 +682,8 @@ TLexBufPtr LexTokenise(Picoc *pc, struct LexState *Lexer, int *TokenLen)
 
     assert(ReserveSpace >= MemUsed);
     memcpy(HeapMem, TokenSpace, MemUsed);
-    HeapPopStack(pc, TokenSpace, ReserveSpace);
+
+    popStack(TokenSpace, ReserveSpace);
 #ifdef DEBUG_LEXER
     {
         int Count;
@@ -697,8 +705,8 @@ TLexBufPtr LexAnalyse(Picoc *pc, TConstRegStringPtr FileName, const char *Source
 {
     struct LexState Lexer;
     
-    Lexer.Pos = Source;
-    Lexer.End = Source + SourceLen;
+    Lexer.Pos = ptrWrap(Source);
+    Lexer.End = Lexer.Pos + SourceLen;
     Lexer.Line = 1;
     Lexer.FileName = FileName;
     Lexer.Mode = LexModeNormal;

@@ -316,7 +316,7 @@ void ExpressionStackPushValue(TParseStatePtr Parser, TExpressionStackPtrPtr Stac
 void ExpressionStackPushLValue(TParseStatePtr Parser, TExpressionStackPtrPtr StackTop, TValuePtr PushValue, int Offset)
 {
     TValuePtr ValueLoc = VariableAllocValueShared(Parser, PushValue);
-    ValueLoc->Val = (TAnyValuePtr)((TAnyValueCharPointer)(ValueLoc->Val) + Offset);
+    ValueLoc->Val = (TAnyValuePtr)((TAnyValueCharPtr)(ValueLoc->Val) + Offset);
     ExpressionStackPushValueNode(Parser, StackTop, ValueLoc);
 }
 
@@ -327,7 +327,7 @@ void ExpressionStackPushDereference(TParseStatePtr Parser, TExpressionStackPtrPt
     int Offset;
     TValueTypePtr DerefType;
     int DerefIsLValue;
-    TAnyValueVoidPointer DerefDataLoc = VariableDereferencePointer(Parser, DereferenceValue, &DerefVal, &Offset, &DerefType, &DerefIsLValue);
+    TAnyValueVoidPtr DerefDataLoc = VariableDereferencePointer(Parser, DereferenceValue, &DerefVal, &Offset, &DerefType, &DerefIsLValue);
     if (DerefDataLoc == NULL)
         ProgramFail(Parser, "NULL pointer dereference");
 
@@ -459,7 +459,7 @@ void ExpressionAssign(TParseStatePtr Parser, TValuePtr DestValue, TValuePtr Sour
                 fprintf(stderr, "char[%d] from char* (len=%d)\n", DestValue->Typ->ArraySize, strlen((TAnyValueCharPointer)SourceValue->Val->Pointer));
                 #endif
 #ifdef WRAP_ANYVALUE
-                memcpy(DestValue->Val->ArrayMem, (TAnyValueCharPointer)SourceValue->Val->Pointer, TypeSizeValue(DestValue, FALSE) - sizeof(TAnyValueCharPointer));
+                memcpy(DestValue->Val->ArrayMem, (TAnyValueCharPtr)SourceValue->Val->Pointer, TypeSizeValue(DestValue, FALSE) - sizeof(TAnyValueCharPtr));
 #else
                 memcpy(DestValue->Val, SourceValue->Val->Pointer, TypeSizeValue(DestValue, FALSE));
 #endif
@@ -598,7 +598,7 @@ void ExpressionPrefixOperator(TParseStatePtr Parser, TExpressionStackPtrPtr Stac
                 /* pointer prefix arithmetic */
                 int Size = TypeSize(TopValue->Typ->FromType, 0, TRUE);
                 TValuePtr StackValue;
-                TAnyValueVoidPointer ResultPtr;
+                TAnyValueVoidPtr ResultPtr;
 
                 if (TopValue->Val->Pointer == NULL)
                     ProgramFail(Parser, "invalid use of a NULL pointer");
@@ -608,8 +608,8 @@ void ExpressionPrefixOperator(TParseStatePtr Parser, TExpressionStackPtrPtr Stac
                     
                 switch (Op)
                 {
-                    case TokenIncrement:    TopValue->Val->Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)TopValue->Val->Pointer + Size); break;
-                    case TokenDecrement:    TopValue->Val->Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)TopValue->Val->Pointer - Size); break;
+                    case TokenIncrement:    TopValue->Val->Pointer = (TAnyValueVoidPtr)((TAnyValueCharPtr)TopValue->Val->Pointer + Size); break;
+                    case TokenDecrement:    TopValue->Val->Pointer = (TAnyValueVoidPtr)((TAnyValueCharPtr)TopValue->Val->Pointer - Size); break;
                     default:                ProgramFail(Parser, "invalid operation"); break;
                 }
 
@@ -664,7 +664,7 @@ void ExpressionPostfixOperator(TParseStatePtr Parser, TExpressionStackPtrPtr Sta
         /* pointer postfix arithmetic */
         int Size = TypeSize(TopValue->Typ->FromType, 0, TRUE);
         TValuePtr StackValue;
-        TAnyValueVoidPointer OrigPointer = TopValue->Val->Pointer;
+        TAnyValueVoidPtr OrigPointer = TopValue->Val->Pointer;
         
         if (TopValue->Val->Pointer == NULL)
             ProgramFail(Parser, "invalid use of a NULL pointer");
@@ -674,8 +674,8 @@ void ExpressionPostfixOperator(TParseStatePtr Parser, TExpressionStackPtrPtr Sta
         
         switch (Op)
         {
-            case TokenIncrement:    TopValue->Val->Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)TopValue->Val->Pointer + Size); break;
-            case TokenDecrement:    TopValue->Val->Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)TopValue->Val->Pointer - Size); break;
+            case TokenIncrement:    TopValue->Val->Pointer = (TAnyValueVoidPtr)((TAnyValueCharPtr)TopValue->Val->Pointer + Size); break;
+            case TokenDecrement:    TopValue->Val->Pointer = (TAnyValueVoidPtr)((TAnyValueCharPtr)TopValue->Val->Pointer - Size); break;
             default:                ProgramFail(Parser, "invalid operation"); break;
         }
         
@@ -691,7 +691,7 @@ void ExpressionInfixOperator(TParseStatePtr Parser, TExpressionStackPtrPtr Stack
 {
     long ResultInt = 0;
     TValuePtr StackValue;
-    TAnyValueVoidPointer Pointer;
+    TAnyValueVoidPtr Pointer;
     
     debugf("ExpressionInfixOperator()\n");
     if (BottomValue == NULL || TopValue == NULL)
@@ -712,11 +712,11 @@ void ExpressionInfixOperator(TParseStatePtr Parser, TExpressionStackPtrPtr Stack
         switch (BottomValue->Typ->Base)
         {
 #ifdef WRAP_ANYVALUE
-            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)((TAnyValueCharPointer)getMembrPtr(BottomValue->Val, &AnyValue::ArrayMem) + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
+            case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)((TAnyValueCharPtr)getMembrPtr(BottomValue->Val, &AnyValue::ArrayMem) + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
 #else
             case TypeArray:   Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)(&BottomValue->Val->ArrayMem[0] + TypeSize(BottomValue->Typ, ArrayIndex, TRUE)), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
 #endif
-            case TypePointer: Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)((TAnyValueCharPointer)BottomValue->Val->Pointer + TypeSize(BottomValue->Typ->FromType, 0, TRUE) * ArrayIndex), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
+            case TypePointer: Result = VariableAllocValueFromExistingData(Parser, BottomValue->Typ->FromType, (TAnyValuePtr)((TAnyValueCharPtr)BottomValue->Val->Pointer + TypeSize(BottomValue->Typ->FromType, 0, TRUE) * ArrayIndex), (BottomValue->Flags & FlagIsLValue), BottomValue->LValueFrom); break;
             default:          ProgramFail(Parser, "this %t is not an array", BottomValue->Typ);
         }
         
@@ -836,9 +836,9 @@ void ExpressionInfixOperator(TParseStatePtr Parser, TExpressionStackPtrPtr Stack
                 ProgramFail(Parser, "invalid use of a NULL pointer");
             
             if (Op == TokenPlus)
-                Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)Pointer + TopInt * Size);
+                Pointer = (TAnyValueVoidPtr)((TAnyValueCharPtr)Pointer + TopInt * Size);
             else
-                Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)Pointer - TopInt * Size);
+                Pointer = (TAnyValueVoidPtr)((TAnyValueCharPtr)Pointer - TopInt * Size);
             
             StackValue = ExpressionStackPushValueByType(Parser, StackTop, BottomValue->Typ);
             StackValue->Val->Pointer = Pointer;
@@ -860,9 +860,9 @@ void ExpressionInfixOperator(TParseStatePtr Parser, TExpressionStackPtrPtr Stack
                 ProgramFail(Parser, "invalid use of a NULL pointer");
 
             if (Op == TokenAddAssign)
-                Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)Pointer + TopInt * Size);
+                Pointer = (TAnyValueVoidPtr)((TAnyValueCharPtr)Pointer + TopInt * Size);
             else
-                Pointer = (TAnyValueVoidPointer)((TAnyValueCharPointer)Pointer - TopInt * Size);
+                Pointer = (TAnyValueVoidPtr)((TAnyValueCharPtr)Pointer - TopInt * Size);
 
             HeapUnpopStack(Parser->pc, sizeof(struct Value));
             BottomValue->Val->Pointer = Pointer;
@@ -874,8 +874,8 @@ void ExpressionInfixOperator(TParseStatePtr Parser, TExpressionStackPtrPtr Stack
     else if (BottomValue->Typ->Base == TypePointer && TopValue->Typ->Base == TypePointer && Op != TokenAssign)
     {
         /* pointer/pointer operations */
-        TAnyValueCharPointer TopLoc = (TAnyValueCharPointer)TopValue->Val->Pointer;
-        TAnyValueCharPointer BottomLoc = (TAnyValueCharPointer)BottomValue->Val->Pointer;
+        TAnyValueCharPtr TopLoc = (TAnyValueCharPtr)TopValue->Val->Pointer;
+        TAnyValueCharPtr BottomLoc = (TAnyValueCharPtr)BottomValue->Val->Pointer;
         
         switch (Op)
         {
@@ -937,7 +937,7 @@ void ExpressionStackCollapse(TParseStatePtr Parser, TExpressionStackPtrPtr Stack
                     TopValue = TopStackNode->Val;
                     
                     /* pop the value and then the prefix operator - assume they'll still be there until we're done */
-                    HeapPopStack(Parser->pc, NULL, sizeof(struct ExpressionStack) + sizeof(struct Value) + TypeStackSizeValue(TopValue));
+                    popStack(NILL, sizeof(struct ExpressionStack) + sizeof(struct Value) + TypeStackSizeValue(TopValue));
                     popStack(TopOperatorNode, sizeof(struct ExpressionStack));
                     *StackTop = TopOperatorNode->Next;
                     
@@ -945,7 +945,17 @@ void ExpressionStackCollapse(TParseStatePtr Parser, TExpressionStackPtrPtr Stack
                     if (Parser->Mode == RunModeRun /* && FoundPrecedence < *IgnorePrecedence */)
                     {
                         /* run the operator */
+#ifdef USE_VIRTSTACK
+                        /* HACK!!: Since we're using free'd(!) data here (TopOperatorNode/TopValue), this can mess things up,
+                         at least for virtmem when it locks the old data.
+                         Just copy the vars for now... */
+                        enum LexToken Op = TopOperatorNode->Op;
+                        struct Value tval;
+                        memcpy(&tval, TopValue, sizeof(struct Value));
+                        ExpressionPrefixOperator(Parser, StackTop, Op, ptrWrap(&tval));
+#else
                         ExpressionPrefixOperator(Parser, StackTop, TopOperatorNode->Op, TopValue);
+#endif
                     }
                     else
                     {
@@ -960,7 +970,7 @@ void ExpressionStackCollapse(TParseStatePtr Parser, TExpressionStackPtrPtr Stack
                     TopValue = TopStackNode->Next->Val;
                     
                     /* pop the postfix operator and then the value - assume they'll still be there until we're done */
-                    HeapPopStack(Parser->pc, NULL, sizeof(struct ExpressionStack));
+                    popStack(NILL, sizeof(struct ExpressionStack));
                     popStack(TopValue, sizeof(struct ExpressionStack) + sizeof(struct Value) + TypeStackSizeValue(TopValue));
                     *StackTop = TopStackNode->Next->Next;
 
@@ -968,7 +978,14 @@ void ExpressionStackCollapse(TParseStatePtr Parser, TExpressionStackPtrPtr Stack
                     if (Parser->Mode == RunModeRun /* && FoundPrecedence < *IgnorePrecedence */)
                     {
                         /* run the operator */
+#ifdef USE_VIRTSTACK
+                        enum LexToken Op = TopOperatorNode->Op;
+                        struct Value tval;
+                        memcpy(&tval, TopValue, sizeof(struct Value));
+                        ExpressionPostfixOperator(Parser, StackTop, Op, ptrWrap(&tval));
+#else
                         ExpressionPostfixOperator(Parser, StackTop, TopOperatorNode->Op, TopValue);
+#endif
                     }
                     else
                     {
@@ -986,8 +1003,8 @@ void ExpressionStackCollapse(TParseStatePtr Parser, TExpressionStackPtrPtr Stack
                         BottomValue = TopOperatorNode->Next->Val;
                         
                         /* pop a value, the operator and another value - assume they'll still be there until we're done */
-                        HeapPopStack(Parser->pc, NULL, sizeof(struct ExpressionStack) + sizeof(struct Value) + TypeStackSizeValue(TopValue));
-                        HeapPopStack(Parser->pc, NULL, sizeof(struct ExpressionStack));
+                        popStack(NILL, sizeof(struct ExpressionStack) + sizeof(struct Value) + TypeStackSizeValue(TopValue));
+                        popStack(NILL, sizeof(struct ExpressionStack));
                         popStack(BottomValue, sizeof(struct ExpressionStack) + sizeof(struct Value) + TypeStackSizeValue(BottomValue));
                         *StackTop = TopOperatorNode->Next->Next;
                         
@@ -995,7 +1012,14 @@ void ExpressionStackCollapse(TParseStatePtr Parser, TExpressionStackPtrPtr Stack
                         if (Parser->Mode == RunModeRun /* && FoundPrecedence <= *IgnorePrecedence */)
                         {
                             /* run the operator */
+#ifdef USE_VIRTSTACK
+                            enum LexToken Op = TopOperatorNode->Op;
+                            struct Value tval;
+                            memcpy(&tval, TopValue, sizeof(struct Value));
+                            ExpressionInfixOperator(Parser, StackTop, Op, BottomValue, ptrWrap(&tval));
+#else
                             ExpressionInfixOperator(Parser, StackTop, TopOperatorNode->Op, BottomValue, TopValue);
+#endif
                         }
                         else
                         {
@@ -1062,13 +1086,13 @@ void ExpressionGetStructElement(TParseStatePtr Parser, TExpressionStackPtrPtr St
         TValuePtr ParamVal = (*StackTop)->Val;
         TValuePtr StructVal = ParamVal;
         TValueTypePtr StructType = ParamVal->Typ;
-        TAnyValueCharPointer DerefDataLoc = (TAnyValueCharPointer)ParamVal->Val;
+        TAnyValueCharPtr DerefDataLoc = (TAnyValueCharPtr)ParamVal->Val;
         TValuePtr MemberValue = NILL;
         TValuePtr Result;
 
         /* if we're doing '->' dereference the struct pointer first */
         if (Token == TokenArrow)
-            DerefDataLoc = (TAnyValueCharPointer)(VariableDereferencePointer(Parser, ParamVal, &StructVal, NULL, &StructType, NULL));
+            DerefDataLoc = (TAnyValueCharPtr)(VariableDereferencePointer(Parser, ParamVal, &StructVal, NULL, &StructType, NULL));
         
         if (StructType->Base != TypeStruct && StructType->Base != TypeUnion)
             ProgramFail(Parser, "can't use '%s' on something that's not a struct or union %s : it's a %t", (Token == TokenDot) ? "." : "->", (Token == TokenArrow) ? "pointer" : "", ParamVal->Typ);
@@ -1340,7 +1364,7 @@ int ExpressionParse(TParseStatePtr Parser, TValuePtrPtr Result)
     /* check that brackets have been closed */
     if (BracketPrecedence > 0)
         ProgramFail(Parser, "brackets not closed");
-        
+
     /* scan and collapse the stack to precedence 0 */
     ExpressionStackCollapse(Parser, &StackTop, 0, &IgnorePrecedence);
     

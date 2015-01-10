@@ -87,10 +87,10 @@ TValuePtr ParseFunctionDefinition(TParseStatePtr Parser, TValueTypePtr ReturnTyp
     FuncValue->Val->FuncDef.ReturnType = ReturnType;
     FuncValue->Val->FuncDef.NumParams = ParamCount;
     FuncValue->Val->FuncDef.VarArgs = FALSE;
-    FuncValue->Val->FuncDef.ParamType = (TValueTypePtrPtr)((TValueCharPointer)(FuncValue->Val) + sizeof(struct FuncDef));
-    FuncValue->Val->FuncDef.ParamName = (TRegStringPtrPtr)((TValueCharPointer)(FuncValue->Val->FuncDef.ParamType) + sizeof(TValueTypePtr) * ParamCount);
+    FuncValue->Val->FuncDef.ParamType = (TValueTypePtrPtr)((TValueCharPtr)(FuncValue->Val) + sizeof(struct FuncDef));
+    FuncValue->Val->FuncDef.ParamName = (TRegStringPtrPtr)((TValueCharPtr)(FuncValue->Val->FuncDef.ParamType) + sizeof(TValueTypePtr) * ParamCount);
     FuncValue->Val->FuncDef.Body = NILL;
-    FuncValue->Val->FuncDef.Intrinsic = NILL; // FIX: that was kept uninitialized
+    FuncValue->Val->FuncDef.Intrinsic = NILL; // FIX: this was kept uninitialized
    
     for (ParamCount = 0; ParamCount < FuncValue->Val->FuncDef.NumParams; ParamCount++)
     { 
@@ -403,7 +403,7 @@ void ParseMacroDefinition(TParseStatePtr Parser)
         NumParams = ParseCountParams(ptrWrap(&ParamParser));
         MacroValue = VariableAllocValueAndData(Parser->pc, Parser, sizeof(struct MacroDef) + sizeof(TRegStringPtr) * NumParams, FALSE, NILL, TRUE);
         MacroValue->Val->MacroDef.NumParams = NumParams;
-        MacroValue->Val->MacroDef.ParamName = (TRegStringPtrPtr)((TAnyValueCharPointer)(MacroValue->Val) + sizeof(struct MacroDef));
+        MacroValue->Val->MacroDef.ParamName = (TRegStringPtrPtr)((TAnyValueCharPtr)(MacroValue->Val) + sizeof(struct MacroDef));
 
         Token = LexGetToken(Parser, &ParamName, TRUE);
         

@@ -5,7 +5,12 @@
 #include "interpreter.h"
 
 Picoc *globalPicoc;
-CStdioVirtMemAlloc<> virtalloc;
+
+#ifdef ARDUINO_HOST
+TVirtAlloc virtalloc(9); // UNDONE
+#else
+TVirtAlloc virtalloc;
+#endif
 
 /* initialise everything */
 void PicocInitialise(Picoc *pc, int StackSize)
@@ -272,17 +277,17 @@ void PlatformCreatePtrArray(Picoc *pc, TParseStatePtr Parser, const char *Ident,
     int i;
     int ElementSize = TypeSize(Typ, Elements, FALSE);
 
-    TValuePtr ArrayValue = VariableAllocValueAndData(pc, NILL, ElementSize * Elements + sizeof(TAnyValueVoidPointer), IsWritable, NILL, TRUE);
+    TValuePtr ArrayValue = VariableAllocValueAndData(pc, NILL, ElementSize * Elements + sizeof(TAnyValueVoidPtr), IsWritable, NILL, TRUE);
     ArrayValue->Typ = Typ;
-    ArrayValue->Val->Pointer = (TAnyValueCharPointer)ArrayValue->Val + sizeof(TAnyValueVoidPointer);
+    ArrayValue->Val->Pointer = (TAnyValueCharPtr)ArrayValue->Val + sizeof(TAnyValueVoidPtr);
 
     for (i=0; i<Elements; ++i)
     {
-        TAnyValuePtr val = (TAnyValuePtr)((TAnyValueCharPointer)ArrayValue->Val->Pointer + i * ElementSize);
-        val->Pointer = (TAnyValueVoidPointer)ptrWrap(*(char **)((char *)Array + i * ElementSizeof));
+        TAnyValuePtr val = (TAnyValuePtr)((TAnyValueCharPtr)ArrayValue->Val->Pointer + i * ElementSize);
+        val->Pointer = (TAnyValueVoidPtr)ptrWrap(*(char **)((char *)Array + i * ElementSizeof));
     }
 
-    if (!TableSet(pc, (pc->TopStackFrame == NULL) ? ptrWrap(&pc->GlobalTable) : ptrWrap(&pc->TopStackFrame->LocalTable), TableStrRegister(pc, Ident), ArrayValue, Parser ? Parser->FileName : NILL, Parser ? Parser->Line : 0, Parser ? Parser->CharacterPos : 0))
+    if (!TableSet(pc, (pc->TopStackFrame == NULL) ? ptrWrap(&pc->GlobalTable) : getMembrPtr(pc->TopStackFrame, &StackFrame::LocalTable), TableStrRegister(pc, Ident), ArrayValue, Parser ? Parser->FileName : NILL, Parser ? Parser->Line : 0, Parser ? Parser->CharacterPos : 0))
         ProgramFail(Parser, "'%s' is already defined", Ident);
 }
 #endif

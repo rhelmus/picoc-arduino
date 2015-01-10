@@ -223,7 +223,7 @@ union AnyValue
     unsigned char UnsignedCharacter;
     TRegStringPtr Identifier;
 #ifdef WRAP_ANYVALUE
-    TAnyValueCharPointer ArrayMem; /* placeholder for where the data starts, doesn't point to it */
+    TAnyValueCharPtr ArrayMem; /* placeholder for where the data starts, doesn't point to it */
 #else
     char ArrayMem[2];               /* placeholder for where the data starts, doesn't point to it */
 #endif
@@ -233,7 +233,7 @@ union AnyValue
 #ifndef NO_FP
     double FP;
 #endif
-    TAnyValueVoidPointer Pointer;                  /* unsafe native pointers */
+    TAnyValueVoidPtr Pointer;                  /* unsafe native pointers */
 };
 
 struct Value
@@ -299,7 +299,7 @@ struct StackFrame
     int8_t NumParams;                       /* the number of parameters */
     struct Table LocalTable;                /* the local variables and parameters */
     TTableEntryPtr LocalHashTable[LOCAL_TABLE_SIZE];
-    struct StackFrame *PreviousStackFrame;  /* the next lower stack frame */
+    TStackFramePtr PreviousStackFrame;      /* the next lower stack frame */
 };
 
 /* lexer state */
@@ -314,8 +314,8 @@ enum LexMode
 
 struct LexState
 {
-    const char *Pos;
-    const char *End;
+    TLexConstCharPtr Pos;
+    TLexConstCharPtr End;
     TConstRegStringPtr FileName;
     int Line;
     int CharacterPos;
@@ -337,7 +337,7 @@ union OutputStreamInfo
     struct StringOutputStream
     {
         TParseStatePtr Parser;
-        TAnyValueCharPointer WritePos;
+        TAnyValueCharPtr WritePos;
     } Str;
 };
 
@@ -408,7 +408,7 @@ struct Picoc_Struct
     TTableEntryPtr StringLiteralHashTable[STRING_LITERAL_TABLE_SIZE];
     
     /* the stack */
-    struct StackFrame *TopStackFrame;
+    TStackFramePtr TopStackFrame;
 
     /* the value passed to exit() */
     int PicocExitValue;
@@ -420,8 +420,10 @@ struct Picoc_Struct
 #ifdef USE_MALLOC_STACK
     unsigned char *HeapMemory;          /* stack memory since our heap is malloc()ed */
     void *HeapBottom;                   /* the bottom of the (downward-growing) heap */
-    void *StackFrame;                   /* the current stack frame */
-    void *HeapStackTop;                 /* the top of the stack */
+    TStackVoidPtr StackFrame;           /* the current stack frame */
+    TStackVoidPtr HeapStackTop;         /* the top of the stack */
+    TStackVoidPtr StackBottom;          /* the bottom of the stack */
+    TStackCharPtr StackStart;           /* the absolute start of the stack */
 #else
 # ifdef SURVEYOR_HOST
     unsigned char *HeapMemory;          /* all memory - stack and heap */
@@ -431,9 +433,11 @@ struct Picoc_Struct
     void *HeapMemStart;
 # else
     unsigned char HeapMemory[HEAP_SIZE];  /* all memory - stack and heap */
-    void *HeapBottom;                   /* the bottom of the (downward-growing) heap */
-    void *StackFrame;                   /* the current stack frame */
-    void *HeapStackTop;                 /* the top of the stack */
+    void *HeapBottom;                     /* the bottom of the (downward-growing) heap */
+    TStackVoidPtr StackFrame;             /* the current stack frame */
+    TStackVoidPtr HeapStackTop;           /* the top of the stack */
+    TStackVoidPtr StackBottom;            /* the bottom of the stack */
+    TStackVoidPtr StackStart;             /* the absolute start of the stack */
 # endif
 #endif
 
@@ -559,8 +563,8 @@ int TypeIsForwardDeclared(TParseStatePtr Parser, TValueTypePtr Typ);
 /* heap.c */
 void HeapInit(Picoc *pc, int StackSize);
 void HeapCleanup(Picoc *pc);
-void *HeapAllocStack(Picoc *pc, int Size);
-int HeapPopStack(Picoc *pc, void *Addr, int Size);
+TStackVoidPtr HeapAllocStack(Picoc *pc, int Size);
+int HeapPopStack(Picoc *pc, TStackVoidPtr Addr, int Size);
 void HeapUnpopStack(Picoc *pc, int Size);
 void HeapPushStackFrame(Picoc *pc);
 int HeapPopStackFrame(Picoc *pc);
@@ -594,7 +598,7 @@ void VariableStackFrameAdd(TParseStatePtr Parser, TConstRegStringPtr FuncName, i
 void VariableStackFramePop(TParseStatePtr Parser);
 TValuePtr VariableStringLiteralGet(Picoc *pc, TRegStringPtr Ident);
 void VariableStringLiteralDefine(Picoc *pc, TRegStringPtr Ident, TValuePtr Val);
-TAnyValueVoidPointer VariableDereferencePointer(TParseStatePtr Parser, TValuePtr PointerValue, TValuePtrPtr DerefVal, int *DerefOffset, TValueTypePtrPtr DerefType, int *DerefIsLValue);
+TAnyValueVoidPtr VariableDereferencePointer(TParseStatePtr Parser, TValuePtr PointerValue, TValuePtrPtr DerefVal, int *DerefOffset, TValueTypePtrPtr DerefType, int *DerefIsLValue);
 int VariableScopeBegin(TParseStatePtr  Parser, int16_t *PrevScopeID);
 void VariableScopeEnd(TParseStatePtr  Parser, int ScopeID, int16_t PrevScopeID);
 

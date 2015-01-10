@@ -3,14 +3,15 @@
 #define PLATFORM_H
 
 #define USE_VIRTMEM
-
-#include "vmem_utils.h"
+#define USE_VIRTSTACK
 
 #ifdef ARDUINO
 #define ARDUINO_HOST
 #else
 #define UNIX_HOST
 #endif
+
+#include "vmem_utils.h"
 
 /* configurable options */
 /* select your host type (or do it in the Makefile):
@@ -45,6 +46,11 @@
 #ifdef USE_VIRTMEM
 typedef TVirtPtr<struct CleanupTokenNode>::type TCleanupNodePtr;
 typedef TVirtPtr<unsigned char>::type TLexBufPtr;
+typedef CVirtPtrBase TLexVoidPtr;
+typedef TVirtPtr<char>::type TLexCharPtr;
+typedef TVirtPtr<unsigned char>::type TLexUnsignedCharPtr;
+typedef TVirtPtr<const char>::type TLexConstCharPtr;
+typedef TVirtPtr<TLexConstCharPtr>::type TLexConstCharPtrPtr;
 typedef TVirtPtr<struct Value>::type TValuePtr;
 typedef TVirtPtr<TValuePtr>::type TValuePtrPtr;
 typedef TVirtPtr<union AnyValue>::type TAnyValuePtr;
@@ -52,11 +58,11 @@ typedef TVirtPtr<char>::type TRegStringPtr;
 typedef TVirtPtr<const char>::type TConstRegStringPtr;
 typedef TVirtPtr<TRegStringPtr>::type TRegStringPtrPtr;
 typedef TVirtPtr<struct ReservedWord>::type TReservedWordPtr;
-typedef TVirtPtr<char>::type TValueCharPointer;
-typedef CVirtPtrBase TAnyValueVoidPointer;
-typedef TVirtPtr<int>::type TAnyValueIntPointer;
-typedef TVirtPtr<char>::type TAnyValueCharPointer;
-typedef TVirtPtr<unsigned char>::type TAnyValueUCharPointer;
+typedef TVirtPtr<char>::type TValueCharPtr;
+typedef CVirtPtrBase TAnyValueVoidPtr;
+typedef TVirtPtr<int>::type TAnyValueIntPtr;
+typedef TVirtPtr<char>::type TAnyValueCharPtr;
+typedef TVirtPtr<unsigned char>::type TAnyValueUCharPtr;
 typedef TVirtPtr<char>::type TStdioCharPtr;
 typedef TVirtPtr<const char>::type TStdioConstCharPtr;
 typedef TVirtPtr<struct ValueType>::type TValueTypePtr;
@@ -71,11 +77,11 @@ typedef TVirtPtr<struct ExpressionStack>::type TExpressionStackPtr;
 typedef TVirtPtr<TExpressionStackPtr>::type TExpressionStackPtrPtr;
 typedef TVirtPtr<struct TokenLine>::type TTokenLinePtr;
 typedef TVirtPtr<uint8_t>::type TVarAllocRet;
+typedef TVirtPtr<struct StackFrame>::type TStackFramePtr;
 
 #define WRAP_REGSTRINGS
 #define WRAP_ANYVALUE
 #define MAX_INC_FILENAME 128
-
 #else
 typedef struct CleanupTokenNode *TCleanupNodePtr;
 typedef unsigned char *TLexBufPtr;
@@ -104,7 +110,26 @@ typedef struct ParseState *TParseStatePtr;
 typedef struct ExpressionStack *TExpressionStackPtr;
 typedef TExpressionStackPtr *TExpressionStackPtrPtr;
 typedef struct TokenLine *TTokenLinePtr;
+typedef struct StackFrame *TStackFramePtr;
 #endif
+
+#if defined(USE_VIRTSTACK) && defined(USE_VIRTMEM)
+typedef CVirtPtrBase TStackVoidPtr;
+typedef TVirtPtr<TStackVoidPtr>::type TStackVoidPtrPtr;
+typedef TVirtPtr<char>::type TStackCharPtr;
+typedef TVirtPtr<const char>::type TStackConstCharPtr;
+typedef TVirtPtr<TStackConstCharPtr>::type TStackConstCharPtrPtr;
+typedef TVirtPtr<unsigned char>::type TStackUnsignedCharPtr;
+#else
+typedef void *TStackVoidPtr;
+typedef void **TStackVoidPtrPtr;
+typedef char *TStackCharPtr;
+typedef const char *TStackConstCharPtr;
+typedef const char **TStackConstCharPtrPtr;
+typedef unsigned char *TStackUnsignedCharPtr;
+#endif
+
+
 /* host platform includes */
 #ifdef UNIX_HOST
 # define USE_MALLOC_STACK                   /* stack is allocated using malloc() */
@@ -224,11 +249,11 @@ extern int ExitBuf[];
 #ifdef ARDUINO_HOST
 # define HEAP_SIZE (7*1024)               /* space for the heap and the stack */
 # define NO_FP
-/*# define NO_PRINTF*/
+# define NO_PRINTF
 # define NO_DEBUGGER
 # define NO_CALLOC
 # define NO_REALLOC
-/*# define NO_STRING_FUNCTIONS */
+# define NO_STRING_FUNCTIONS
 # include <stdlib.h>
 # include <ctype.h>
 # include <stdint.h>

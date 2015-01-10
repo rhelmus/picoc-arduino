@@ -46,7 +46,7 @@ void VariableInit(Picoc *pc)
 {
     TableInitTable(ptrWrap(&(pc->GlobalTable)), &(pc->GlobalHashTable)[0], GLOBAL_TABLE_SIZE, TRUE);
     TableInitTable(ptrWrap(&pc->StringLiteralTable), &pc->StringLiteralHashTable[0], STRING_LITERAL_TABLE_SIZE, TRUE);
-    pc->TopStackFrame = NULL;
+    pc->TopStackFrame = NILL;
 }
 
 /* deallocate the contents of a variable */
@@ -104,6 +104,7 @@ void VariableCleanup(Picoc *pc)
 
 int varmemused = 0;
 
+#ifndef USE_VIRTSTACK
 /* allocate some memory, either on the heap or the stack and check if we've run out */
 void *VariableAlloc(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap)
 {
@@ -129,6 +130,7 @@ void *VariableAlloc(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap)
 
     return NewValue;
 }
+#endif
 
 #ifdef USE_VIRTMEM
 /* allocate some memory, either on the heap or the stack and check if we've run out */
@@ -139,10 +141,7 @@ TVarAllocRet VariableAllocVirt(Picoc *pc, TParseStatePtr Parser, int Size, int O
     if (OnHeap)
         varmemused += Size;
 
-    if (OnHeap)
-        NewValue = TVarAllocRet::alloc(Size);
-    else
-        NewValue = TVarAllocRet::wrap(HeapAllocStack(pc, Size)); // UNDONE
+    NewValue = allocMem<unsigned char>(!OnHeap, Size);
 
     if (NewValue == NULL)
         ProgramFail(Parser, "out of memory");
@@ -162,7 +161,7 @@ TVarAllocRet VariableAllocVirt(Picoc *pc, TParseStatePtr Parser, int Size, int O
 TValuePtr VariableAllocValueAndData(Picoc *pc, TParseStatePtr Parser, int DataSize, int IsLValue, TValuePtr LValueFrom, int OnHeap)
 {
     TValuePtr NewValue = allocMemVariable<Value>(Parser, !OnHeap, MEM_ALIGN(sizeof(struct Value)) + DataSize);
-    NewValue->Val = (TAnyValuePtr)((TAnyValueCharPointer)(NewValue) + MEM_ALIGN(sizeof(struct Value)));
+    NewValue->Val = (TAnyValuePtr)((TAnyValueCharPtr)(NewValue) + MEM_ALIGN(sizeof(struct Value)));
     NewValue->Flags = 0;
     if (OnHeap)
         NewValue->Flags |= FlagValOnHeap;
@@ -192,7 +191,7 @@ TValuePtr VariableAllocValueFromType(Picoc *pc, TParseStatePtr Parser, TValueTyp
 
 #ifdef WRAP_ANYVALUE
     if (Typ->Base == TypeArray)
-        NewValue->Val->ArrayMem = (TAnyValueCharPointer)(getMembrPtr(NewValue->Val, &AnyValue::ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
+        NewValue->Val->ArrayMem = (TAnyValueCharPtr)(getMembrPtr(NewValue->Val, &AnyValue::ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPtr));
 #endif
 
     return NewValue;
@@ -228,7 +227,7 @@ TValuePtr VariableAllocValueFromExistingData(TParseStatePtr Parser, TValueTypePt
 
 #ifdef WRAP_ANYVALUE
     if (Typ->Base == TypeArray)
-        NewValue->Val->ArrayMem = (TAnyValueCharPointer)(getMembrPtr(NewValue->Val, &AnyValue::ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
+        NewValue->Val->ArrayMem = (TAnyValueCharPtr)(getMembrPtr(NewValue->Val, &AnyValue::ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPtr));
 #endif
 
     return NewValue;
@@ -253,12 +252,12 @@ void VariableRealloc(TParseStatePtr Parser, TValuePtr FromValue, int NewSize)
     FromValue->Val = allocMemVariable<AnyValue>(Parser, false, NewSize);
 #ifdef WRAP_ANYVALUE
     if (Typ->Base == TypeArray)
-        FromValue->Val->ArrayMem = (TAnyValueCharPointer)(getMembrPtr(FromValue->Val, &AnyValue::ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPointer));
+        FromValue->Val->ArrayMem = (TAnyValueCharPtr)(getMembrPtr(FromValue->Val, &AnyValue::ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPtr));
 #endif
     FromValue->Flags |= FlagAnyValOnHeap;
 }
 
-int VariableScopeBegin(TParseStatePtr  Parser, int16_t* OldScopeID)
+int VariableScopeBegin(TParseStatePtr Parser, int16_t* OldScopeID)
 {
     TTableEntryPtr Entry;
     TTableEntryPtr NextEntry;
@@ -268,7 +267,7 @@ int VariableScopeBegin(TParseStatePtr  Parser, int16_t* OldScopeID)
     int FirstPrint = 0;
     #endif
     
-    TTablePtr HashTable = ptrWrap((pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable);
+    TTablePtr HashTable = (pc->TopStackFrame == NULL) ? ptrWrap(&(pc->GlobalTable)) : getMembrPtr(pc->TopStackFrame, &StackFrame::LocalTable);
 
     if (Parser->ScopeID == -1) return -1;
 
@@ -312,7 +311,7 @@ void VariableScopeEnd(TParseStatePtr  Parser, int ScopeID, int16_t PrevScopeID)
     int FirstPrint = 0;
     #endif
 
-    TTablePtr HashTable = ptrWrap((pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable);
+    TTablePtr HashTable = (pc->TopStackFrame == NULL) ? ptrWrap(&(pc->GlobalTable)) : getMembrPtr(pc->TopStackFrame, &StackFrame::LocalTable);
 
     if (ScopeID == -1) return;
 
@@ -342,7 +341,7 @@ int VariableDefinedAndOutOfScope(Picoc * pc, TConstRegStringPtr Ident)
     TTableEntryPtr Entry;
     int Count;
 
-    TTablePtr HashTable = ptrWrap((pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable);
+    TTablePtr HashTable = (pc->TopStackFrame == NULL) ? ptrWrap(&(pc->GlobalTable)) : getMembrPtr(pc->TopStackFrame, &StackFrame::LocalTable);
     for (Count = 0; Count < HashTable->Size; Count++)
     {
         for (Entry = HashTable->HashTable[Count]; Entry != NULL; Entry = Entry->Next)
@@ -358,7 +357,7 @@ int VariableDefinedAndOutOfScope(Picoc * pc, TConstRegStringPtr Ident)
 TValuePtr VariableDefine(Picoc *pc, TParseStatePtr Parser, TRegStringPtr Ident, TValuePtr InitValue, TValueTypePtr Typ, int MakeWritable)
 {
     TValuePtr AssignValue;
-    TTablePtr currentTable = ptrWrap((pc->TopStackFrame == NULL) ? &(pc->GlobalTable) : &(pc->TopStackFrame)->LocalTable);
+    TTablePtr currentTable = (pc->TopStackFrame == NULL) ? ptrWrap(&(pc->GlobalTable)) : getMembrPtr(pc->TopStackFrame, &StackFrame::LocalTable);
     
     int16_t ScopeID = Parser ? Parser->ScopeID : -1;
 #ifdef VAR_SCOPE_DEBUG
@@ -436,7 +435,7 @@ TValuePtr VariableDefineButIgnoreIdentical(TParseStatePtr Parser, TRegStringPtr 
     }
     else
     {
-        if (Parser->Line != 0 && TableGet((pc->TopStackFrame == NULL) ? ptrWrap(&pc->GlobalTable) : ptrWrap(&pc->TopStackFrame->LocalTable), Ident, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn))
+        if (Parser->Line != 0 && TableGet((pc->TopStackFrame == NULL) ? ptrWrap(&pc->GlobalTable) : getMembrPtr(pc->TopStackFrame, &StackFrame::LocalTable), Ident, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn))
         {
 #ifndef DISABLE_TABLEENTRY_DECL
             if (DeclFileName == Parser->FileName && DeclLine == Parser->Line && DeclColumn == Parser->CharacterPos)
@@ -448,13 +447,6 @@ TValuePtr VariableDefineButIgnoreIdentical(TParseStatePtr Parser, TRegStringPtr 
         }
 
         return VariableDefine(Parser->pc, Parser, Ident, NILL, Typ, TRUE);
-#if 0
-        if (Parser->Line != 0 && TableGet((pc->TopStackFrame == NULL) ? ptrWrap(&pc->GlobalTable) : &pc->TopStackFrame->LocalTable, Ident, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn)
-                && DeclFileName == Parser->FileName && DeclLine == Parser->Line && DeclColumn == Parser->CharacterPos)
-            return ExistingValue;
-        else
-            return VariableDefine(Parser->pc, Parser, Ident, NULL, Typ, TRUE);
-#endif
     }
 }
 
@@ -463,7 +455,7 @@ int VariableDefined(Picoc *pc, TConstRegStringPtr Ident)
 {
     TValuePtr FoundValue;
     
-    if (pc->TopStackFrame == NULL || !TableGet(ptrWrap(&pc->TopStackFrame->LocalTable), Ident, &FoundValue, NULL, NULL, NULL))
+    if (pc->TopStackFrame == NULL || !TableGet(getMembrPtr(pc->TopStackFrame, &StackFrame::LocalTable), Ident, &FoundValue, NULL, NULL, NULL))
     {
         if (!TableGet(ptrWrap(&pc->GlobalTable), Ident, &FoundValue, NULL, NULL, NULL))
             return FALSE;
@@ -475,7 +467,7 @@ int VariableDefined(Picoc *pc, TConstRegStringPtr Ident)
 /* get the value of a variable. must be defined. Ident must be registered */
 void VariableGet(Picoc *pc, TParseStatePtr Parser, TConstRegStringPtr Ident, TValuePtrPtr LVal)
 {
-    if (pc->TopStackFrame == NULL || !TableGet(ptrWrap(&pc->TopStackFrame->LocalTable), Ident, LVal, NULL, NULL, NULL))
+    if (pc->TopStackFrame == NULL || !TableGet(getMembrPtr(pc->TopStackFrame, &StackFrame::LocalTable), Ident, LVal, NULL, NULL, NULL))
     {
         if (!TableGet(ptrWrap(&pc->GlobalTable), Ident, LVal, NULL, NULL, NULL))
         {
@@ -511,7 +503,7 @@ void VariableDefinePlatformVar(Picoc *pc, TParseStatePtr Parser, TConstRegString
     SomeValue->Typ = Typ;
     SomeValue->Val = FromValue;
     
-    if (!TableSet(pc, (pc->TopStackFrame == NULL) ? ptrWrap(&pc->GlobalTable) : ptrWrap(&pc->TopStackFrame->LocalTable), TableStrRegister(pc, Ident), SomeValue, Parser ? Parser->FileName : NILL, Parser ? Parser->Line : 0, Parser ? Parser->CharacterPos : 0))
+    if (!TableSet(pc, (pc->TopStackFrame == NULL) ? ptrWrap(&pc->GlobalTable) : getMembrPtr(pc->TopStackFrame, &StackFrame::LocalTable), TableStrRegister(pc, Ident), SomeValue, Parser ? Parser->FileName : NILL, Parser ? Parser->Line : 0, Parser ? Parser->CharacterPos : 0))
         ProgramFail(Parser, "'%s' is already defined", Ident);
 }
 
@@ -524,7 +516,7 @@ void VariableStackPop(TParseStatePtr Parser, TValuePtr Var)
     if (Var->ValOnStack)
         printf("popping %ld at 0x%lx\n", (unsigned long)(sizeof(struct Value) + TypeSizeValue(Var, FALSE)), (unsigned long)Var);
 #endif
-        
+
     if (Var->Flags & FlagValOnHeap)
     { 
         if (Var->Val != NULL)
@@ -544,17 +536,21 @@ void VariableStackPop(TParseStatePtr Parser, TValuePtr Var)
 /* add a stack frame when doing a function call */
 void VariableStackFrameAdd(TParseStatePtr Parser, TConstRegStringPtr FuncName, int NumParams)
 {
-    struct StackFrame *NewFrame;
+    TStackFramePtr NewFrame;
     
     HeapPushStackFrame(Parser->pc);
-    NewFrame = (struct StackFrame *)HeapAllocStack(Parser->pc, sizeof(struct StackFrame) + sizeof(TValuePtr) * NumParams);
+    NewFrame = allocMem<struct StackFrame>(true, sizeof(struct StackFrame) + sizeof(TValuePtr) * NumParams);
     if (NewFrame == NULL)
         ProgramFail(Parser, "out of memory");
         
-    ParserCopy(ptrWrap(&NewFrame->ReturnParser), Parser);
+    ParserCopy(getMembrPtr(NewFrame, &StackFrame::ReturnParser), Parser);
     NewFrame->FuncName = FuncName;
-    NewFrame->Parameter = (NumParams > 0) ? /*((TValuePtrPtr)((char *)NewFrame + sizeof(struct StackFrame))) UNDONE*/ (TValuePtrPtr)ptrWrap((char *)NewFrame + sizeof(struct StackFrame)) : NILL;
-    TableInitTable(ptrWrap(&NewFrame->LocalTable), &NewFrame->LocalHashTable[0], LOCAL_TABLE_SIZE, FALSE);
+    NewFrame->Parameter = (NumParams > 0) ? (TValuePtrPtr)((TValueCharPtr)NewFrame + sizeof(struct StackFrame)) : NILL;
+#ifdef USE_VIRTMEM
+    TableInitTable(getMembrPtr(NewFrame, &StackFrame::LocalTable), (TTableEntryPtrPtr)getMembrPtr(NewFrame, &StackFrame::LocalHashTable), LOCAL_TABLE_SIZE, FALSE);
+#else
+    TableInitTable(getMembrPtr(NewFrame, &StackFrame::LocalTable), &NewFrame->LocalHashTable[0], LOCAL_TABLE_SIZE, FALSE);
+#endif
     NewFrame->PreviousStackFrame = Parser->pc->TopStackFrame;
     Parser->pc->TopStackFrame = NewFrame;
 }
@@ -565,7 +561,7 @@ void VariableStackFramePop(TParseStatePtr Parser)
     if (Parser->pc->TopStackFrame == NULL)
         ProgramFail(Parser, "stack is empty - can't go back");
         
-    ParserCopy(Parser, ptrWrap(&Parser->pc->TopStackFrame->ReturnParser));
+    ParserCopy(Parser, getMembrPtr(Parser->pc->TopStackFrame, &StackFrame::ReturnParser));
     Parser->pc->TopStackFrame = Parser->pc->TopStackFrame->PreviousStackFrame;
     HeapPopStackFrame(Parser->pc);
 }
@@ -588,7 +584,7 @@ void VariableStringLiteralDefine(Picoc *pc, TRegStringPtr Ident, TValuePtr Val)
 }
 
 /* check a pointer for validity and dereference it for use */
-TAnyValueVoidPointer VariableDereferencePointer(TParseStatePtr Parser, TValuePtr PointerValue, TValuePtrPtr DerefVal, int *DerefOffset, TValueTypePtrPtr DerefType, int *DerefIsLValue)
+TAnyValueVoidPtr VariableDereferencePointer(TParseStatePtr Parser, TValuePtr PointerValue, TValuePtrPtr DerefVal, int *DerefOffset, TValueTypePtrPtr DerefType, int *DerefIsLValue)
 {
     if (DerefVal != NULL)
         *DerefVal = NILL;

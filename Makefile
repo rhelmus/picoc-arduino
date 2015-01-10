@@ -1,6 +1,8 @@
+#NOTE: enabling optimizations on x86-64 seems to segfault when int128_t is used...
+
 CPPFLAGS=-I../../virtmem/src -I../virtmem/src -D__STDC_FORMAT_MACROS
 CXX=g++
-CXXFLAGS=-Wall -pedantic -DVER=\"`git rev-parse --short HEAD`\" -std=gnu++11 -m32 -Os -ffunction-sections -fdata-sections
+CXXFLAGS=-Wall -Wextra -pedantic -DVER=\"`git rev-parse --short HEAD`\" -std=gnu++11  -g -ffunction-sections -fdata-sections
 LIBS=-lm -lreadline -L../../virtmem/src -lvirtmem -L../virtmem/src
 LDFLAGS=-Wl,--gc-sections
 

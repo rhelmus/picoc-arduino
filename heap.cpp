@@ -6,11 +6,12 @@
 #include "interpreter.h"
 
 #define NVALGRIND
-//#define USE_MALLOC_FOR_STACK
 
 #ifndef NVALGRIND
 # include <valgrind/memcheck.h>
 #endif
+
+//#define DEBUG_HEAP
 
 #ifdef DEBUG_HEAP
 void ShowBigList(Picoc *pc)
@@ -34,8 +35,8 @@ void HeapInit(Picoc *pc, int StackOrHeapSize)
 #ifdef USE_MALLOC_STACK
     pc->HeapMemory = (unsigned char *)malloc(StackOrHeapSize);
     pc->HeapBottom = NULL;                     /* the bottom of the (downward-growing) heap */
-    pc->StackFrame = NULL;                     /* the current stack frame */
-    pc->HeapStackTop = NULL;                          /* the top of the stack */
+    pc->StackFrame = NILL;                     /* the current stack frame */
+    pc->HeapStackTop = NILL;                          /* the top of the stack */
 #else
 # ifdef SURVEYOR_HOST
     pc->HeapMemory = (unsigned char *)C_HEAPSTART;      /* all memory - stack and heap */
@@ -50,13 +51,34 @@ void HeapInit(Picoc *pc, int StackOrHeapSize)
 # endif
 #endif
 
+    pc->HeapBottom = &(pc->HeapMemory)[StackOrHeapSize-sizeof(ALIGN_TYPE)+AlignOffset];
+#ifndef USE_VIRTSTACK
+    pc->StackStart = (TStackCharPtr)pc->HeapMemory;
+
     while (((unsigned long)&pc->HeapMemory[AlignOffset] & (sizeof(ALIGN_TYPE)-1)) != 0)
         AlignOffset++;
-        
+
     pc->StackFrame = &(pc->HeapMemory)[AlignOffset];
     pc->HeapStackTop = &(pc->HeapMemory)[AlignOffset];
-    *(void **)(pc->StackFrame) = NULL;
-    pc->HeapBottom = &(pc->HeapMemory)[StackOrHeapSize-sizeof(ALIGN_TYPE)+AlignOffset];
+    pc->StackBottom = pc->HeapBottom;
+#else
+    pc->StackStart = (TStackCharPtr)pc->StackStart.alloc(StackOrHeapSize);
+
+    // UNDONE: need this?
+    /*while (((unsigned long)&pc->HeapMemory[AlignOffset] & (sizeof(ALIGN_TYPE)-1)) != 0)
+        AlignOffset++;*/
+
+    pc->StackFrame = &(pc->StackStart)[AlignOffset];
+    pc->HeapStackTop = &(pc->StackStart)[AlignOffset];
+    // UNDONE: need this?
+//    pc->StackBottom = &(pc->StackStart)[StackOrHeapSize-sizeof(ALIGN_TYPE)+AlignOffset];
+    pc->StackBottom = &(pc->StackStart)[StackOrHeapSize-1];
+#endif
+    *(TStackVoidPtrPtr)(pc->StackFrame) = NILL;
+#ifdef DEBUG_HEAP
+    printf("stack top/frame/bottom/*frame: %u/%u/%u/%u\n", (unsigned)getNumPtr(pc->StackStart), (unsigned)getNumPtr(pc->StackFrame), (unsigned)getNumPtr(pc->StackBottom), (unsigned)getNumPtr((TStackVoidPtr)*(TStackVoidPtrPtr)(pc->StackFrame)));
+#endif
+
     pc->FreeListBig = NULL;
     for (Count = 0; Count < FREELIST_BUCKETS; Count++)
         pc->FreeListBucket[Count] = NULL;
@@ -80,32 +102,20 @@ void HeapCleanup(Picoc *pc)
 
 /* allocate some space on the stack, in the current stack frame
  * clears memory. can return NULL if out of stack space */
-void *HeapAllocStack(Picoc *pc, int Size)
+TStackVoidPtr HeapAllocStack(Picoc *pc, int Size)
 {
-#ifdef USE_MALLOC_FOR_STACK
-    return malloc(Size);
-#endif
-
-    char *NewMem = (char *)pc->HeapStackTop;
-    char *NewTop = (char *)pc->HeapStackTop + MEM_ALIGN(Size);
+    TStackCharPtr NewMem = (TStackCharPtr)pc->HeapStackTop;
+    TStackCharPtr NewTop = (TStackCharPtr)pc->HeapStackTop + MEM_ALIGN(Size);
 #ifdef DEBUG_HEAP
-    printf("HeapAllocStack(%ld) at 0x%lx\n", (unsigned long)MEM_ALIGN(Size), (unsigned long)pc->HeapStackTop);
+    printf("HeapAllocStack(%ld) at 0x%lx\n", (unsigned long)MEM_ALIGN(Size), (unsigned long)pc->HeapStackTop.getRawNum());
 #endif
-    if (NewTop > (char *)pc->HeapBottom)
-        return NULL;
+    if (NewTop > (TStackCharPtr)pc->StackBottom)
+        return NILL;
 
 //    printf("Stack used: %ld\n", ((intptr_t)NewTop - (intptr_t)pc->HeapMemory));
 
-#ifndef NVALGRIND
-    VALGRIND_MEMPOOL_ALLOC(pc->HeapMemory, NewMem, MEM_ALIGN(Size));
-#endif
-
-    pc->HeapStackTop = (void *)NewTop;
-    memset((void *)NewMem, '\0', Size);
-
-#ifndef NVALGRIND
-//    VALGRIND_MAKE_MEM_DEFINED(NewMem, MEM_ALIGN(Size));
-#endif
+    pc->HeapStackTop = NewTop;
+    memset(NewMem, '\0', Size);
 
     return NewMem;
 }
@@ -113,43 +123,27 @@ void *HeapAllocStack(Picoc *pc, int Size)
 /* allocate some space on the stack, in the current stack frame */
 void HeapUnpopStack(Picoc *pc, int Size)
 {
-#ifdef USE_MALLOC_FOR_STACK
-    return;
-#endif
-
 #ifdef DEBUG_HEAP
-    printf("HeapUnpopStack(%ld) at 0x%lx\n", (unsigned long)MEM_ALIGN(Size), (unsigned long)pc->HeapStackTop);
+    printf("HeapUnpopStack(%ld) at 0x%lx\n", (unsigned long)MEM_ALIGN(Size), (unsigned long)pc->HeapStackTop.getRawNum());
 #endif
 
-#ifndef NVALGRIND
-    VALGRIND_MEMPOOL_ALLOC(pc->HeapMemory, pc->HeapStackTop, MEM_ALIGN(Size));
-#endif
-
-    pc->HeapStackTop = (void *)((char *)pc->HeapStackTop + MEM_ALIGN(Size));
+    pc->HeapStackTop = (TStackVoidPtr)((TStackCharPtr)pc->HeapStackTop + MEM_ALIGN(Size));
 }
 
 /* free some space at the top of the stack */
-int HeapPopStack(Picoc *pc, void *Addr, int Size)
+int HeapPopStack(Picoc *pc, TStackVoidPtr Addr, int Size)
 {
-#ifdef USE_MALLOC_FOR_STACK
-    return TRUE; // LEAKS!!
-#endif
-
     int ToLose = MEM_ALIGN(Size);
-    if (ToLose > ((char *)pc->HeapStackTop - (char *)&(pc->HeapMemory)[0]))
+    if (ToLose > ((TStackCharPtr)pc->HeapStackTop - (TStackCharPtr)&(pc->StackStart)[0]))
         return FALSE;
-    
-#ifdef DEBUG_HEAP
-    printf("HeapPopStack(0x%lx, %ld) back to 0x%lx\n", (unsigned long)Addr, (unsigned long)MEM_ALIGN(Size), (unsigned long)pc->HeapStackTop - ToLose);
-#endif
-    pc->HeapStackTop = (void *)((char *)pc->HeapStackTop - ToLose);
-    assert(Addr == NULL || pc->HeapStackTop == Addr);
-    
-//    printf("Stack used: %ld\n", ((intptr_t)pc->HeapStackTop - (intptr_t)pc->HeapMemory));
 
-#ifndef NVALGRIND
-    VALGRIND_MEMPOOL_FREE(pc->HeapMemory, pc->HeapStackTop);
+#ifdef DEBUG_HEAP
+    printf("HeapPopStack(0x%lx, %ld) back to 0x%lx\n", (unsigned long)getNumPtr(Addr), (unsigned long)MEM_ALIGN(Size), (unsigned long)getNumPtr(pc->HeapStackTop) - ToLose);
 #endif
+    pc->HeapStackTop = (TStackVoidPtr)((TStackCharPtr)pc->HeapStackTop - ToLose);
+    assert(Addr == NULL || pc->HeapStackTop == Addr);
+
+//    printf("Stack used: %ld\n", ((intptr_t)pc->HeapStackTop - (intptr_t)pc->HeapMemory));
 
     return TRUE;
 }
@@ -157,41 +151,28 @@ int HeapPopStack(Picoc *pc, void *Addr, int Size)
 /* push a new stack frame on to the stack */
 void HeapPushStackFrame(Picoc *pc)
 {
-#ifdef USE_MALLOC_FOR_STACK
-    return;
-#endif
-
 #ifdef DEBUG_HEAP
-    printf("Adding stack frame at 0x%lx\n", (unsigned long)pc->HeapStackTop);
+    printf("Adding stack frame at 0x%lx\n", (unsigned long)pc->HeapStackTop.getRawNum());
 #endif
-    *(void **)pc->HeapStackTop = pc->StackFrame;
+    *(TStackVoidPtrPtr)pc->HeapStackTop = pc->StackFrame;
     pc->StackFrame = pc->HeapStackTop;
-    pc->HeapStackTop = (void *)((char *)pc->HeapStackTop + MEM_ALIGN(sizeof(ALIGN_TYPE)));
-
-#ifndef NVALGRIND
-    VALGRIND_MEMPOOL_ALLOC(pc->HeapMemory, pc->StackFrame, MEM_ALIGN(sizeof(ALIGN_TYPE)));
+#ifdef USE_VIRTSTACK
+    pc->HeapStackTop = (TStackVoidPtr)((TStackCharPtr)pc->HeapStackTop + MEM_ALIGN(sizeof(TStackVoidPtr)));
+#else
+    pc->HeapStackTop = (TStackVoidPtr)((TStackCharPtr)pc->HeapStackTop + MEM_ALIGN(sizeof(ALIGN_TYPE)));
 #endif
 }
 
 /* pop the current stack frame, freeing all memory in the frame. can return NULL */
 int HeapPopStackFrame(Picoc *pc)
 {
-#ifdef USE_MALLOC_FOR_STACK
-    return TRUE; // LEAKS!!
-#endif
-
-    if (*(void **)pc->StackFrame != NULL)
+    if (*(TStackVoidPtrPtr)pc->StackFrame != NILL)
     {
         pc->HeapStackTop = pc->StackFrame;
-        pc->StackFrame = *(void **)pc->StackFrame;
+        pc->StackFrame = *(TStackVoidPtrPtr)pc->StackFrame;
 #ifdef DEBUG_HEAP
-        printf("Popping stack frame back to 0x%lx\n", (unsigned long)pc->HeapStackTop);
+        printf("Popping stack frame back to 0x%lx\n", (unsigned long)pc->HeapStackTop.getRawNum());
 #endif
-
-#ifndef NVALGRIND
-        VALGRIND_MEMPOOL_FREE(pc->HeapMemory, pc->HeapStackTop);
-#endif
-
         return TRUE;
     }
     else

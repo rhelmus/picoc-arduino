@@ -292,7 +292,7 @@ void GenericPrintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
                     PrintStr("XXX", Stream);   /* not enough parameters for format */
                 else
                 {
-                    NextArg = (TValuePtr)((TValueCharPointer)(NextArg) + MEM_ALIGN(sizeof(struct Value) + TypeStackSizeValue(NextArg)));
+                    NextArg = (TValuePtr)((TValueCharPtr)(NextArg) + MEM_ALIGN(sizeof(struct Value) + TypeStackSizeValue(NextArg)));
                     if (NextArg->Typ != FormatType && 
                             !((FormatType == ptrWrap(&pc->IntType) || *FPos == 'f') && IS_NUMERIC_COERCIBLE(NextArg)) &&
                             !(FormatType == pc->CharPtrType && (NextArg->Typ->Base == TypePointer || 
@@ -304,10 +304,10 @@ void GenericPrintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
                         {
                             case 's':
                             {
-                                TAnyValueCharPointer Str;
+                                TAnyValueCharPtr Str;
                                 
                                 if (NextArg->Typ->Base == TypePointer)
-                                    Str = (TAnyValueCharPointer)NextArg->Val->Pointer;
+                                    Str = (TAnyValueCharPtr)NextArg->Val->Pointer;
                                 else
                                     Str = &NextArg->Val->ArrayMem[0];
                                     
@@ -353,7 +353,7 @@ void LibSPrintf(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param
     
     StrStream.Putch = &SPutc;
     StrStream.i.Str.Parser = Parser;
-    StrStream.i.Str.WritePos = (TAnyValueCharPointer)Param[0]->Val->Pointer;
+    StrStream.i.Str.WritePos = (TAnyValueCharPtr)Param[0]->Val->Pointer;
 
     GenericPrintf(Parser, ReturnValue, Param+1, NumArgs-1, &StrStream);
     PrintCh(0, &StrStream);
@@ -368,7 +368,7 @@ void LibGets(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, i
 
 #ifdef WRAP_ANYVALUE
     TVirtPageSize size = GETS_BUF_MAX;
-    CPtrWrapLock<TAnyValueCharPointer> l = makeVirtPtrLock((TAnyValueCharPointer)Param[0]->Val->Pointer, size, false);
+    CPtrWrapLock<TAnyValueCharPtr> l = makeVirtPtrLock((TAnyValueCharPtr)Param[0]->Val->Pointer, size, false);
 
     if (PlatformGetLine((char *)*l, size, NULL) != NULL)
     {
@@ -520,8 +520,8 @@ void LibFree(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, i
 
 void LibStrcpy(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    TAnyValueCharPointer To = (TAnyValueCharPointer)Param[0]->Val->Pointer;
-    TAnyValueCharPointer From = (TAnyValueCharPointer)Param[1]->Val->Pointer;
+    TAnyValueCharPtr To = (TAnyValueCharPtr)Param[0]->Val->Pointer;
+    TAnyValueCharPtr From = (TAnyValueCharPtr)Param[1]->Val->Pointer;
     
     while (*From != '\0')
         *To++ = *From++;
@@ -531,8 +531,8 @@ void LibStrcpy(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param,
 
 void LibStrncpy(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    TAnyValueCharPointer To = (TAnyValueCharPointer)Param[0]->Val->Pointer;
-    TAnyValueCharPointer From = (TAnyValueCharPointer)Param[1]->Val->Pointer;
+    TAnyValueCharPtr To = (TAnyValueCharPtr)Param[0]->Val->Pointer;
+    TAnyValueCharPtr From = (TAnyValueCharPtr)Param[1]->Val->Pointer;
     int Len = Param[2]->Val->Integer;
     
     for (; *From != '\0' && Len > 0; Len--)
@@ -544,8 +544,8 @@ void LibStrncpy(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param
 
 void LibStrcmp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    TAnyValueCharPointer Str1 = (TAnyValueCharPointer)Param[0]->Val->Pointer;
-    TAnyValueCharPointer Str2 = (TAnyValueCharPointer)Param[1]->Val->Pointer;
+    TAnyValueCharPtr Str1 = (TAnyValueCharPtr)Param[0]->Val->Pointer;
+    TAnyValueCharPtr Str2 = (TAnyValueCharPtr)Param[1]->Val->Pointer;
     int StrEnded;
     
     for (StrEnded = FALSE; !StrEnded; StrEnded = (*Str1 == '\0' || *Str2 == '\0'), Str1++, Str2++)
@@ -559,8 +559,8 @@ void LibStrcmp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param,
 
 void LibStrncmp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    TAnyValueCharPointer Str1 = (TAnyValueCharPointer)Param[0]->Val->Pointer;
-    TAnyValueCharPointer Str2 = (TAnyValueCharPointer)Param[1]->Val->Pointer;
+    TAnyValueCharPtr Str1 = (TAnyValueCharPtr)Param[0]->Val->Pointer;
+    TAnyValueCharPtr Str2 = (TAnyValueCharPtr)Param[1]->Val->Pointer;
     int Len = Param[2]->Val->Integer;
     int StrEnded;
     
@@ -575,8 +575,8 @@ void LibStrncmp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param
 
 void LibStrcat(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    TAnyValueCharPointer To = (TAnyValueCharPointer)Param[0]->Val->Pointer;
-    TAnyValueCharPointer From = (TAnyValueCharPointer)Param[1]->Val->Pointer;
+    TAnyValueCharPtr To = (TAnyValueCharPtr)Param[0]->Val->Pointer;
+    TAnyValueCharPtr From = (TAnyValueCharPtr)Param[1]->Val->Pointer;
     
     while (*To != '\0')
         To++;
@@ -589,7 +589,7 @@ void LibStrcat(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param,
 
 void LibIndex(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    TAnyValueCharPointer Pos = (TAnyValueCharPointer)Param[0]->Val->Pointer;
+    TAnyValueCharPtr Pos = (TAnyValueCharPtr)Param[0]->Val->Pointer;
     int SearchChar = Param[1]->Val->Integer;
 
     while (*Pos != '\0' && *Pos != SearchChar)
@@ -603,7 +603,7 @@ void LibIndex(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, 
 
 void LibRindex(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    TAnyValueCharPointer Pos = (TAnyValueCharPointer)Param[0]->Val->Pointer;
+    TAnyValueCharPtr Pos = (TAnyValueCharPtr)Param[0]->Val->Pointer;
     int SearchChar = Param[1]->Val->Integer;
 
     ReturnValue->Val->Pointer = NILL;
@@ -616,7 +616,7 @@ void LibRindex(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param,
 
 void LibStrlen(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    TAnyValueCharPointer Pos = (TAnyValueCharPointer)Param[0]->Val->Pointer;
+    TAnyValueCharPtr Pos = (TAnyValueCharPtr)Param[0]->Val->Pointer;
     int Len;
     
     for (Len = 0; *Pos != '\0'; Pos++)
@@ -628,19 +628,19 @@ void LibStrlen(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param,
 void LibMemset(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     /* we can use the system memset() */
-    memset((TAnyValueCharPointer)Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer);
+    memset((TAnyValueCharPtr)Param[0]->Val->Pointer, Param[1]->Val->Integer, Param[2]->Val->Integer);
 }
 
 void LibMemcpy(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
     /* we can use the system memcpy() */
-    memcpy((TAnyValueCharPointer)Param[0]->Val->Pointer, (TAnyValueCharPointer)Param[1]->Val->Pointer, Param[2]->Val->Integer);
+    memcpy((TAnyValueCharPtr)Param[0]->Val->Pointer, (TAnyValueCharPtr)Param[1]->Val->Pointer, Param[2]->Val->Integer);
 }
 
 void LibMemcmp(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
-    TAnyValueUCharPointer Mem1 = (TAnyValueUCharPointer)Param[0]->Val->Pointer;
-    TAnyValueUCharPointer Mem2 = (TAnyValueUCharPointer)Param[1]->Val->Pointer;
+    TAnyValueUCharPtr Mem1 = (TAnyValueUCharPtr)Param[0]->Val->Pointer;
+    TAnyValueUCharPtr Mem2 = (TAnyValueUCharPtr)Param[1]->Val->Pointer;
     int Len = Param[2]->Val->Integer;
     
     for (; Len > 0; Mem1++, Mem2++, Len--)

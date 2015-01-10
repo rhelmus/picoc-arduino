@@ -47,9 +47,9 @@ TValueTypePtr TypeGetMatching(Picoc *pc, TParseStatePtr Parser, TValueTypePtr Pa
         
     switch (Base)
     {
-        case TypePointer:   Sizeof = sizeof(TAnyValueVoidPointer); AlignBytes = PointerAlignBytes; break;
+        case TypePointer:   Sizeof = sizeof(TAnyValueVoidPtr); AlignBytes = PointerAlignBytes; break;
 #ifdef WRAP_ANYVALUE
-        case TypeArray:     Sizeof = sizeof(TAnyValueCharPointer) + ArraySize * ParentType->Sizeof; AlignBytes = ParentType->AlignBytes; break;
+        case TypeArray:     Sizeof = sizeof(TAnyValueCharPtr) + ArraySize * ParentType->Sizeof; AlignBytes = ParentType->AlignBytes; break;
 #else
         case TypeArray:     Sizeof = ArraySize * ParentType->Sizeof; AlignBytes = ParentType->AlignBytes; break;
 #endif
@@ -78,7 +78,7 @@ int TypeSizeValue(TValuePtr Val, int Compact)
         return Val->Typ->Sizeof;
     else
 #ifdef WRAP_ANYVALUE
-        return Val->Typ->FromType->Sizeof * Val->Typ->ArraySize + sizeof(TAnyValueCharPointer);
+        return Val->Typ->FromType->Sizeof * Val->Typ->ArraySize + sizeof(TAnyValueCharPtr);
 #else
         return Val->Typ->FromType->Sizeof * Val->Typ->ArraySize;
 #endif
@@ -93,7 +93,7 @@ int TypeSize(TValueTypePtr Typ, int ArraySize, int Compact)
         return Typ->Sizeof;
     else
 #ifdef WRAP_ANYVALUE
-        return Typ->FromType->Sizeof * ArraySize + sizeof(TAnyValueCharPointer);
+        return Typ->FromType->Sizeof * ArraySize + sizeof(TAnyValueCharPtr);
 #else
         return Typ->FromType->Sizeof * ArraySize;
 #endif
@@ -104,7 +104,7 @@ int SizeOf(TValueTypePtr Typ, int ArraySize, int Compact)
 {
 #ifdef WRAP_ANYVALUE
     if (Typ->Base == TypeArray)
-        return TypeSize(Typ, ArraySize, Compact) - sizeof(TAnyValueCharPointer);
+        return TypeSize(Typ, ArraySize, Compact) - sizeof(TAnyValueCharPtr);
 #endif
     return TypeSize(Typ, ArraySize, Compact);
 }
@@ -135,7 +135,7 @@ void TypeInit(Picoc *pc)
 #ifndef NO_FP
     struct DoubleAlign { char x; double y; } da;
 #endif
-    struct PointerAlign { char x; TAnyValueVoidPointer y; } pa;
+    struct PointerAlign { char x; TAnyValueVoidPtr y; } pa;
     
     IntAlignBytes = (char *)&ia.y - &ia.x;
     PointerAlignBytes = (char *)&pa.y - &pa.x;
@@ -168,9 +168,9 @@ void TypeInit(Picoc *pc)
     TypeAddBaseType(pc, ptrWrap(&pc->TypeType), Type_Type, sizeof(TValueTypePtr), PointerAlignBytes);
 #endif
     pc->CharArrayType = TypeAdd(pc, NILL, ptrWrap(&pc->CharType), TypeArray, 0, pc->StrEmpty, sizeof(char), (char *)&ca.y - &ca.x);
-    pc->CharPtrType = TypeAdd(pc, NILL, ptrWrap(&pc->CharType), TypePointer, 0, pc->StrEmpty, sizeof(TAnyValueVoidPointer), PointerAlignBytes);
-    pc->CharPtrPtrType = TypeAdd(pc, NILL, pc->CharPtrType, TypePointer, 0, pc->StrEmpty, sizeof(TAnyValueVoidPointer), PointerAlignBytes);
-    pc->VoidPtrType = TypeAdd(pc, NILL, ptrWrap(&pc->VoidType), TypePointer, 0, pc->StrEmpty, sizeof(TAnyValueVoidPointer), PointerAlignBytes);
+    pc->CharPtrType = TypeAdd(pc, NILL, ptrWrap(&pc->CharType), TypePointer, 0, pc->StrEmpty, sizeof(TAnyValueVoidPtr), PointerAlignBytes);
+    pc->CharPtrPtrType = TypeAdd(pc, NILL, pc->CharPtrType, TypePointer, 0, pc->StrEmpty, sizeof(TAnyValueVoidPtr), PointerAlignBytes);
+    pc->VoidPtrType = TypeAdd(pc, NILL, ptrWrap(&pc->VoidType), TypePointer, 0, pc->StrEmpty, sizeof(TAnyValueVoidPtr), PointerAlignBytes);
 }
 
 /* deallocate heap-allocated types */
