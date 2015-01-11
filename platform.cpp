@@ -7,11 +7,7 @@
 Picoc *globalPicoc;
 
 #ifdef USE_VIRTMEM
-#ifdef ARDUINO_HOST
-TVirtAlloc virtalloc(9); // UNDONE
-#else
 TVirtAlloc virtalloc;
-#endif
 #endif
 
 /* initialise everything */
@@ -110,11 +106,11 @@ void PicocCallMain(Picoc *pc, int argc, char **argv)
 }
 #endif
 
-void PrintSourceTextErrorLine(IOFILE *Stream, TConstRegStringPtr FileName, const char *SourceText, int Line, int CharacterPos)
+void PrintSourceTextErrorLine(IOFILE *Stream, TConstRegStringPtr FileName, TLexConstCharPtr SourceText, int Line, int CharacterPos)
 {
     int LineCount;
-    const char *LinePos;
-    const char *CPos;
+    TLexConstCharPtr LinePos;
+    TLexConstCharPtr CPos;
     int CCount;
     
     if (SourceText != NULL)

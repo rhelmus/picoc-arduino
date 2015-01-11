@@ -109,7 +109,7 @@ template <typename T> inline void setPtrFromNum(T *&p, intptr_t ip) { p = reinte
 
 inline void deallocMem(void *ptr) { HeapFreeMem(globalPicoc, ptr); }
 #ifdef USE_VIRTMEM
-template <typename T> inline void deallocMem(CVirtPtr<T, TVirtAlloc> &p) { p.free(p); }
+template <typename T> inline void deallocMem(CVirtPtr<T, TVirtAlloc> p) { p.free(p); }
 #endif
 inline int popStack(TStackVoidPtr ptr, int size) { return HeapPopStack(globalPicoc, ptr, size); }
 

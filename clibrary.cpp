@@ -42,8 +42,8 @@ void LibraryAdd(Picoc *pc, TTablePtr GlobalTable, TConstRegStringPtr LibraryName
     /* read all the library definitions */
     for (Count = 0; FuncList[Count].Prototype != NULL; Count++)
     {
-        Tokens = LexAnalyse(pc, IntrinsicName, FuncList[Count].Prototype, strlen((char *)FuncList[Count].Prototype), NULL);
-        LexInitParser(ptrWrap(&Parser), pc, FuncList[Count].Prototype, Tokens, IntrinsicName, NULL, TRUE, FALSE);
+        Tokens = LexAnalyse(pc, IntrinsicName, ptrWrap(FuncList[Count].Prototype), strlen(FuncList[Count].Prototype), NULL);
+        LexInitParser(ptrWrap(&Parser), pc, ptrWrap(FuncList[Count].Prototype), Tokens, IntrinsicName, NULL, TRUE, FALSE);
         TypeParse(ptrWrap(&Parser), &ReturnType, &Identifier, NULL);
         NewValue = ParseFunctionDefinition(ptrWrap(&Parser), ReturnType, Identifier);
         NewValue->Val->FuncDef.Intrinsic = FuncList[Count].Func;

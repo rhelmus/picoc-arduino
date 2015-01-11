@@ -701,11 +701,11 @@ TLexBufPtr LexTokenise(Picoc *pc, struct LexState *Lexer, int *TokenLen)
 }
 
 /* lexically analyse some source text */
-TLexBufPtr LexAnalyse(Picoc *pc, TConstRegStringPtr FileName, const char *Source, int SourceLen, int *TokenLen)
+TLexBufPtr LexAnalyse(Picoc *pc, TConstRegStringPtr FileName, TLexConstCharPtr Source, int SourceLen, int *TokenLen)
 {
     struct LexState Lexer;
     
-    Lexer.Pos = ptrWrap(Source);
+    Lexer.Pos = Source;
     Lexer.End = Lexer.Pos + SourceLen;
     Lexer.Line = 1;
     Lexer.FileName = FileName;
@@ -718,7 +718,7 @@ TLexBufPtr LexAnalyse(Picoc *pc, TConstRegStringPtr FileName, const char *Source
 }
 
 /* prepare to parse a pre-tokenised buffer */
-void LexInitParser(TParseStatePtr Parser, Picoc *pc, const char *SourceText, TLexBufPtr TokenSource, TRegStringPtr FileName, void *FilePointer, int RunIt, int EnableDebugger)
+void LexInitParser(TParseStatePtr Parser, Picoc *pc, TLexConstCharPtr SourceText, TLexBufPtr TokenSource, TRegStringPtr FileName, void *FilePointer, int RunIt, int EnableDebugger)
 {
     Parser->pc = pc;
     Parser->Pos = TokenSource;
@@ -771,7 +771,7 @@ enum LexToken LexGetRawToken(TParseStatePtr Parser, TValuePtrPtr Value, int IncP
                     return TokenEOF;
 
                 /* put the new line at the end of the linked list of interactive lines */        
-                LineTokens = LexAnalyse(pc, pc->StrEmpty, &LineBuffer[0], strlen(LineBuffer), &LineBytes);
+                LineTokens = LexAnalyse(pc, pc->StrEmpty, ptrWrap(&LineBuffer[0]), strlen(LineBuffer), &LineBytes);
                 LineNode = allocMemVariable<struct TokenLine>(Parser, false);
                 LineNode->Next = NILL; // FIX: this was kept unset
                 LineNode->Tokens = LineTokens;

@@ -45,13 +45,18 @@ void HeapInit(Picoc *pc, int StackOrHeapSize)
     pc->HeapStackTop = (void *)C_HEAPSTART;                   /* the top of the stack */
     pc->HeapMemStart = (void *)C_HEAPSTART;
 # else
-    pc->HeapBottom = &pc->HeapMemory[HEAP_SIZE];   /* the bottom of the (downward-growing) heap */
-    pc->StackFrame = &pc->HeapMemory[0];           /* the current stack frame */
-    pc->HeapStackTop = &pc->HeapMemory[0];                /* the top of the stack */
+//    pc->HeapBottom = &pc->HeapMemory[HEAP_SIZE];   /* the bottom of the (downward-growing) heap */
+//    pc->StackFrame = &pc->HeapMemory[0];           /* the current stack frame */
+//    pc->HeapStackTop = &pc->HeapMemory[0];                /* the top of the stack */
+    pc->StackFrame = NILL;                     /* the current stack frame */
+    pc->HeapStackTop = NILL;                          /* the top of the stack */
 # endif
 #endif
 
+#ifndef USE_VIRTMEM
     pc->HeapBottom = &(pc->HeapMemory)[StackOrHeapSize-sizeof(ALIGN_TYPE)+AlignOffset];
+#endif
+
 #ifndef USE_VIRTSTACK
     pc->StackStart = (TStackCharPtr)pc->HeapMemory;
 
@@ -179,8 +184,9 @@ int HeapPopStackFrame(Picoc *pc)
         return FALSE;
 }
 
-int memused = 0;
+#ifndef USE_VIRTMEM
 
+int memused = 0;
 /* allocate some dynamically allocated memory. memory is cleared. can return NULL if out of memory */
 void *HeapAllocMem(Picoc *pc, int Size)
 {
@@ -257,8 +263,10 @@ void *HeapAllocMem(Picoc *pc, int Size)
 #ifdef DEBUG_HEAP
         printf("allocating %d(%d) at bottom of heap (0x%lx-0x%lx)", Size, AllocSize, (long)((char *)pc->HeapBottom - AllocSize), (long)HeapBottom);
 #endif
+#ifndef USE_VIRTSTACK
         if ((char *)pc->HeapBottom - AllocSize < (char *)pc->HeapStackTop)
             return NULL;
+#endif
         
         pc->HeapBottom = (void *)((char *)pc->HeapBottom - AllocSize);
         NewMem = (struct AllocNode *)pc->HeapBottom;
@@ -329,4 +337,4 @@ void HeapFreeMem(Picoc *pc, void *Mem)
     }
 #endif
 }
-
+#endif

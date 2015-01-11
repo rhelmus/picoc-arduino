@@ -14,9 +14,9 @@ void ParseCleanup(Picoc *pc)
         if (pc->CleanupTokenList->SourceText != NULL)
         {
 #if defined(USE_MALLOC_HEAP) && defined(UNIX_HOST) // FIX: PlatformReadFile on unix uses malloc
-            free((void *)pc->CleanupTokenList->SourceText);
+            free((void *)ptrUnwrap(pc->CleanupTokenList->SourceText));
 #else
-            HeapFreeMem(pc, (void *)pc->CleanupTokenList->SourceText);
+            deallocMem((TLexCharPtr)pc->CleanupTokenList->SourceText);
 #endif
         }
         deallocMem(pc->CleanupTokenList);
@@ -949,7 +949,7 @@ enum ParseResult ParseStatement(TParseStatePtr Parser, int CheckTrailingSemicolo
 }
 
 /* quick scan a source file for definitions */
-void PicocParse(Picoc *pc, TConstRegStringPtr FileName, const char *Source, int SourceLen, int RunIt, int CleanupNow, int CleanupSource, int EnableDebugger)
+void PicocParse(Picoc *pc, TConstRegStringPtr FileName, TLexConstCharPtr Source, int SourceLen, int RunIt, int CleanupNow, int CleanupSource, int EnableDebugger)
 {
     struct ParseState Parser;
     enum ParseResult Ok;
@@ -969,7 +969,7 @@ void PicocParse(Picoc *pc, TConstRegStringPtr FileName, const char *Source, int 
         if (CleanupSource)
             NewCleanupNode->SourceText = Source;
         else
-            NewCleanupNode->SourceText = NULL;
+            NewCleanupNode->SourceText = NILL;
             
         NewCleanupNode->Next = pc->CleanupTokenList;
         pc->CleanupTokenList = NewCleanupNode;
@@ -996,7 +996,7 @@ void PicocParseInteractiveNoStartPrompt(Picoc *pc, int EnableDebugger)
     struct ParseState Parser;
     enum ParseResult Ok;
     
-    LexInitParser(ptrWrap(&Parser), pc, NULL, NILL, pc->StrEmpty, NULL, TRUE, EnableDebugger);
+    LexInitParser(ptrWrap(&Parser), pc, NILL, NILL, pc->StrEmpty, NULL, TRUE, EnableDebugger);
     PicocPlatformSetExitPoint(pc);
     LexInteractiveClear(pc, ptrWrap(&Parser));
 
@@ -1028,7 +1028,7 @@ void PicocParseLineByLine(Picoc *pc, const char *FileName, void *FilePointer, in
     enum ParseResult Ok;
     TRegStringPtr RegFileName = TableStrRegister(pc, FileName);
 
-    LexInitParser(ptrWrap(&Parser), pc, NULL, NILL, RegFileName, FilePointer, TRUE, EnableDebugger);
+    LexInitParser(ptrWrap(&Parser), pc, NILL, NILL, RegFileName, FilePointer, TRUE, EnableDebugger);
     /*PicocPlatformSetExitPoint(pc);*/
     LexInteractiveClear(pc, ptrWrap(&Parser));
 

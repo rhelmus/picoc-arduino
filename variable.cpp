@@ -29,10 +29,10 @@ uint8_t Crc8(unsigned char Crc, unsigned char Data)
     return ret;
 }
 
-uint8_t StrHash(const char *Str)
+uint8_t StrHash(TLexConstCharPtr Str)
 {
     uint8_t ret = 0;
-    const char *p = Str;
+    TLexConstCharPtr p = Str;
     while (p && *p)
     {
         ret = Crc8(ret, *p);

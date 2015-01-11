@@ -142,7 +142,7 @@ struct ParseState
     enum RunMode Mode;          /* whether to skip or run code */
     int SearchLabel;            /* what case label we're searching for */
     TConstRegStringPtr SearchGotoLabel;/* what goto label we're searching for */
-    const char *SourceText;     /* the entire source text */
+    TLexConstCharPtr SourceText;/* the entire source text */
     short int HashIfLevel;      /* how many "if"s we're nested down */
     short int HashIfEvaluateToLevel;    /* if we're not evaluating an if branch, what the last evaluated level was */
     char DebugMode;             /* debugging mode */
@@ -319,7 +319,7 @@ struct LexState
     TConstRegStringPtr FileName;
     int Line;
     int CharacterPos;
-    const char *SourceText;
+    TLexConstCharPtr SourceText;
     enum LexMode Mode;
     int EmitExtraNewlines;
 };
@@ -358,7 +358,7 @@ enum ParseResult { ParseResultEOF, ParseResultError, ParseResultOk };
 struct CleanupTokenNode
 {
     TLexBufPtr Tokens;
-    const char *SourceText;
+    TLexConstCharPtr SourceText;
     TCleanupNodePtr Next;
 };
 
@@ -432,12 +432,14 @@ struct Picoc_Struct
     void *HeapStackTop;                 /* the top of the stack */
     void *HeapMemStart;
 # else
+#ifndef USE_VIRTMEM
     unsigned char HeapMemory[HEAP_SIZE];  /* all memory - stack and heap */
+#endif
     void *HeapBottom;                     /* the bottom of the (downward-growing) heap */
     TStackVoidPtr StackFrame;             /* the current stack frame */
     TStackVoidPtr HeapStackTop;           /* the top of the stack */
     TStackVoidPtr StackBottom;            /* the bottom of the stack */
-    TStackVoidPtr StackStart;             /* the absolute start of the stack */
+    TStackCharPtr StackStart;             /* the absolute start of the stack */
 # endif
 #endif
 
@@ -514,8 +516,8 @@ void TableStrFree(Picoc *pc);
 /* lex.c */
 void LexInit(Picoc *pc);
 void LexCleanup(Picoc *pc);
-TLexBufPtr LexAnalyse(Picoc *pc, TConstRegStringPtr FileName, const char *Source, int SourceLen, int *TokenLen);
-void LexInitParser(TParseStatePtr Parser, Picoc *pc, const char *SourceText, TLexBufPtr TokenSource, TRegStringPtr FileName, void *FilePointer, int RunIt, int SetDebugMode);
+TLexBufPtr LexAnalyse(Picoc *pc, TConstRegStringPtr FileName, TLexConstCharPtr Source, int SourceLen, int *TokenLen);
+void LexInitParser(TParseStatePtr Parser, Picoc *pc, TLexConstCharPtr SourceText, TLexBufPtr TokenSource, TRegStringPtr FileName, void *FilePointer, int RunIt, int SetDebugMode);
 enum LexToken LexGetToken(TParseStatePtr Parser, TValuePtrPtr Value, int IncPos);
 enum LexToken LexRawPeekToken(TParseStatePtr Parser);
 void LexToEndOfLine(TParseStatePtr Parser);
