@@ -57,6 +57,8 @@ inline void PicocParse(Picoc *pc, TConstRegStringPtr FileName, const char *Sourc
 { return PicocParse(pc, FileName, ptrWrap(Source), SourceLen, RunIt, CleanupNow, CleanupSource, EnableDebugger); }
 inline void PicocParse(Picoc *pc, const char *FileName, const char *Source, int SourceLen, int RunIt, int CleanupNow, int CleanupSource, int EnableDebugger)
 { return PicocParse(pc, ptrWrap(FileName), ptrWrap(Source), SourceLen, RunIt, CleanupNow, CleanupSource, EnableDebugger); }
+inline void PicocParse(Picoc *pc, const char *FileName, TLexConstCharPtr Source, int SourceLen, int RunIt, int CleanupNow, int CleanupSource, int EnableDebugger)
+{ return PicocParse(pc, ptrWrap(FileName), Source, SourceLen, RunIt, CleanupNow, CleanupSource, EnableDebugger); }
 #endif
 void PicocParseInteractive(Picoc *pc);
 void PicocParseLineByLine(Picoc *pc, const char *FileName, void *FilePointer, int EnableDebugger);

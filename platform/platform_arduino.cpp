@@ -152,9 +152,21 @@ void PicocPlatformScanFile(Picoc *pc, const char *FileName)
         ProgramFailNoParser(pc, "opening source file for read failed");
 
     const uint32_t size = sdFile.fileSize();
-    char *source = 0;// (char *)HeapAllocMem(pc, size + 1); // UNDONE: virtmem
 
+    TLexCharPtr source = allocMem<char>(false, size + 1);
+#ifdef USE_VIRTMEM
+    const uint8_t bufsize = 64;
+    char buf[bufsize];
+    for (uint32_t i=0; i<size; i+=bufsize)
+    {
+        const uint32_t cpsize = ((i+bufsize) < size) ? bufsize : (size-i);
+        sdFile.read(buf, cpsize);
+        memcpy(&source[i], buf, cpsize);
+    }
+#else
     sdFile.read(source, size);
+#endif
+
     source[size] = 0;
     sdFile.close();
 
