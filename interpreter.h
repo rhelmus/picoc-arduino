@@ -443,6 +443,10 @@ struct Picoc_Struct
 # endif
 #endif
 
+#ifdef TRACE_MEMUSAGE
+    int MaxStackUsage;
+#endif
+
     struct AllocNode *FreeListBucket[FREELIST_BUCKETS];      /* we keep a pool of freelist buckets to reduce fragmentation */
     struct AllocNode *FreeListBig;                           /* free memory which doesn't fit in a bucket */
 
@@ -572,6 +576,12 @@ void HeapPushStackFrame(Picoc *pc);
 int HeapPopStackFrame(Picoc *pc);
 void *HeapAllocMem(Picoc *pc, int Size);
 void HeapFreeMem(Picoc *pc, void *Mem);
+#ifdef TRACE_MEMUSAGE
+int StackMemUsed(Picoc *pc);
+int MaxStackMemUsed(Picoc *pc);
+int HeapMemUsed(Picoc *pc);
+int MaxHeapMemUsed(Picoc *pc);
+#endif
 
 /* variable.c */
 void VariableInit(Picoc *pc);

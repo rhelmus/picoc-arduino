@@ -4,6 +4,7 @@
 
 #define USE_VIRTMEM
 #define USE_VIRTSTACK
+#define TRACE_MEMUSAGE
 
 #ifdef ARDUINO
 #define ARDUINO_HOST
@@ -251,9 +252,10 @@ extern int ExitBuf[];
 
 #ifdef ARDUINO_HOST
 # define HEAP_SIZE (7*1024)               /* space for the heap and the stack */
-# define NO_FP
-# define NO_PRINTF
+//# define NO_FP
+//# define NO_PRINTF
 # define NO_DEBUGGER
+# define NO_MALLOC
 # define NO_CALLOC
 # define NO_REALLOC
 # define NO_STRING_FUNCTIONS

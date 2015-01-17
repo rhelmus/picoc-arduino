@@ -31,3 +31,6 @@ $COPY "${PWD}"/README "${DEST}/"
 mkdir -p "${DEST}/utility"
 $COPY "${PWD}"/platform/library_arduino.cpp "${DEST}/utility"
 $COPY "${PWD}"/platform/platform_arduino.cpp "${DEST}/utility"
+
+mkdir -p "${DEST}/examples/run_tests"
+$COPY "${PWD}"/tests/run_tests.ino "${DEST}/examples/run_tests"

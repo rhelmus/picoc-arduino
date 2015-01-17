@@ -57,7 +57,7 @@ void PicocCleanup(Picoc *pc)
 }
 
 /* platform-dependent code for running programs */
-#if defined(UNIX_HOST) || defined(WIN32)
+#if defined(UNIX_HOST) || defined(WIN32) || defined(ARDUINO_HOST)
 
 #define CALL_MAIN_NO_ARGS_RETURN_VOID "main();"
 #define CALL_MAIN_WITH_ARGS_RETURN_VOID "main(__argc,__argv);"

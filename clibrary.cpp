@@ -683,7 +683,7 @@ const struct LibraryFunction CLibrary[] =
     { LibCeil,          "float ceil(float);" },
     { LibFloor,         "float floor(float);" },
 #endif
-#ifndef NO_STRING_FUNCTIONS
+#ifndef NO_MALLOC
     { LibMalloc,        "void *malloc(int);" },
 #endif
 #ifndef NO_CALLOC
@@ -692,8 +692,10 @@ const struct LibraryFunction CLibrary[] =
 #ifndef NO_REALLOC
     { LibRealloc,       "void *realloc(void *,int);" },
 #endif
-#ifndef NO_STRING_FUNCTIONS
+#if !defined(NO_MALLOC) && !defined(NO_CALLOC) && !defined(NO_REALLOC)
     { LibFree,          "void free(void *);" },
+#endif
+#ifndef NO_STRING_FUNCTIONS
     { LibStrcpy,        "void strcpy(char *,char *);" },
     { LibStrncpy,       "void strncpy(char *,char *,int);" },
     { LibStrcmp,        "int strcmp(char *,char *);" },

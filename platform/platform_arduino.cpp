@@ -95,8 +95,10 @@ void PlatformInit(Picoc *pc)
 {
 }
 
-void PlatformCleanup()
+void PlatformCleanup(Picoc *pc)
 {
+    if (sdFile.isOpen())
+        sdFile.close();
 }
 
 /* get a line of interactive input */
@@ -129,20 +131,9 @@ void PlatformPutc(unsigned char OutCh, union OutputStreamInfo *Stream)
 /* get a line from a file */
 char *PlatformGetLineFromFile(char *Buf, int MaxLen, void *FilePointer)
 {
-    int index = 0;
-    do
-    {
-        int16_t b = sdFile.read();
-        if (b == -1)
-            break;
-        Buf[index] = b;
-        ++index;
-    }
-    while (index < (MaxLen-1) && Buf[index] != '\n');
-
-    Buf[index] = 0;
-
-    return (index != 0) ? Buf : NULL;
+    const int16_t read = sdFile.fgets(Buf, MaxLen);
+    Serial.print("Source line: "); Serial.println((read == -1) ? "EOF" : Buf);
+    return (read > 0) ? Buf : NULL;
 }
 
 /* read and scan a file for definitions */
@@ -187,6 +178,8 @@ void PicocPlatformScanFileByLine(Picoc *pc, const char *FileName)
 void PlatformExit(Picoc *pc, int RetVal)
 {
     //PicocExitValue = RetVal;
+    while (true)
+        ;
     // .. no exit (UNDONE?)
 }
 

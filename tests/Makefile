@@ -3,6 +3,7 @@
 #	22_floating_point.test \
 #	24_math_library.test \
 #	40_stdio.test \
+#	61_initializers.test \
 
 TESTS=	00_assignment.test \
 	01_comment.test \
@@ -58,7 +59,6 @@ TESTS=	00_assignment.test \
 	58_return_outside.test \
 	59_break_before_loop.test \
 	60_local_vars.test \
-        61_initializers.c \
 	62_float.test \
 	64_double_prefix_op.test \
 	66_printf_undefined.test \

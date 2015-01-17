@@ -88,6 +88,10 @@ void HeapInit(Picoc *pc, int StackOrHeapSize)
     for (Count = 0; Count < FREELIST_BUCKETS; Count++)
         pc->FreeListBucket[Count] = NULL;
 
+#ifdef TRACE_MEMUSAGE
+    pc->MaxStackUsage = 0;
+#endif
+
 #ifndef NVALGRIND
     VALGRIND_CREATE_MEMPOOL(pc->HeapMemory, 0, 0);
     VALGRIND_MAKE_MEM_NOACCESS(pc->HeapMemory, StackOrHeapSize);
@@ -121,6 +125,12 @@ TStackVoidPtr HeapAllocStack(Picoc *pc, int Size)
 
     pc->HeapStackTop = NewTop;
     memset(NewMem, '\0', Size);
+
+#ifdef TRACE_MEMUSAGE
+    int susage = StackMemUsed(pc);
+    if (susage > pc->MaxStackUsage)
+        pc->MaxStackUsage = susage;
+#endif
 
     return NewMem;
 }
@@ -166,6 +176,12 @@ void HeapPushStackFrame(Picoc *pc)
 #else
     pc->HeapStackTop = (TStackVoidPtr)((TStackCharPtr)pc->HeapStackTop + MEM_ALIGN(sizeof(ALIGN_TYPE)));
 #endif
+
+#ifdef TRACE_MEMUSAGE
+    int susage = StackMemUsed(pc);
+    if (susage > pc->MaxStackUsage)
+        pc->MaxStackUsage = susage;
+#endif
 }
 
 /* pop the current stack frame, freeing all memory in the frame. can return NULL */
@@ -186,7 +202,6 @@ int HeapPopStackFrame(Picoc *pc)
 
 #ifndef USE_VIRTMEM
 
-int memused = 0;
 /* allocate some dynamically allocated memory. memory is cleared. can return NULL if out of memory */
 void *HeapAllocMem(Picoc *pc, int Size)
 {
@@ -208,7 +223,7 @@ void *HeapAllocMem(Picoc *pc, int Size)
     if (AllocSize < sizeof(struct AllocNode))
         AllocSize = sizeof(struct AllocNode);
 
-    memused += AllocSize;
+//    memused += AllocSize;
 
     Bucket = AllocSize >> 2;
     if (Bucket < FREELIST_BUCKETS && pc->FreeListBucket[Bucket] != NULL)
@@ -299,7 +314,7 @@ void HeapFreeMem(Picoc *pc, void *Mem)
     if (Mem == NULL)
         return;
     
-    memused -= MemNode->Size;
+//    memused -= MemNode->Size;
 
     if ((void *)MemNode == pc->HeapBottom)
     { 
@@ -337,4 +352,35 @@ void HeapFreeMem(Picoc *pc, void *Mem)
     }
 #endif
 }
+#endif
+
+#ifdef TRACE_MEMUSAGE
+int StackMemUsed(Picoc *pc)
+{
+    return ((TStackCharPtr)pc->HeapStackTop - (TStackCharPtr)&(pc->StackStart)[0]);
+}
+
+int MaxStackMemUsed(Picoc *pc)
+{
+    return pc->MaxStackUsage;
+}
+
+int HeapMemUsed(Picoc *pc)
+{
+#ifdef USE_VIRTMEM
+    return TVirtAlloc::getInstance()->getMemUsed();
+#else
+    return 0; // UNDONE
+#endif
+}
+
+int MaxHeapMemUsed(Picoc *pc)
+{
+#ifdef USE_VIRTMEM
+    return TVirtAlloc::getInstance()->getMaxMemUsed();
+#else
+    return 0; // UNDONE
+#endif
+}
+
 #endif

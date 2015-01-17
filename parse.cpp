@@ -1005,8 +1005,6 @@ void PicocParseInteractiveNoStartPrompt(Picoc *pc, int EnableDebugger)
         LexInteractiveStatementPrompt(pc);
         Ok = ParseStatement(ptrWrap(&Parser), TRUE);
         LexInteractiveCompleted(pc, ptrWrap(&Parser));
-        extern int memused, varmemused;
-        debugline("memused: %d/%d\n", memused, varmemused);
     } while (Ok == ParseResultOk);
     
     if (Ok == ParseResultError)
