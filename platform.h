@@ -2,8 +2,8 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#define USE_VIRTMEM
-#define USE_VIRTSTACK
+//#define USE_VIRTMEM
+//#define USE_VIRTSTACK
 #define TRACE_MEMUSAGE
 
 #ifdef ARDUINO
@@ -186,7 +186,7 @@ extern jmp_buf ExitBuf;
 # else
 #  ifdef FLYINGFOX_HOST
 #   define HEAP_SIZE (16*1024)               /* space for the heap and the stack */
-#   define NO_HASH_INCLUDE
+#   define NO_FILE_SUPPORT
 #   include <stdlib.h>
 #   include <ctype.h>
 #   include <string.h>
@@ -203,7 +203,7 @@ extern jmp_buf ExitBuf;
 #    define HEAP_SIZE C_HEAPSIZE
 #    define NO_FP
 #    define NO_CTYPE
-#    define NO_HASH_INCLUDE
+#    define NO_FILE_SUPPORT
 #    define NO_MODULUS
 #    include <cdefBF537.h>
 #    include "../string.h"
@@ -251,9 +251,10 @@ extern int ExitBuf[];
 #endif
 
 #ifdef ARDUINO_HOST
-# define HEAP_SIZE (7*1024)               /* space for the heap and the stack */
+# define HEAP_SIZE (16*1024)               /* space for the heap and the stack */
 //# define NO_FP
 //# define NO_PRINTF
+# define NO_FILE_SUPPORT
 # define NO_DEBUGGER
 # define NO_MALLOC
 # define NO_CALLOC
@@ -270,6 +271,7 @@ extern int ExitBuf[];
 # define BUILTIN_MINI_STDLIB  /* UNDONE: use avr libc? */
 # define debugline
 # undef BIG_ENDIAN
+# define ARDUINO_EXIT 2
 
 #endif
 

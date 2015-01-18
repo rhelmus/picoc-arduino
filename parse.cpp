@@ -793,7 +793,7 @@ enum ParseResult ParseStatement(TParseStatePtr Parser, int CheckTrailingSemicolo
             CheckTrailingSemicolon = FALSE;
             break;
             
-#ifndef NO_HASH_INCLUDE
+#ifndef NO_FILE_SUPPORT
         case TokenHashInclude:
             if (LexGetToken(Parser, &LexerValue, TRUE) != TokenStringConstant)
                 ProgramFail(Parser, "\"filename.h\" expected");
@@ -997,7 +997,12 @@ void PicocParseInteractiveNoStartPrompt(Picoc *pc, int EnableDebugger)
     enum ParseResult Ok;
     
     LexInitParser(ptrWrap(&Parser), pc, NILL, NILL, pc->StrEmpty, NULL, TRUE, EnableDebugger);
+#ifdef ARDUINO_HOST
+    if (PicocPlatformSetExitPoint(pc) && pc->PicocExitValue == ARDUINO_EXIT)
+        return; // called exit(), get out
+#else
     PicocPlatformSetExitPoint(pc);
+#endif
     LexInteractiveClear(pc, ptrWrap(&Parser));
 
     do

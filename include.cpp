@@ -4,7 +4,7 @@
 #include "picoc.h"
 #include "interpreter.h"
 
-#ifndef NO_HASH_INCLUDE
+#ifndef NO_FILE_SUPPORT
 
 
 /* initialise the built-in include libraries */
@@ -121,4 +121,4 @@ void IncludeFile(Picoc *pc, TRegStringPtr FileName, int LineByLine)
 #endif
 }
 
-#endif /* NO_HASH_INCLUDE */
+#endif /* NO_FILE_SUPPORT */

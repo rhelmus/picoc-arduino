@@ -1,6 +1,6 @@
 /* picoc variable storage. This provides ways of defining and accessing
  * variables */
- 
+
 #include "interpreter.h"
 
 /* maximum size of a value to temporarily copy while we create a variable */
@@ -278,7 +278,11 @@ int VariableScopeBegin(TParseStatePtr Parser, int16_t* OldScopeID)
     //Parser->ScopeID = Parser->Line * 0x10000 + Parser->CharacterPos;
     Parser->ScopeID = ((Parser->SourceText) ? StrHash(Parser->SourceText) : 0) + Parser->Line * 0x100 + Parser->CharacterPos;
 //    Parser->ScopeID = ((Parser->SourceText) ? StrHash(Parser->SourceText) : 0) + Parser->Line * 0x100 + (getNumPtr(Parser->Pos) / sizeof(char*));
-//    printf("ScopeID: %d/%d/%d\n", Parser->ScopeID, StrHash(Parser->SourceText), getNumPtr(Parser->Pos) / sizeof(char*));
+#ifdef ARDUINO_HOST
+//    Serial.print("ScopeID: "); Serial.print((int)Parser->ScopeID); Serial.print("/"); Serial.println((Parser->SourceText) ? StrHash(Parser->SourceText) : 0);
+#else
+//    printf("ScopeID: %d/%d/%d/%d\n", Parser->ScopeID, ((Parser->SourceText) ? StrHash(Parser->SourceText) : 0), Parser->Line, Parser->CharacterPos);
+#endif
 
     for (Count = 0; Count < HashTable->Size; Count++)
     {

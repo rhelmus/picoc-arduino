@@ -42,7 +42,7 @@ int main(int argc, char **argv)
             break;
         case 'l':
             LineByLine = TRUE;
-            /*PicocIncludeAllSystemHeaders(&pc);*/
+            /*PicocIncludeAllSystemHeaders(&pc);*/ // UNDONE
             break;
         case 'i':
             PicocIncludeAllSystemHeaders(&pc);

@@ -218,3 +218,4 @@ arduinofy.sh
 platform/library_arduino.cpp
 vmem_utils.h
 tests/run_tests.ino
+arduino-examples/run_serial.ino

@@ -25,7 +25,7 @@ void PicocInitialise(Picoc *pc, int StackSize)
     VariableInit(pc);
     LexInit(pc);
     TypeInit(pc);
-#ifndef NO_HASH_INCLUDE
+#ifndef NO_FILE_SUPPORT
     IncludeInit(pc);
 #endif
     LibraryInit(pc);
@@ -41,7 +41,7 @@ void PicocInitialise(Picoc *pc, int StackSize)
 void PicocCleanup(Picoc *pc)
 {
     DebugCleanup(pc);
-#ifndef NO_HASH_INCLUDE
+#ifndef NO_FILE_SUPPORT
     IncludeCleanup(pc);
 #endif
     ParseCleanup(pc);
@@ -57,7 +57,7 @@ void PicocCleanup(Picoc *pc)
 }
 
 /* platform-dependent code for running programs */
-#if defined(UNIX_HOST) || defined(WIN32) || defined(ARDUINO_HOST)
+#if defined(UNIX_HOST) || defined(WIN32)
 
 #define CALL_MAIN_NO_ARGS_RETURN_VOID "main();"
 #define CALL_MAIN_WITH_ARGS_RETURN_VOID "main(__argc,__argv);"
@@ -105,6 +105,20 @@ void PicocCallMain(Picoc *pc, int argc, char **argv)
     }
 }
 #endif
+
+void PicocCallFunctionIfExists(Picoc *pc, const char *func, const char *exec)
+{
+    if (VariableDefined(pc, TableStrRegister(pc, func)))
+    {
+        TValuePtr FuncValue = NILL;
+
+        VariableGet(pc, NILL, TableStrRegister(pc, func), &FuncValue);
+        if (FuncValue->Typ->Base != TypeFunction)
+            ProgramFailNoParser(pc, "%s is not a function - can't call it", func);
+
+        PicocParse(pc, "startup", exec, strlen(exec), TRUE, TRUE, FALSE, TRUE);
+    }
+}
 
 void PrintSourceTextErrorLine(IOFILE *Stream, TConstRegStringPtr FileName, TLexConstCharPtr SourceText, int Line, int CharacterPos)
 {

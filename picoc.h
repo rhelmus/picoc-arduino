@@ -20,7 +20,7 @@
 #include "vmem_utils.h"
 
 
-#if defined(UNIX_HOST) || defined(WIN32)
+#if defined(UNIX_HOST) || defined(WIN32) || defined(ARDUINO_HOST)
 #include <setjmp.h>
 
 /* this has to be a macro, otherwise errors will occur due to the stack being corrupt */
@@ -32,22 +32,6 @@
 extern int PicocExitBuf[];
 
 #define PicocPlatformSetExitPoint(pc) setjmp((pc)->PicocExitBuf)
-#endif
-
-#ifdef ARDUINO_HOST
-#define PicocPlatformSetExitPoint(pc) /* empty */
-
-typedef char *(*ReadCompleteFileFunc)(const char *);
-typedef void *(*OpenFileFunc)(const char *);
-typedef void (*CloseFileFunc)(void *);
-typedef char *(*ReadFileLineFunc)(char *, int, void *);
-void PicocSetReadCompleteFileFunc(ReadCompleteFileFunc f);
-void PicocSetOpenFileFunc(OpenFileFunc f);
-void PicocSetCloseFileFunc(CloseFileFunc f);
-void PicocSetReadFileLineFunc(ReadFileLineFunc f);
-char *PicocGetCharBuffer(Picoc *pc, int size);
-void PicocFreeCharBuffer(Picoc *pc, char *buf);
-
 #endif
 
 /* parse.c */
@@ -67,6 +51,7 @@ void PicocParseLineByLine(Picoc *pc, const char *FileName, void *FilePointer, in
 void PicocCallMain(Picoc *pc, int argc, char **argv);
 void PicocInitialise(Picoc *pc, int StackSize);
 void PicocCleanup(Picoc *pc);
+void PicocCallFunctionIfExists(Picoc *pc, const char *func, const char *exec);
 void PicocPlatformScanFile(Picoc *pc, const char *FileName);
 void PicocPlatformScanFileByLine(Picoc *pc, const char *FileName);
 

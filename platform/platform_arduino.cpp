@@ -1,95 +1,17 @@
 #include <Arduino.h>
-#include <SdFat.h>
 
 #include "../picoc.h"
-#include "../interpreter.h"
 
-#if 0
-namespace {
-
-ReadCompleteFileFunc ReadFileFunction;
-OpenFileFunc OpenFileFunction;
-CloseFileFunc CloseFileFunction;
-ReadFileLineFunc ReadFileLineFunction;
-
-}
-
-void PicocSetReadCompleteFileFunc(ReadCompleteFileFunc f)
-{
-    ReadFileFunction = f;
-}
-
-void PicocSetOpenFileFunc(OpenFileFunc f)
-{
-    OpenFileFunction = f;
-}
-
-void PicocSetCloseFileFunc(CloseFileFunc f)
-{
-    CloseFileFunction = f;
-}
-
-void PicocSetReadFileLineFunc(ReadFileLineFunc f)
-{
-    ReadFileLineFunction = f;
-}
-
-char *PicocGetCharBuffer(Picoc *pc, int size)
-{
-    return (char *)HeapAllocMem(pc, size);
-}
-
-void PicocFreeCharBuffer(Picoc *pc, char *buf)
-{
-    HeapFreeMem(pc, (void *)buf);
-}
-
-/* get a line from a file */
-char *PlatformGetLineFromFile(char *Buf, int MaxLen, void *FilePointer)
-{
-    if (ReadFileLineFunction)
-        return ReadFileLineFunction(Buf, MaxLen, FilePointer);
-    return NULL;
-}
-
-/* read and scan a file for definitions */
-void PicocPlatformScanFile(Picoc *pc, const char *FileName)
-{
-    if (ReadFileFunction)
-    {
-        char *SourceStr = ReadFileFunction(FileName);
-        if (SourceStr)
-            PicocParse(pc, FileName, SourceStr, strlen(SourceStr), TRUE, FALSE, TRUE, TRUE); /* UNDONE: always clean? */
-    }
-}
-
-/* read and scan a file for definitions */
-void PicocPlatformScanFileByLine(Picoc *pc, const char *FileName)
-{
-    if (!OpenFileFunction)
-        return;
-
-    void *fp = OpenFileFunction(FileName);
-
-    if (fp)
-    {
-        PicocParseLineByLine(pc, FileName, fp, TRUE);
-        if (CloseFileFunction)
-            CloseFileFunction(fp);
-    }
-}
-
-/* exit the program */
-void PlatformExit(Picoc *pc, int RetVal)
-{
-    //PicocExitValue = RetVal;
-    // .. no exit (UNDONE?)
-}
-#endif
+#ifndef NO_FILE_SUPPORT
+#include <SdFat.h>
 
 namespace {
 SdFile sdFile;
 }
+#endif
+
+/* mark where to end the program for platforms which require this */
+jmp_buf PicocExitBuf;
 
 void PlatformInit(Picoc *pc)
 {
@@ -97,8 +19,10 @@ void PlatformInit(Picoc *pc)
 
 void PlatformCleanup(Picoc *pc)
 {
+#ifndef NO_FILE_SUPPORT
     if (sdFile.isOpen())
         sdFile.close();
+#endif
 }
 
 /* get a line of interactive input */
@@ -109,8 +33,20 @@ char *PlatformGetLine(char *Buf, int MaxLen, const char *Prompt)
 
     while (true)
     {
-        if (Serial.readBytesUntil('\n', Buf, MaxLen))
+        if (Serial.available())
+        {
+            int index = 0;
+            do
+            {
+                if (Serial.available())
+                    Buf[index++] = Serial.read();
+            }
+            while (Buf[index-1] != '\n' && (index < (MaxLen-1)));
+
+            Buf[index] = 0;
+            Serial.print('\n');
             return Buf;
+        }
     }
 
     return 0;
@@ -128,6 +64,7 @@ void PlatformPutc(unsigned char OutCh, union OutputStreamInfo *Stream)
     Serial.write(OutCh);
 }
 
+#ifndef NO_FILE_SUPPORT
 /* get a line from a file */
 char *PlatformGetLineFromFile(char *Buf, int MaxLen, void *FilePointer)
 {
@@ -173,13 +110,11 @@ void PicocPlatformScanFileByLine(Picoc *pc, const char *FileName)
     PicocParseLineByLine(pc, FileName, &sdFile, TRUE);
     sdFile.close();
 }
+#endif
 
 /* exit the program */
 void PlatformExit(Picoc *pc, int RetVal)
 {
-    //PicocExitValue = RetVal;
-    while (true)
-        ;
-    // .. no exit (UNDONE?)
+    pc->PicocExitValue = RetVal;
+    longjmp(pc->PicocExitBuf, 1);
 }
-

@@ -151,6 +151,7 @@ int LexGetMoreSource(TParseStatePtr Parser, char *LineBuffer, int Size)
     {
         int len, i, end;
 
+#ifndef NO_FILE_SUPPORT
         if (Parser->LineFilePointer)
         {
             if (PlatformGetLineFromFile(&LineBuffer[start], (Size-start), Parser->LineFilePointer) == NULL)
@@ -161,6 +162,7 @@ int LexGetMoreSource(TParseStatePtr Parser, char *LineBuffer, int Size)
             }
         }
         else
+#endif
         {
             const char *Prompt;
 

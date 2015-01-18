@@ -398,7 +398,11 @@ void LibGetc(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, i
 
 void LibExit(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
+#ifdef ARDUINO_HOST
+    PlatformExit(Parser->pc, ARDUINO_EXIT);
+#else
     PlatformExit(Parser->pc, Param[0]->Val->Integer);
+#endif
 }
 
 #ifdef PICOC_LIBRARY
@@ -662,7 +666,11 @@ const struct LibraryFunction CLibrary[] =
 #endif
     { LibGets,          "char *gets(char *);" },
     { LibGetc,          "int getchar();" },
+#ifdef ARDUINO_HOST
+    { LibExit,          "void exit();" },
+#else
     { LibExit,          "void exit(int);" },
+#endif
 #ifdef PICOC_LIBRARY
     { LibSin,           "float sin(float);" },
     { LibCos,           "float cos(float);" },

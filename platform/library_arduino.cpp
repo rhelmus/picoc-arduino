@@ -50,5 +50,7 @@ struct LibraryFunction ArduinoFunctions[] =
 
 void PlatformLibraryInit(Picoc *pc)
 {
+#ifndef NO_FILE_SUPPORT // UNDONE
     IncludeRegister(pc, "Arduino.h", &ArduinoSetupFunc, &ArduinoFunctions[0], ArduinoDefs);
+#endif
 }

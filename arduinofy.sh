@@ -34,3 +34,6 @@ $COPY "${PWD}"/platform/platform_arduino.cpp "${DEST}/utility"
 
 mkdir -p "${DEST}/examples/run_tests"
 $COPY "${PWD}"/tests/run_tests.ino "${DEST}/examples/run_tests"
+
+mkdir -p "${DEST}/examples/run_serial"
+$COPY "${PWD}"/arduino-examples/run_serial.ino "${DEST}/examples/run_serial"
