@@ -100,6 +100,7 @@ void LexInit(Picoc *pc)
     pc->LexValue.Val = ptrWrap(&pc->LexAnyValue);
     pc->LexValue.LValueFrom = NILL;
     pc->LexValue.Flags = FlagValNone;
+    pc->LexUseStatementPrompt = PromptSimple;
 }
 
 /* deallocate */
@@ -164,15 +165,15 @@ int LexGetMoreSource(TParseStatePtr Parser, char *LineBuffer, int Size)
         else
 #endif
         {
-            const char *Prompt;
+            const char *Prompt = NULL;
 
             /* get interactive input */
-            if (Parser->pc->LexUseStatementPrompt)
+            if (Parser->pc->LexUseStatementPrompt == PromptFull)
             {
                 Prompt = INTERACTIVE_PROMPT_STATEMENT;
-                Parser->pc->LexUseStatementPrompt = FALSE;
+                Parser->pc->LexUseStatementPrompt = PromptSimple;
             }
-            else
+            else if (Parser->pc->LexUseStatementPrompt == PromptSimple)
                 Prompt = INTERACTIVE_PROMPT_LINE;
 
             if (PlatformGetLine(&LineBuffer[start], (Size-start), Prompt) == NULL)
@@ -1138,5 +1139,14 @@ void LexInteractiveCompleted(Picoc *pc, TParseStatePtr Parser)
 /* the next time we prompt, make it the full statement prompt */
 void LexInteractiveStatementPrompt(Picoc *pc)
 {
-    pc->LexUseStatementPrompt = TRUE;
+    if (pc->LexUseStatementPrompt != PromptNone)
+        pc->LexUseStatementPrompt = PromptFull;
+}
+
+void PicocEnablePrompt(Picoc *pc, int e)
+{
+    if (e && pc->LexUseStatementPrompt == PromptNone)
+        pc->LexUseStatementPrompt = PromptSimple;
+    else if (!e)
+        pc->LexUseStatementPrompt = PromptNone;
 }

@@ -48,7 +48,8 @@ void loop()
     }
 #endif
     PicocInitialise(&pc, HEAP_SIZE);
-    Serial.println("Starting serial interactive picoc. Hit ctrl+d (EOF) to reset.");
+    Serial.println("Starting serial interactive picoc. Run exit() to reset.");
+    PicocEnablePrompt(&pc, false);
     PicocParseInteractive(&pc); // blocks
     PicocCleanup(&pc);
 }

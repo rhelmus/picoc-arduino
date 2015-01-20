@@ -44,7 +44,8 @@ char *PlatformGetLine(char *Buf, int MaxLen, const char *Prompt)
             while (Buf[index-1] != '\n' && (index < (MaxLen-1)));
 
             Buf[index] = 0;
-            Serial.print('\n');
+            if (Prompt != NULL)
+                Serial.print('\n');
             return Buf;
         }
     }

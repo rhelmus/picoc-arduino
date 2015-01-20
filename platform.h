@@ -259,7 +259,7 @@ extern int ExitBuf[];
 # define NO_MALLOC
 # define NO_CALLOC
 # define NO_REALLOC
-# define NO_STRING_FUNCTIONS
+//# define NO_STRING_FUNCTIONS
 # include <stdlib.h>
 # include <ctype.h>
 # include <stdint.h>

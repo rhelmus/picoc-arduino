@@ -354,6 +354,8 @@ struct OutputStream
 /* possible results of parsing a statement */
 enum ParseResult { ParseResultEOF, ParseResultError, ParseResultOk };
 
+enum StatementPrompt { PromptNone, PromptSimple, PromptFull };
+
 /* a chunk of heap-allocated tokens we'll cleanup when we're done */
 struct CleanupTokenNode
 {
@@ -397,7 +399,7 @@ struct Picoc_Struct
     TTokenLinePtr InteractiveHead;
     TTokenLinePtr InteractiveTail;
     TTokenLinePtr InteractiveCurrentLine;
-    int LexUseStatementPrompt;
+    enum StatementPrompt LexUseStatementPrompt;
     union AnyValue LexAnyValue;
     struct Value LexValue;
     struct Table ReservedWordTable;
@@ -529,6 +531,7 @@ TLexBufPtr LexCopyTokens(TParseStatePtr Parser, const TLexBufPtr &StartParserPos
 void LexInteractiveClear(Picoc *pc, TParseStatePtr Parser);
 void LexInteractiveCompleted(Picoc *pc, TParseStatePtr Parser);
 void LexInteractiveStatementPrompt(Picoc *pc);
+void PicocEnablePrompt(Picoc *pc, int e);
 
 /* parse.c */
 /* the following are defined in picoc.h:

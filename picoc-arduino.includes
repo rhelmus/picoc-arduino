@@ -3,3 +3,7 @@ tests
 platform
 ../../virtmem/src
 ../virtmem/src
+arduino-examples
+tests/csmith
+arduino-tests
+cstdlib
