@@ -2,7 +2,7 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-//#define USE_VIRTMEM
+#define USE_VIRTMEM
 //#define USE_VIRTSTACK
 #define TRACE_MEMUSAGE
 

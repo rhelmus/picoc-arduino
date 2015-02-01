@@ -434,7 +434,7 @@ struct Picoc_Struct
     void *HeapStackTop;                 /* the top of the stack */
     void *HeapMemStart;
 # else
-#ifndef USE_VIRTMEM
+#ifndef USE_VIRTSTACK
     unsigned char HeapMemory[HEAP_SIZE];  /* all memory - stack and heap */
 #endif
     void *HeapBottom;                     /* the bottom of the (downward-growing) heap */

@@ -53,11 +53,8 @@ void HeapInit(Picoc *pc, int StackOrHeapSize)
 # endif
 #endif
 
-#ifndef USE_VIRTMEM
-    pc->HeapBottom = &(pc->HeapMemory)[StackOrHeapSize-sizeof(ALIGN_TYPE)+AlignOffset];
-#endif
-
 #ifndef USE_VIRTSTACK
+    pc->HeapBottom = &(pc->HeapMemory)[StackOrHeapSize-sizeof(ALIGN_TYPE)+AlignOffset];
     pc->StackStart = (TStackCharPtr)pc->HeapMemory;
 
     while (((unsigned long)&pc->HeapMemory[AlignOffset] & (sizeof(ALIGN_TYPE)-1)) != 0)
