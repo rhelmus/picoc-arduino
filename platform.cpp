@@ -40,7 +40,7 @@ void PicocInitialise(Picoc *pc, int StackSize)
 /* free memory */
 void PicocCleanup(Picoc *pc)
 {
-#if defined(USE_VIRTMEM) && defined(VIRTMEM_TRACE_STATS) && !defined(ARDUINO_HOST)
+#if 1 && defined(USE_VIRTMEM) && defined(VIRTMEM_TRACE_STATS) && !defined(ARDUINO_HOST)
     printf("\nstats:\nMem used: %u\nMax mem used: %u\nPage reads: %u\nPage writes: %u\n", virtalloc.getMemUsed(),
            virtalloc.getMaxMemUsed(), virtalloc.getBigPageReads(), virtalloc.getBigPageWrites());
 #endif

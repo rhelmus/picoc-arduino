@@ -28,7 +28,11 @@
 #if defined(__hppa__) || defined(__sparc__)
 #define ALIGN_TYPE double                   /* the default data type to use for alignment */
 #else
+#if defined(__x86_64__) || defined(_M_X64)
+#define ALIGN_TYPE  __uint128_t
+#else
 #define ALIGN_TYPE void *                   /* the default data type to use for alignment */
+#endif
 #endif
 
 #define GLOBAL_TABLE_SIZE 97                /* global variable table */
