@@ -46,7 +46,7 @@ def checkOutput(checkterm=False):
 def runTest(filename):
 
     serInterface.write(b'exit();\n')
-    time.sleep(1)
+    time.sleep(3)
 
     print "Running test {}...\n---".format(filename)
 
@@ -60,7 +60,7 @@ def runTest(filename):
     serInterface.write(b'main();\n')
     serInterface.write(b'printf("\\n{}\\n");\n'.format(serialTerminator))
 
-    time.sleep(0.5)
+    time.sleep(3)
     checkOutput(True)
     print("---\nFinished!")
 
@@ -72,6 +72,10 @@ def main():
     else:
 	for file in test_files:
 	    runTest(file)
+
+#    serInterface.write(b'exit();\n')
+#    time.sleep(0.5)
+#    checkOutput(True)
 
     while True:
 	checkOutput()

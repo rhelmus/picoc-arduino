@@ -1,6 +1,10 @@
 #include <Arduino.h>
 #include <picoc.h>
+#include "serialram.h"
+#include "virtmem.h"
+
 //#include <SdFat.h> // UNDONE
+#include <SPI.h>
 
 namespace {
 
@@ -28,28 +32,10 @@ void setup()
 
 void loop()
 {
-#if 0
-    static uint32_t delay;
-    const uint32_t curtime = millis();
-
-    if (curtime >= delay)
-    {
-        delay = curtime + 50;
-
-        if (Serial.available())
-        {
-            char buffer[BUFFER_LEN];
-            if (Serial.readBytesUntil('\n', buffer, BUFFER_LEN-1) > 0)
-            {
-                buffer[BUFFER_LEN-1] = 0;
-
-            }
-        }
-    }
-#endif
     PicocInitialise(&pc, HEAP_SIZE);
     Serial.println("Starting serial interactive picoc. Run exit() to reset.");
     PicocEnablePrompt(&pc, false);
     PicocParseInteractive(&pc); // blocks
+//    Serial.print("Exiting... "); Serial.print(MaxStackMemUsed(&pc)); Serial.print("/"); Serial.print(MaxHeapMemUsed(&pc)); Serial.println(" bytes used");
     PicocCleanup(&pc);
 }
