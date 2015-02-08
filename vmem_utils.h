@@ -11,20 +11,28 @@ typedef struct Picoc_Struct Picoc;
 #include "virtmem.h"
 
 #ifdef ARDUINO_HOST
-/*#include "sdfatlib_alloc.h"
+#if 0 // UNDONE
+#include "sdfatlib_alloc.h"
 
 typedef CSdfatlibVirtMemAlloc<> TVirtAlloc;
-#define TVirtPtr TSdfatlibVirtPtr*/
+#define TVirtPtr TSdfatlibVirtPtr
+#elif 0
 #include "spiram_alloc.h"
 
 typedef CSPIRAMVirtMemAlloc<> TVirtAlloc;
 #define TVirtPtr TSPIRAMVirtPtr
+#else
+#include "static_alloc.h"
+
+typedef CStaticVirtMemAlloc<> TVirtAlloc;
+#define TVirtPtr TStaticVirtPtr
+#endif
 
 #else
-#include "stdio_alloc.h"
+#include "static_alloc.h"
 
-typedef CStdioVirtMemAlloc<> TVirtAlloc;
-#define TVirtPtr TStdioVirtPtr
+typedef CStaticVirtMemAlloc<> TVirtAlloc;
+#define TVirtPtr TStaticVirtPtr
 #endif
 
 using namespace virtmem;

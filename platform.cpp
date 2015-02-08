@@ -7,8 +7,8 @@
 Picoc *globalPicoc;
 
 #ifdef USE_VIRTMEM
-//TVirtAlloc virtalloc;
-TVirtAlloc virtalloc(true, 9, CSerialRam::SPEED_FULL);
+TVirtAlloc virtalloc;
+//TVirtAlloc virtalloc(true, 9, CSerialRam::SPEED_FULL);
 #endif
 
 /* initialise everything */
@@ -41,7 +41,7 @@ void PicocInitialise(Picoc *pc, int StackSize)
 /* free memory */
 void PicocCleanup(Picoc *pc)
 {
-#if 1 && defined(USE_VIRTMEM) && defined(VIRTMEM_TRACE_STATS) && !defined(ARDUINO_HOST)
+#if 0 && defined(USE_VIRTMEM) && defined(VIRTMEM_TRACE_STATS) && !defined(ARDUINO_HOST)
     printf("\nstats:\nMem used: %u\nMax mem used: %u\nPage reads: %u\nPage writes: %u\n", virtalloc.getMemUsed(),
            virtalloc.getMaxMemUsed(), virtalloc.getBigPageReads(), virtalloc.getBigPageWrites());
 #endif
