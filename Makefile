@@ -2,7 +2,7 @@
 
 CPPFLAGS=-I../../virtmem/src -I../virtmem/src -D__STDC_FORMAT_MACROS
 CXX=g++
-CXXFLAGS=-Wall -Wextra -pedantic -DVER=\"`git rev-parse --short HEAD`\" -std=gnu++11  -g -ffunction-sections -fdata-sections
+CXXFLAGS=-Wall -Wextra -pedantic -DVER=\"`git rev-parse --short HEAD`\" -std=gnu++11 -m32 -g -ffunction-sections -fdata-sections
 LIBS=-lm -lreadline -L../../virtmem/src -lvirtmem -L../virtmem/src
 LDFLAGS=-Wl,--gc-sections
 

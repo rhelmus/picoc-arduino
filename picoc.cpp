@@ -45,53 +45,38 @@ int main(int argc, char **argv)
             /*PicocIncludeAllSystemHeaders(&pc);*/ // UNDONE
             break;
         case 'i':
-            PicocIncludeAllSystemHeaders(&pc);
-            PicocParseInteractive(&pc);
+            while (true)
+            {
+                PicocIncludeAllSystemHeaders(&pc);
+                PicocParseInteractive(&pc);
+#if 0 // UNDONE
             goto cleanup;
-        }
-    }
-
-#if 0
-    if (strcmp(argv[ParamCount], "-s") == 0 || strcmp(argv[ParamCount], "-m") == 0)
-    {
-        DontRunMain = TRUE;
-        PicocIncludeAllSystemHeaders(&pc);
-        ParamCount++;
-    }
-    else if (argc > ParamCount && strcmp(argv[ParamCount], "-l") == 0)
-    {
-        LineByLine = TRUE;
-        /*PicocIncludeAllSystemHeaders(&pc);*/
-        ParamCount++;
-    }
-
-
-    if (argc > ParamCount && strcmp(argv[ParamCount], "-i") == 0)
-    {
-        PicocIncludeAllSystemHeaders(&pc);
-        PicocParseInteractive(&pc);
-    }
-    else
+#else
+                PicocCleanup(&pc);
+                PicocInitialise(&pc, StackSize);
 #endif
-    {
-        if (PicocPlatformSetExitPoint(&pc))
-        {
-            PicocCleanup(&pc);
-            return pc.PicocExitValue;
-        }
-        
-        for (; ParamCount < argc && strcmp(argv[ParamCount], "-") != 0; ParamCount++)
-        {
-            if (LineByLine)
-                PicocPlatformScanFileByLine(&pc, argv[ParamCount]);
-            else
-                PicocPlatformScanFile(&pc, argv[ParamCount]);
-        }
+            }
 
-        if (!DontRunMain)
-            PicocCallMain(&pc, argc - ParamCount, &argv[ParamCount]);
+        }
     }
-    
+
+    if (PicocPlatformSetExitPoint(&pc))
+    {
+        PicocCleanup(&pc);
+        return pc.PicocExitValue;
+    }
+
+    for (; ParamCount < argc && strcmp(argv[ParamCount], "-") != 0; ParamCount++)
+    {
+        if (LineByLine)
+            PicocPlatformScanFileByLine(&pc, argv[ParamCount]);
+        else
+            PicocPlatformScanFile(&pc, argv[ParamCount]);
+    }
+
+    if (!DontRunMain)
+        PicocCallMain(&pc, argc - ParamCount, &argv[ParamCount]);
+
 cleanup:
     PicocCleanup(&pc);
     return pc.PicocExitValue;

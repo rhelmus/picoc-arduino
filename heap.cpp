@@ -104,6 +104,10 @@ void HeapCleanup(Picoc *pc)
 #ifdef USE_MALLOC_STACK
     free(pc->HeapMemory);
 #endif
+
+#ifdef USE_VIRTSTACK
+    pc->StackStart.free(pc->StackStart);
+#endif
 }
 
 /* allocate some space on the stack, in the current stack frame

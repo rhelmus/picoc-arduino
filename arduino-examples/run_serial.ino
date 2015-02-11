@@ -8,11 +8,6 @@
 
 namespace {
 
-enum
-{
-    BUFFER_LEN = 256 // NOTE: picoc has an internal buffer length as well (LINEBUFFER_MAX)
-};
-
 Picoc pc;
 
 }

@@ -22,7 +22,7 @@ def init():
     serInterface.baudrate = serialBaud
     serInterface.timeout = serialTimeout
 
-    print "Waiting untill port {} can be opened...\n".format(serialPort)
+    print "Waiting until port {} can be opened...\n".format(serialPort)
     while True:
 	try:
 	    serInterface.open()
