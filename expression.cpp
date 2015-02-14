@@ -1554,7 +1554,7 @@ void ExpressionParseFunctionCall(TParseStatePtr Parser, TExpressionStackPtrPtr S
         }
         
     } while (Token != TokenCloseBracket);
-    
+
     if (RunIt) 
     { 
         /* run the function */
@@ -1570,7 +1570,7 @@ void ExpressionParseFunctionCall(TParseStatePtr Parser, TExpressionStackPtrPtr S
             
             if (FuncValue->Val->FuncDef.Body == NULL)
                 ProgramFail(Parser, "'%s' is undefined", FuncName);
-            
+
             ParserCopy(ptrWrap(&FuncParser), FuncValue->Val->FuncDef.Body);
             VariableStackFrameAdd(Parser, FuncName, FuncValue->Val->FuncDef.Intrinsic ? FuncValue->Val->FuncDef.NumParams : 0);
             Parser->pc->TopStackFrame->NumParams = ArgCount;
@@ -1583,7 +1583,7 @@ void ExpressionParseFunctionCall(TParseStatePtr Parser, TExpressionStackPtrPtr S
                 VariableDefine(Parser->pc, Parser, FuncValue->Val->FuncDef.ParamName[Count], ParamArray[Count], NILL, TRUE);
 
             Parser->ScopeID = OldScopeID;
-                
+
             if (ParseStatement(ptrWrap(&FuncParser), TRUE) != ParseResultOk)
                 ProgramFail(ptrWrap(&FuncParser), "function body expected");
             

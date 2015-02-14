@@ -193,7 +193,6 @@ TValuePtr VariableAllocValueFromType(Picoc *pc, TParseStatePtr Parser, TValueTyp
     if (Typ->Base == TypeArray)
         NewValue->Val->ArrayMem = (TAnyValueCharPtr)(getMembrPtr(NewValue->Val, &AnyValue::ArrayMem)) + MEM_ALIGN(sizeof(TAnyValueCharPtr));
 #endif
-
     return NewValue;
 }
 
@@ -423,7 +422,7 @@ TValuePtr VariableDefineButIgnoreIdentical(TParseStatePtr Parser, TRegStringPtr 
         if (MNEnd - MNPos > 0) *MNPos++ = '/';
         strncpy(MNPos, Ident, MNEnd - MNPos);
         RegisteredMangledName = TableStrRegister(pc, MangledName);
-        
+
         /* is this static already defined? */
         if (!TableGet(ptrWrap(&pc->GlobalTable), RegisteredMangledName, &ExistingValue, &DeclFileName, &DeclLine, &DeclColumn))
         {

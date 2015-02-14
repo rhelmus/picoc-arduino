@@ -29,10 +29,16 @@ typedef CStaticVirtMemAlloc<> TVirtAlloc;
 #endif
 
 #else
+#if 1
 #include "static_alloc.h"
-
 typedef CStaticVirtMemAlloc<> TVirtAlloc;
 #define TVirtPtr TStaticVirtPtr
+#else
+#include "stdio_alloc.h"
+typedef CStdioVirtMemAlloc<> TVirtAlloc;
+#define TVirtPtr TStdioVirtPtr
+#endif
+
 #endif
 
 using namespace virtmem;

@@ -343,7 +343,7 @@ int ParseDeclaration(TParseStatePtr Parser, enum LexToken Token)
         TypeParseIdentPart(Parser, BasicType, &Typ, &Identifier);
         if ((Token != TokenVoidType && Token != TokenStructType && Token != TokenUnionType && Token != TokenEnumType) && Identifier == pc->StrEmpty)
             ProgramFail(Parser, "identifier expected");
-            
+
         if (Identifier != pc->StrEmpty)
         {
             /* handle function definitions */
@@ -359,7 +359,7 @@ int ParseDeclaration(TParseStatePtr Parser, enum LexToken Token)
                     
                 if (Parser->Mode == RunModeRun || Parser->Mode == RunModeGoto)
                     NewVariable = VariableDefineButIgnoreIdentical(Parser, Identifier, Typ, IsStatic, &FirstVisit);
-                
+
                 if (LexGetToken(Parser, NILL, FALSE) == TokenAssign)
                 {
                     /* we're assigning an initial value */
@@ -372,7 +372,6 @@ int ParseDeclaration(TParseStatePtr Parser, enum LexToken Token)
         Token = LexGetToken(Parser, NILL, FALSE);
         if (Token == TokenComma)
             LexGetToken(Parser, NILL, TRUE);
-            
     } while (Token == TokenComma);
     
     return TRUE;
@@ -547,7 +546,7 @@ enum RunMode ParseBlock(TParseStatePtr Parser, int AbsorbOpenBrace, int Conditio
         Parser->Mode = OldMode;
     }
     else
-    { 
+    {
         /* just run it in its current mode */
         while (ParseStatement(Parser, TRUE) == ParseResultOk)
         {}
