@@ -16,7 +16,7 @@ typedef struct Picoc_Struct Picoc;
 
 typedef CSdfatlibVirtMemAlloc<> TVirtAlloc;
 #define TVirtPtr TSdfatlibVirtPtr
-#elif 0
+#elif 1
 #include "spiram_alloc.h"
 
 typedef CSPIRAMVirtMemAlloc<> TVirtAlloc;

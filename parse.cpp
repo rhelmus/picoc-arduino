@@ -75,7 +75,7 @@ TValuePtr ParseFunctionDefinition(TParseStatePtr Parser, TValueTypePtr ReturnTyp
 
     if (pc->TopStackFrame != NULL)
         ProgramFail(Parser, "nested function definitions are not allowed");
-        
+
     LexGetToken(Parser, NILL, TRUE);  /* open bracket */
     ParserCopy(ptrWrap(&ParamParser), Parser);
     ParamCount = ParseCountParams(Parser);
@@ -138,7 +138,7 @@ TValuePtr ParseFunctionDefinition(TParseStatePtr Parser, TValueTypePtr ReturnTyp
              (FuncValue->Val->FuncDef.NumParams != 2 || FuncValue->Val->FuncDef.ParamType[0] != ptrWrap(&pc->IntType)) )
             ProgramFail(Parser, "bad parameters to main()");
     }
-    
+
     /* look for a function body */
     Token = LexGetToken(Parser, NILL, FALSE);
     if (Token == TokenSemicolon)

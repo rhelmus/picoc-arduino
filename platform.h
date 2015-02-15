@@ -255,7 +255,7 @@ extern int ExitBuf[];
 #endif
 
 #ifdef ARDUINO_HOST
-# define HEAP_SIZE (8*1024)               /* space for the heap and the stack */
+# define HEAP_SIZE (16*1024)               /* space for the heap and the stack */
 //# define NO_FP
 //# define NO_PRINTF
 # define NO_FILE_SUPPORT
@@ -271,7 +271,7 @@ extern int ExitBuf[];
 # include <stdarg.h>
 # include <setjmp.h>
 # include <math.h>
-# define assert(x)
+# define assert(x) do { if (!(x)) { Serial.print("assertion!: "); Serial.println(#x); } } while(false)
 # define BUILTIN_MINI_STDLIB  /* UNDONE: use avr libc? */
 # define debugline
 # undef BIG_ENDIAN

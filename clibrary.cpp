@@ -38,7 +38,7 @@ void LibraryAdd(Picoc *pc, TTablePtr GlobalTable, TConstRegStringPtr LibraryName
     TLexBufPtr Tokens;
     TRegStringPtr IntrinsicName = TableStrRegister(pc, "c library"); /* UNDONE: Shouldn't this be LibraryName? */
     /*char *IntrinsicName = TableStrRegister(pc, LibraryName);*/
-    
+
     /* read all the library definitions */
     for (Count = 0; FuncList[Count].Prototype != NULL; Count++)
     {

@@ -59,7 +59,7 @@ int TableSet(Picoc *pc, TTablePtr Tbl, TConstRegStringPtr Key, TValuePtr Val, TC
 {
     int AddAt;
     TTableEntryPtr FoundEntry = TableSearch(Tbl, Key, &AddAt);
-    
+
     if (FoundEntry == NULL)
     {   /* add it to the table */
         TTableEntryPtr NewEntry = allocMemVariable<struct TableEntry>(NILL, !Tbl->OnHeap);
