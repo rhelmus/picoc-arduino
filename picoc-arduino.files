@@ -509,3 +509,4 @@ variable.cpp
 vmem_utils.h
 arduino-tests/run_tests-serial.py
 arduino-tests/run_tests.ino
+tests/run_tests.sh
