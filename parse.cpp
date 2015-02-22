@@ -678,7 +678,7 @@ enum ParseResult ParseStatement(TParseStatePtr Parser, int CheckTrailingSemicolo
         case TokenIf:
             if (LexGetToken(Parser, NILL, TRUE) != TokenOpenBracket)
                 ProgramFail(Parser, "'(' expected");
-                
+
             Condition = ExpressionParseInt(Parser);
             
             if (LexGetToken(Parser, NILL, TRUE) != TokenCloseBracket)
@@ -943,7 +943,7 @@ enum ParseResult ParseStatement(TParseStatePtr Parser, int CheckTrailingSemicolo
         if (LexGetToken(Parser, NILL, TRUE) != TokenSemicolon)
             ProgramFail(Parser, "';' expected");
     }
-    
+
     return ParseResultOk;
 }
 

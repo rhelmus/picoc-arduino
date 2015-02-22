@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <picoc.h>
-//#include "serialram.h"
+#include "serialram.h"
 #include "virtmem.h"
 
 //#include <SdFat.h> // UNDONE

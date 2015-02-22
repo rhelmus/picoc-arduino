@@ -271,7 +271,7 @@ extern int ExitBuf[];
 # include <stdarg.h>
 # include <setjmp.h>
 # include <math.h>
-# define assert(x) do { if (!(x)) { Serial.print("assertion!: "); Serial.println(#x); } } while(false)
+# define assert(x) /*do { if (!(x)) { Serial.print("assertion!: "); Serial.println(#x); } } while(false)*/
 # define BUILTIN_MINI_STDLIB  /* UNDONE: use avr libc? */
 # define debugline
 # undef BIG_ENDIAN
