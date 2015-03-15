@@ -144,7 +144,7 @@ int LexGetMoreSource(TParseStatePtr Parser, char *LineBuffer, int Size)
 #else
 
     /* Initially one line of source input is fetched. If this line contains unfinished
-       string/comment blocks, more text is loaded is it fits in the buffer */
+       string/comment blocks, more text is loaded if it fits in the buffer */
 
     int start = 0;
     int QuoteStart = -1, CommentStart = -1;

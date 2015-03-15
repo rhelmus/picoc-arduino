@@ -10,6 +10,34 @@ SdFile sdFile;
 }
 #endif
 
+namespace {
+
+#ifdef USE_VIRTMEM
+template <typename VA> struct CSerialInputTrait
+{
+    static int read(void) { return Serial.read(); }
+    static bool available(void) { return Serial.available(); }
+};
+
+// Must use different functions with serial ram allocator
+template <> struct CSerialInputTrait<class CSerRAMVirtMemAlloc>
+{
+    static int read(void) { return TVirtAlloc::getInstance()->input.read(); }
+    static bool available(void) { return TVirtAlloc::getInstance()->input.available(); }
+};
+
+typedef CSerialInputTrait<TVirtAlloc> CSerialInput;
+
+#else
+struct CSerialInput
+{
+    static int read(void) { return Serial.read(); }
+    static bool available(void) { return Serial.available(); }
+};
+#endif
+
+}
+
 /* mark where to end the program for platforms which require this */
 jmp_buf PicocExitBuf;
 
@@ -33,13 +61,13 @@ char *PlatformGetLine(char *Buf, int MaxLen, const char *Prompt)
 
     while (true)
     {
-        if (Serial.available())
+        if (CSerialInput::available())
         {
             int index = 0;
             do
             {
-                if (Serial.available())
-                    Buf[index++] = Serial.read();
+                if (CSerialInput::available())
+                    Buf[index++] = CSerialInput::read();
             }
             while (Buf[index-1] != '\n' && (index < (MaxLen-1)));
 
@@ -56,7 +84,7 @@ char *PlatformGetLine(char *Buf, int MaxLen, const char *Prompt)
 /* get a character of interactive input */
 int PlatformGetCharacter()
 {
-    return Serial.read();
+    return CSerialInput::read();
 }
 
 /* write a character to the console */
