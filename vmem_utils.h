@@ -16,11 +16,16 @@ typedef struct Picoc_Struct Picoc;
 
 typedef CSdfatlibVirtMemAlloc<> TVirtAlloc;
 #define TVirtPtr TSdfatlibVirtPtr
-#elif 1
+#elif 0
 #include "spiram_alloc.h"
 
 typedef CSPIRAMVirtMemAlloc<> TVirtAlloc;
 #define TVirtPtr TSPIRAMVirtPtr
+#elif 1
+#include "serram_alloc.h"
+
+typedef CSerRAMVirtMemAlloc<typeof(Serial)> TVirtAlloc;
+#define TVirtPtr TSerRAMVirtPtr
 #else
 #include "static_alloc.h"
 
@@ -41,7 +46,7 @@ typedef CStdioVirtMemAlloc<> TVirtAlloc;
 
 #endif
 
-using namespace virtmem;
+using namespace virtmem; // UNDONE
 
 typedef TVirtPtr<struct ParseState>::type TParseStatePtr;
 typedef TVirtPtr<uint8_t>::type TVarAllocRet;

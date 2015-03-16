@@ -13,6 +13,8 @@ SdFile sdFile;
 namespace {
 
 #ifdef USE_VIRTMEM
+#include <serram_alloc.h>
+
 template <typename VA> struct CSerialInputTrait
 {
     static int read(void) { return Serial.read(); }
@@ -20,10 +22,10 @@ template <typename VA> struct CSerialInputTrait
 };
 
 // Must use different functions with serial ram allocator
-template <> struct CSerialInputTrait<class CSerRAMVirtMemAlloc>
+template <typename S, typename P> struct CSerialInputTrait<CSerRAMVirtMemAlloc<S, P> >
 {
-    static int read(void) { return TVirtAlloc::getInstance()->input.read(); }
-    static bool available(void) { return TVirtAlloc::getInstance()->input.available(); }
+    static int read(void) { return ((CSerRAMVirtMemAlloc<S, P> *)CSerRAMVirtMemAlloc<S, P>::getInstance())->input.read(); }
+    static bool available(void) { return ((CSerRAMVirtMemAlloc<S, P> *)CSerRAMVirtMemAlloc<S, P>::getInstance())->input.available(); }
 };
 
 typedef CSerialInputTrait<TVirtAlloc> CSerialInput;
