@@ -8,7 +8,7 @@ import time
 
 # --- config ---
 
-serialPort = '/dev/ttyACM0'
+serialPort = '/dev/pts/4' # '/dev/ttyACM0'
 serialBaud = 115200
 serialTimeout = 0
 serialTerminator = b'DONE!!11!1!'
@@ -33,18 +33,22 @@ def init():
     time.sleep(2) # wait to settle after open (only needed if board resets)
     print("Connected and initialized!")
 
+outputTmpBuf = b""
 def checkOutput(checkterm=False):
+    global outputTmpBuf
     while True:
-	for line in serInterface:
-	    if line.strip():
-		if checkterm and line.strip() == serialTerminator:
-		    return
-		print line,
+        line = serInterface.readline()
+        outputTmpBuf += line
+        if len(outputTmpBuf) > 0 and outputTmpBuf[-1] == '\n':
+            if outputTmpBuf.strip():
+                if checkterm and outputTmpBuf.strip() == serialTerminator:
+                    return
+                print outputTmpBuf,
+            outputTmpBuf = b""
 	if not checkterm:
 	    break
 
 def runTest(filename):
-
     serInterface.write(b'exit();\n')
     time.sleep(3)
 
@@ -77,8 +81,8 @@ def main():
 #    time.sleep(0.5)
 #    checkOutput(True)
 
-    while True:
-	checkOutput()
+#    while True:
+#	checkOutput()
 
 # test files
 test_files = [

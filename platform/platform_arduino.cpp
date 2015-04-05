@@ -78,6 +78,8 @@ char *PlatformGetLine(char *Buf, int MaxLen, const char *Prompt)
                 Serial.print('\n');
             return Buf;
         }
+        else
+            delay(25);
     }
 
     return 0;
