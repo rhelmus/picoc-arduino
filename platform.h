@@ -3,7 +3,7 @@
 #define PLATFORM_H
 
 #define USE_VIRTMEM
-#define USE_VIRTSTACK
+//#define USE_VIRTSTACK
 #define TRACE_MEMUSAGE
 
 #ifdef ARDUINO
@@ -28,7 +28,7 @@
 #if defined(__hppa__) || defined(__sparc__)
 #define ALIGN_TYPE double                   /* the default data type to use for alignment */
 #else
-#if defined(__x86_64__) || defined(_M_X64)
+#if 0 && defined(__x86_64__) || defined(_M_X64) // UNDONE
 #define ALIGN_TYPE  __uint128_t
 #else
 #define ALIGN_TYPE void *                   /* the default data type to use for alignment */
@@ -142,7 +142,7 @@ typedef unsigned char *TStackUnsignedCharPtr;
 #ifdef UNIX_HOST
 //# define USE_MALLOC_STACK                   /* stack is allocated using malloc() */
 //# define USE_MALLOC_HEAP                    /* heap is allocated using malloc() */
-# define HEAP_SIZE (1024*16)
+# define HEAP_SIZE (1024*1024)
 # define BUILTIN_MINI_STDLIB
 # define debugline /*printf*/
 # include <stdio.h>

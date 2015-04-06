@@ -13,7 +13,7 @@ void ParseCleanup(Picoc *pc)
         deallocMem(pc->CleanupTokenList->Tokens);
         if (pc->CleanupTokenList->SourceText != NULL)
         {
-#if defined(USE_MALLOC_HEAP) && defined(UNIX_HOST) // FIX: PlatformReadFile on unix uses malloc
+#if defined(UNIX_HOST) // FIX: PlatformReadFile on unix uses malloc
             free((void *)ptrUnwrap(pc->CleanupTokenList->SourceText));
 #else
             deallocMem((TLexCharPtr)pc->CleanupTokenList->SourceText);

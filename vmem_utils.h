@@ -34,7 +34,7 @@ typedef CStaticVirtMemAlloc<> TVirtAlloc;
 #endif
 
 #else
-#if 1
+#if 0
 #include "static_alloc.h"
 typedef CStaticVirtMemAlloc<> TVirtAlloc;
 #define TVirtPtr TStaticVirtPtr
