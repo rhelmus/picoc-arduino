@@ -24,7 +24,7 @@ typedef CSPIRAMVirtMemAlloc<> TVirtAlloc;
 #elif 1
 #include "serram_alloc.h"
 
-typedef CSerRAMVirtMemAlloc<typeof(Serial)> TVirtAlloc;
+typedef CSerRAMVirtMemAlloc<> TVirtAlloc;
 #define TVirtPtr TSerRAMVirtPtr
 #else
 #include "static_alloc.h"

@@ -8,7 +8,7 @@ import time
 
 # --- config ---
 
-serialPort = '/dev/pts/4' # '/dev/ttyACM0'
+serialPort = '/dev/pts/10' # '/dev/ttyACM0'
 serialBaud = 115200
 serialTimeout = 0
 serialTerminator = b'DONE!!11!1!'
@@ -42,6 +42,7 @@ def checkOutput(checkterm=False):
         if len(outputTmpBuf) > 0 and outputTmpBuf[-1] == '\n':
             if outputTmpBuf.strip():
                 if checkterm and outputTmpBuf.strip() == serialTerminator:
+                    outputTmpBuf = b""
                     return
                 print outputTmpBuf,
             outputTmpBuf = b""
