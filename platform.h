@@ -255,7 +255,7 @@ extern int ExitBuf[];
 #endif
 
 #ifdef ARDUINO_HOST
-# define HEAP_SIZE (16*1024)               /* space for the heap and the stack */
+# define HEAP_SIZE (32*1024)               /* space for the heap and the stack */
 //# define NO_FP
 //# define NO_PRINTF
 # define NO_FILE_SUPPORT

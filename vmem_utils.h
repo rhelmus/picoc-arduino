@@ -53,7 +53,9 @@ typedef TVirtPtr<uint8_t>::type TVarAllocRet;
 TVarAllocRet VariableAllocVirt(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap);
 #else
 typedef struct ParseState *TParseStatePtr;
+#ifndef NILL
 #define NILL NULL
+#endif
 #endif
 
 #ifdef USE_VIRTSTACK
