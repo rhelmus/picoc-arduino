@@ -368,9 +368,9 @@ void LibGets(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, i
 
 #ifdef WRAP_ANYVALUE
     TVirtPageSize size = GETS_BUF_MAX;
-    CPtrWrapLock<TAnyValueCharPtr> l = makeVirtPtrLock((TAnyValueCharPtr)Param[0]->Val->Pointer, size, false);
+    CPtrWrapLock<TAnyValueCharPtr> l = makeVirtPtrLock((TAnyValueCharPtr)Param[0]->Val->Pointer, size);
 
-    if (PlatformGetLine((char *)*l, size, NULL) != NULL)
+    if (l && PlatformGetLine((char *)*l, size, NULL) != NULL)
     {
         char *EOLPos = strchr((char *)&l, '\n');
         if (EOLPos != NULL)
