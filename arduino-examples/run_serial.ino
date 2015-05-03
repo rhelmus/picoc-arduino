@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <picoc.h>
 #include "serialram.h"
-//#include "virtmem.h"
+#include "virtmem.h"
 #include <Wire.h>
 
 //#include <SdFat.h> // UNDONE

@@ -22,10 +22,11 @@ template <typename VA> struct CSerialInputTrait
 };
 
 // Must use different functions with serial ram allocator
-template <typename P> struct CSerialInputTrait<CSerRAMVirtMemAlloc<Serial, P> >
+template <typename P> struct CSerialInputTrait<CSerRAMVirtMemAlloc<typeof(Serial), P> >
 {
-    static int read(void) { return ((CSerRAMVirtMemAlloc<Serial, P> *)CSerRAMVirtMemAlloc<Serial, P>::getInstance())->input.read(); }
-    static bool available(void) { return ((CSerRAMVirtMemAlloc<Serial, P> *)CSerRAMVirtMemAlloc<Serial, P>::getInstance())->input.available(); }
+    typedef CSerRAMVirtMemAlloc<typeof(Serial), P> TAlloc;
+    static int read(void) { return ((TAlloc *)TAlloc::getInstance())->input.read(); }
+    static bool available(void) { return ((TAlloc *)TAlloc::getInstance())->input.available(); }
 };
 
 typedef CSerialInputTrait<TVirtAlloc> CSerialInput;

@@ -121,9 +121,9 @@ public:
     ~CAllocProxy(void) { }
 };
 
-template <typename T> inline CAllocProxy<T> allocMem(bool st, size_t size=sizeof(T))
+template <typename T> inline CAllocProxy<T> allocMem(bool st, size_t size)
 { return CAllocProxy<T>(size, NILL, st, false); }
-template <typename T> inline CAllocProxy<T> allocMemVariable(TParseStatePtr p, bool st, size_t size=sizeof(T))
+template <typename T> inline CAllocProxy<T> allocMemVariable(TParseStatePtr p, bool st, size_t size)
 { return CAllocProxy<T>(size, p, st, true); }
 
 #ifdef USE_VIRTMEM
