@@ -89,14 +89,38 @@ void SerPrintlnInt(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Pa
 
 void SerPrintStr(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
+#ifdef USE_VIRTMEM
+    TAnyValueUCharPtr str = (TAnyValueUCharPtr)Param[1]->Val->Pointer;
+    int len = strlen((TAnyValueCharPtr)str);
+    ReturnValue->Val->Integer = 0;
+    while (len)
+    {
+        CVirtPtrLock<TAnyValueUCharPtr> l(str, len, true);
+        int written = 0;
+        execSerialFuncAssign(Param[0]->Val->UnsignedCharacter, write, written, *l, l.getLockSize());
+
+        ReturnValue->Val->Integer += written;
+        if (written < l.getLockSize())
+            break;
+
+        len -= written;
+        str += written;
+    }
+#else
     execSerialFuncAssign(Param[0]->Val->UnsignedCharacter, print, ReturnValue->Val->Integer,
             (const char *)Param[1]->Val->Pointer);
+#endif
 }
 
 void SerPrintlnStr(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
+#ifdef USE_VIRTMEM
+    SerPrintStr(Parser, ReturnValue, Param, NumArgs);
+    ReturnValue->Val->Integer += Serial.print('\n');
+#else
     execSerialFuncAssign(Param[0]->Val->UnsignedCharacter, println, ReturnValue->Val->Integer,
             (const char *)Param[1]->Val->Pointer);
+#endif
 }
 
 #ifndef NO_PRINTF
@@ -123,16 +147,53 @@ void SerRead(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, i
 
 void SerReadBytes(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
+#ifdef USE_VIRTMEM
+    TAnyValueCharPtr str = (TAnyValueCharPtr)Param[1]->Val->Pointer;
+    unsigned long n = Param[2]->Val->UnsignedLongInteger;
+    ReturnValue->Val->UnsignedLongInteger = 0;
+    while (n)
+    {
+        CVirtPtrLock<TAnyValueCharPtr> l(str, n, false);
+        unsigned long read = 0;
+        execSerialFuncAssign(Param[0]->Val->UnsignedCharacter, readBytes, read, *l, l.getLockSize());
+
+        ReturnValue->Val->UnsignedLongInteger += read;
+        if (read < l.getLockSize())
+            break;
+        n -= read;
+        str += read;
+    }
+#else
     execSerialFuncAssign(Param[0]->Val->UnsignedCharacter, readBytes,
             ReturnValue->Val->UnsignedLongInteger, (char *)Param[1]->Val->Pointer,
             Param[2]->Val->UnsignedLongInteger);
+#endif
 }
 
 void SerReadBytesUntil(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
+#ifdef USE_VIRTMEM
+    TAnyValueCharPtr str = (TAnyValueCharPtr)Param[2]->Val->Pointer;
+    unsigned long n = Param[2]->Val->UnsignedLongInteger;
+    ReturnValue->Val->UnsignedLongInteger = 0;
+    while (n)
+    {
+        CVirtPtrLock<TAnyValueCharPtr> l(str, n, false);
+        unsigned long read = 0;
+        execSerialFuncAssign(Param[0]->Val->UnsignedCharacter, readBytesUntil, read,
+                Param[1]->Val->UnsignedCharacter, *l, l.getLockSize());
+
+        ReturnValue->Val->UnsignedLongInteger += read;
+        if (read < l.getLockSize())
+            break;
+        n -= read;
+        str += read;
+    }
+#else
     execSerialFuncAssign(Param[0]->Val->UnsignedCharacter, readBytesUntil,
             ReturnValue->Val->UnsignedLongInteger, Param[1]->Val->UnsignedCharacter,
             (char *)Param[2]->Val->Pointer, Param[3]->Val->UnsignedLongInteger);
+#endif
 }
 
 void SerSetTimeout(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)

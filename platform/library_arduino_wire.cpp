@@ -34,7 +34,7 @@ void WireWrite(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param,
 void WireWriteBytes(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Param, int NumArgs)
 {
 #ifdef USE_VIRTMEM
-    const unsigned long n = Param[1]->Val->UnsignedLongInteger;
+    unsigned long n = Param[1]->Val->UnsignedLongInteger;
     TAnyValueCharPtr ptr = (TAnyValueCharPtr)Param[0]->Val->Pointer;
     ReturnValue->Val->UnsignedLongInteger = 0;
 
@@ -50,7 +50,6 @@ void WireWriteBytes(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr P
         n -= written;
         ptr += written;
     }
-#endif
 #else
     ReturnValue->Val->UnsignedLongInteger = Wire.write((char *)Param[0]->Val->Pointer,
             Param[1]->Val->UnsignedLongInteger);
