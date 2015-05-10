@@ -142,7 +142,7 @@ typedef unsigned char *TStackUnsignedCharPtr;
 #ifdef UNIX_HOST
 //# define USE_MALLOC_STACK                   /* stack is allocated using malloc() */
 //# define USE_MALLOC_HEAP                    /* heap is allocated using malloc() */
-# define HEAP_SIZE (1024*1024)
+# define HEAP_SIZE (1024*30)
 # define BUILTIN_MINI_STDLIB
 # define debugline /*printf*/
 # include <stdio.h>

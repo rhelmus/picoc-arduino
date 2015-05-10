@@ -3,8 +3,9 @@
 #include "../picoc.h"
 #include "../interpreter.h"
 
-// Defined in serial library file
+// Defined in library_arduino*.cpp files
 extern void LibraryArduinoSerialInit(Picoc *pc);
+extern void LibraryArduinoWireInit(Picoc *pc);
 
 namespace {
 
@@ -190,4 +191,5 @@ void PlatformLibraryInit(Picoc *pc)
     LibraryAdd(pc, ptrWrap(&pc->GlobalTable), "arduino library", &ArduinoFunctions[0]);
 
     LibraryArduinoSerialInit(pc);
+    LibraryArduinoWireInit(pc);
 }
