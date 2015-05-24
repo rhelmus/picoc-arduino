@@ -22,6 +22,7 @@ template <typename VA> struct CSerialInputTrait
 };
 
 // Must use different functions with serial ram allocator
+template <typename, typename> class CSerRAMVirtMemAlloc;
 template <typename P> struct CSerialInputTrait<CSerRAMVirtMemAlloc<typeof(Serial), P> >
 {
     typedef CSerRAMVirtMemAlloc<typeof(Serial), P> TAlloc;
@@ -117,6 +118,7 @@ void PicocPlatformScanFile(Picoc *pc, const char *FileName)
 
     TLexCharPtr source = allocMem<char>(false, size + 1);
 #ifdef USE_VIRTMEM
+    // UNDONE: use locks
     const uint8_t bufsize = 64;
     char buf[bufsize];
     for (uint32_t i=0; i<size; i+=bufsize)

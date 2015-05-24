@@ -10,6 +10,8 @@ typedef struct Picoc_Struct Picoc;
 #ifdef USE_VIRTMEM
 #include "virtmem.h"
 
+using namespace virtmem;
+
 #ifdef ARDUINO_HOST
 #if 0 // UNDONE
 #include "sdfatlib_alloc.h"
@@ -21,7 +23,7 @@ typedef CSdfatlibVirtMemAlloc<> TVirtAlloc;
 
 typedef CSPIRAMVirtMemAlloc<> TVirtAlloc;
 #define TVirtPtr TSPIRAMVirtPtr
-#elif 1
+#elif 0
 #include "serram_alloc.h"
 
 typedef CSerRAMVirtMemAlloc<> TVirtAlloc;
@@ -29,8 +31,8 @@ typedef CSerRAMVirtMemAlloc<> TVirtAlloc;
 #else
 #include "static_alloc.h"
 
-typedef CStaticVirtMemAlloc<> TVirtAlloc;
-#define TVirtPtr TStaticVirtPtr
+typedef CStaticVirtMemAlloc<1024*40> TVirtAlloc;
+template <typename T> struct TVirtPtr { typedef CVirtPtr<T, TVirtAlloc> type; };
 #endif
 
 #else
@@ -45,8 +47,6 @@ typedef CStdioVirtMemAlloc<> TVirtAlloc;
 #endif
 
 #endif
-
-using namespace virtmem; // UNDONE
 
 typedef TVirtPtr<struct ParseState>::type TParseStatePtr;
 typedef TVirtPtr<uint8_t>::type TVarAllocRet;

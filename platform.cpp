@@ -1,6 +1,6 @@
 /* picoc's interface to the underlying platform. most platform-specific code
  * is in platform/platform_XX.c and platform/library_XX.c */
- 
+
 #include "picoc.h"
 #include "interpreter.h"
 

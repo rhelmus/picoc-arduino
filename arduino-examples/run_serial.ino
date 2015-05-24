@@ -32,6 +32,6 @@ void loop()
     Serial.println("Starting serial interactive picoc. Run exit() to reset.");
     PicocEnablePrompt(&pc, false);
     PicocParseInteractive(&pc); // blocks
-//    Serial.print("Exiting... "); Serial.print(MaxStackMemUsed(&pc)); Serial.print("/"); Serial.print(MaxHeapMemUsed(&pc)); Serial.println(" bytes used");
+    Serial.print("Exiting... "); Serial.print(MaxStackMemUsed(&pc)); Serial.print("/"); Serial.print(MaxHeapMemUsed(&pc)); Serial.println(" bytes used");
     PicocCleanup(&pc);
 }

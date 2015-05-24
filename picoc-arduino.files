@@ -512,3 +512,4 @@ arduino-tests/run_tests.ino
 tests/run_tests.sh
 platform/library_arduino_serial.cpp
 platform/library_arduino_wire.cpp
+platform/library_arduino_spi.cpp

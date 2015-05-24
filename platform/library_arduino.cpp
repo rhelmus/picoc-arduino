@@ -5,6 +5,7 @@
 
 // Defined in library_arduino*.cpp files
 extern void LibraryArduinoSerialInit(Picoc *pc);
+extern void LibraryArduinoSPIInit(Picoc *pc);
 extern void LibraryArduinoWireInit(Picoc *pc);
 
 namespace {
@@ -21,7 +22,7 @@ typedef unsigned char uint8_t; \
 typedef signed char int8_t;\
 typedef unsigned short uint16_t;\
 typedef signed short int16_t;\
-typedef unsigned long uin32_t;\
+typedef unsigned long uint32_t;\
 typedef signed long int32_t;\
 \
 #define min(a,b) ((a)<(b)?(a):(b))\n\
@@ -191,5 +192,6 @@ void PlatformLibraryInit(Picoc *pc)
     LibraryAdd(pc, ptrWrap(&pc->GlobalTable), "arduino library", &ArduinoFunctions[0]);
 
     LibraryArduinoSerialInit(pc);
+    LibraryArduinoSPIInit(pc);
     LibraryArduinoWireInit(pc);
 }

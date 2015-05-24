@@ -142,7 +142,7 @@ typedef unsigned char *TStackUnsignedCharPtr;
 #ifdef UNIX_HOST
 //# define USE_MALLOC_STACK                   /* stack is allocated using malloc() */
 //# define USE_MALLOC_HEAP                    /* heap is allocated using malloc() */
-# define HEAP_SIZE (1024*30)
+# define HEAP_SIZE (1024*32)
 # define BUILTIN_MINI_STDLIB
 # define debugline /*printf*/
 # include <stdio.h>
@@ -255,7 +255,7 @@ extern int ExitBuf[];
 #endif
 
 #ifdef ARDUINO_HOST
-# define HEAP_SIZE (32*1024)               /* space for the heap and the stack */
+# define HEAP_SIZE (3*1024)               /* space for the heap and the stack */
 //# define NO_FP
 //# define NO_PRINTF
 # define NO_FILE_SUPPORT

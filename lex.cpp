@@ -95,7 +95,7 @@ void LexInit(Picoc *pc)
     {
         TableSet(pc, ptrWrap(&pc->ReservedWordTable), TableStrRegister(pc, ReservedWords[Count].Word), (TValuePtr)ptrWrap((void *)&ReservedWords[Count]), NILL, 0, 0);
     }
-    
+
     pc->LexValue.Typ = NILL;
     pc->LexValue.Val = ptrWrap(&pc->LexAnyValue);
     pc->LexValue.LValueFrom = NILL;

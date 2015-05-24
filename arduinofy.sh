@@ -31,6 +31,7 @@ $COPY "${PWD}"/README "${DEST}/"
 mkdir -p "${DEST}/utility"
 $COPY "${PWD}"/platform/library_arduino.cpp "${DEST}/utility"
 $COPY "${PWD}"/platform/library_arduino_serial.cpp "${DEST}/utility"
+$COPY "${PWD}"/platform/library_arduino_spi.cpp "${DEST}/utility"
 $COPY "${PWD}"/platform/library_arduino_wire.cpp "${DEST}/utility"
 $COPY "${PWD}"/platform/platform_arduino.cpp "${DEST}/utility"
 

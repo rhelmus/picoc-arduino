@@ -26,6 +26,10 @@ void ShowBigList(Picoc *pc)
 }
 #endif
 
+#if !defined(USE_VIRTMEM) && defined(TRACE_MEMUSAGE)
+static uint32_t HeapMemUsage, HeapMaxMemUsage;
+#endif
+
 /* initialise the stack and heap storage */
 void HeapInit(Picoc *pc, int StackOrHeapSize)
 {
@@ -87,6 +91,9 @@ void HeapInit(Picoc *pc, int StackOrHeapSize)
 
 #ifdef TRACE_MEMUSAGE
     pc->MaxStackUsage = 0;
+#ifndef USE_VIRTMEM
+    HeapMemUsage = HeapMaxMemUsage = 0;
+#endif
 #endif
 
 #ifndef NVALGRIND
@@ -224,7 +231,11 @@ void *HeapAllocMem(Picoc *pc, int Size)
     if (AllocSize < sizeof(struct AllocNode))
         AllocSize = sizeof(struct AllocNode);
 
-//    memused += AllocSize;
+#ifdef TRACE_MEMUSAGE
+    HeapMemUsage += AllocSize;
+    if (HeapMemUsage > HeapMaxMemUsage)
+        HeapMaxMemUsage = HeapMemUsage;
+#endif
 
     Bucket = AllocSize >> 2;
     if (Bucket < FREELIST_BUCKETS && pc->FreeListBucket[Bucket] != NULL)
@@ -315,7 +326,7 @@ void HeapFreeMem(Picoc *pc, void *Mem)
     if (Mem == NULL)
         return;
     
-//    memused -= MemNode->Size;
+    HeapMemUsage -= MemNode->Size;
 
     if ((void *)MemNode == pc->HeapBottom)
     { 
@@ -371,7 +382,7 @@ int HeapMemUsed(Picoc *pc)
 #ifdef USE_VIRTMEM
     return TVirtAlloc::getInstance()->getMemUsed();
 #else
-    return 0; // UNDONE
+    return HeapMemUsage;
 #endif
 }
 
@@ -380,7 +391,7 @@ int MaxHeapMemUsed(Picoc *pc)
 #ifdef USE_VIRTMEM
     return TVirtAlloc::getInstance()->getMaxMemUsed();
 #else
-    return 0; // UNDONE
+    return HeapMaxMemUsage;
 #endif
 }
 
