@@ -8,7 +8,7 @@ import time
 
 # --- config ---
 
-serialPort = '/dev/pts/10' # '/dev/ttyACM0'
+serialPort = '/dev/pts/5' # '/dev/ttyACM0'
 serialBaud = 115200
 serialTimeout = 0
 serialTerminator = b'DONE!!11!1!'
