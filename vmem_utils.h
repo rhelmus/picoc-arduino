@@ -23,7 +23,7 @@ typedef CSdfatlibVirtMemAlloc<> TVirtAlloc;
 
 typedef CSPIRAMVirtMemAlloc<> TVirtAlloc;
 #define TVirtPtr TSPIRAMVirtPtr
-#elif 0
+#elif 1
 #include "serram_alloc.h"
 
 typedef CSerRAMVirtMemAlloc<> TVirtAlloc;
