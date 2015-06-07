@@ -51,7 +51,7 @@
 #ifdef USE_VIRTMEM
 typedef TVirtPtr<struct CleanupTokenNode>::type TCleanupNodePtr;
 typedef TVirtPtr<unsigned char>::type TLexBufPtr;
-typedef CVirtPtrBase TLexVoidPtr;
+typedef CBaseVirtPtr TLexVoidPtr;
 typedef TVirtPtr<char>::type TLexCharPtr;
 typedef TVirtPtr<unsigned char>::type TLexUnsignedCharPtr;
 typedef TVirtPtr<const char>::type TLexConstCharPtr;
@@ -64,7 +64,7 @@ typedef TVirtPtr<const char>::type TConstRegStringPtr;
 typedef TVirtPtr<TRegStringPtr>::type TRegStringPtrPtr;
 typedef TVirtPtr<struct ReservedWord>::type TReservedWordPtr;
 typedef TVirtPtr<char>::type TValueCharPtr;
-typedef CVirtPtrBase TAnyValueVoidPtr;
+typedef CBaseVirtPtr TAnyValueVoidPtr;
 typedef TVirtPtr<int>::type TAnyValueIntPtr;
 typedef TVirtPtr<char>::type TAnyValueCharPtr;
 typedef TVirtPtr<unsigned char>::type TAnyValueUCharPtr;
@@ -122,7 +122,7 @@ typedef struct StackFrame *TStackFramePtr;
 #endif
 
 #if defined(USE_VIRTSTACK) && defined(USE_VIRTMEM)
-typedef CVirtPtrBase TStackVoidPtr;
+typedef CBaseVirtPtr TStackVoidPtr;
 typedef TVirtPtr<TStackVoidPtr>::type TStackVoidPtrPtr;
 typedef TVirtPtr<char>::type TStackCharPtr;
 typedef TVirtPtr<const char>::type TStackConstCharPtr;
