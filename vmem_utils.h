@@ -59,7 +59,7 @@ typedef struct ParseState *TParseStatePtr;
 #endif
 
 #ifdef USE_VIRTSTACK
-typedef CVirtPtrBase TStackVoidPtr;
+typedef CBaseVirtPtr TStackVoidPtr;
 #else
 typedef void *TStackVoidPtr;
 #endif
@@ -127,8 +127,8 @@ template <typename T> inline CAllocProxy<T> allocMemVariable(TParseStatePtr p, b
 { return CAllocProxy<T>(size, p, st, true); }
 
 #ifdef USE_VIRTMEM
-inline CVirtPtrBase::TPtrNum getNumPtr(const CVirtPtrBase &pwb) { return pwb.getRawNum(); }
-inline void setPtrFromNum(CVirtPtrBase &pwb, CVirtPtrBase::TPtrNum ip) { pwb.setRawNum(ip); }
+inline CBaseVirtPtr::TPtrNum getNumPtr(const CBaseVirtPtr &pwb) { return pwb.getRawNum(); }
+inline void setPtrFromNum(CBaseVirtPtr &pwb, CBaseVirtPtr::TPtrNum ip) { pwb.setRawNum(ip); }
 #endif
 inline intptr_t getNumPtr(const void *p) { return reinterpret_cast<intptr_t>(p); }
 template <typename T> inline void setPtrFromNum(T *&p, intptr_t ip) { p = reinterpret_cast<T *>(ip); }
@@ -146,7 +146,7 @@ template <typename T> inline int popStack(CVirtPtr<T, TVirtAlloc> &p, int size) 
 #ifdef USE_VIRTMEM
 template <typename T> CVirtPtr<T, TVirtAlloc> ptrWrap(T *p) { return CVirtPtr<T, TVirtAlloc>::wrap(p); }
 template <typename T> T *ptrUnwrap(CVirtPtr<T, TVirtAlloc> p) { return p.unwrap(); }
-inline void *ptrUnwrap(CVirtPtrBase p) { return p.unwrap(); }
+inline void *ptrUnwrap(CBaseVirtPtr p) { return p.unwrap(); }
 #else
 #define ptrWrap /* empty */
 #define ptrUnwrap /* empty */
