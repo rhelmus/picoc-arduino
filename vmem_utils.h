@@ -14,10 +14,10 @@ using namespace virtmem;
 
 #ifdef ARDUINO_HOST
 #if 0 // UNDONE
-#include "sdfatlib_alloc.h"
+#include "sd_alloc.h"
 
-typedef CSdfatlibVirtMemAlloc<> TVirtAlloc;
-#define TVirtPtr TSdfatlibVirtPtr
+typedef CSDVirtMemAlloc<> TVirtAlloc;
+#define TVirtPtr TSDVirtPtr
 #elif 0
 #include "spiram_alloc.h"
 
