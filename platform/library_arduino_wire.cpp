@@ -40,7 +40,7 @@ void WireWriteBytes(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr P
 
     while (n)
     {
-        CVirtPtrLock<TAnyValueCharPtr> l = makeVirtPtrLock(ptr, n);
+        VPtrLock<TAnyValueCharPtr> l = makeVirtPtrLock(ptr, n);
         const size_t written = Wire.write(*l, l.getLockSize());
         ReturnValue->Val->UnsignedLongInteger += written;
 

@@ -1395,7 +1395,7 @@ int ExpressionParse(TParseStatePtr Parser, TValuePtrPtr Result)
 /* do a parameterised macro call */
 void ExpressionParseMacroCall(TParseStatePtr Parser, TExpressionStackPtrPtr StackTop, TConstRegStringPtr MacroName,
 #ifdef WRAP_ANYVALUE
-                              TVirtPtr<struct MacroDef>::type MDef)
+                              TVirtAlloc::TVPtr<struct MacroDef>::type MDef)
 #else
                               struct MacroDef *MDef)
 #endif

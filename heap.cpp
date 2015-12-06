@@ -68,7 +68,7 @@ void HeapInit(Picoc *pc, int StackOrHeapSize)
     pc->HeapStackTop = &(pc->HeapMemory)[AlignOffset];
     pc->StackBottom = pc->HeapBottom;
 #else
-    pc->StackStart = (TStackCharPtr)pc->StackStart.alloc(StackOrHeapSize);
+    pc->StackStart = TVirtAlloc::getInstance()->alloc<char>(StackOrHeapSize);
 
     // UNDONE: need this?
     /*while (((unsigned long)&pc->HeapMemory[AlignOffset] & (sizeof(ALIGN_TYPE)-1)) != 0)
@@ -113,7 +113,7 @@ void HeapCleanup(Picoc *pc)
 #endif
 
 #ifdef USE_VIRTSTACK
-    pc->StackStart.free(pc->StackStart);
+    TVirtAlloc::getInstance()->free(pc->StackStart);
 #endif
 }
 

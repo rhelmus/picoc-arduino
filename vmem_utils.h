@@ -14,42 +14,36 @@ using namespace virtmem;
 
 #ifdef ARDUINO_HOST
 #if 0 // UNDONE
-#include "sdfatlib_alloc.h"
+#include "sd_alloc.h"
 
-typedef CSdfatlibVirtMemAlloc<> TVirtAlloc;
-#define TVirtPtr TSdfatlibVirtPtr
+typedef SDVAlloc TVirtAlloc;
 #elif 0
 #include "spiram_alloc.h"
 
-typedef CSPIRAMVirtMemAlloc<> TVirtAlloc;
-#define TVirtPtr TSPIRAMVirtPtr
+typedef SPIRAMVAlloc TVirtAlloc;
 #elif 1
-#include "serram_alloc.h"
+#include "serial_alloc.h"
 
-typedef CSerRAMVirtMemAlloc<> TVirtAlloc;
-#define TVirtPtr TSerRAMVirtPtr
+typedef SerialVAlloc TVirtAlloc;
 #else
 #include "static_alloc.h"
 
-typedef CStaticVirtMemAlloc<1024*40> TVirtAlloc;
-template <typename T> struct TVirtPtr { typedef CVirtPtr<T, TVirtAlloc> type; };
+typedef StaticVAllocP<1024*40> TVirtAlloc;
 #endif
 
 #else
 #if 1
 #include "static_alloc.h"
-typedef CStaticVirtMemAlloc<> TVirtAlloc;
-#define TVirtPtr TStaticVirtPtr
+typedef StaticVAlloc TVirtAlloc;
 #else
 #include "stdio_alloc.h"
-typedef CStdioVirtMemAlloc<> TVirtAlloc;
-#define TVirtPtr TStdioVirtPtr
+typedef StdioVAlloc TVirtAlloc;
 #endif
 
 #endif
 
-typedef TVirtPtr<struct ParseState>::type TParseStatePtr;
-typedef TVirtPtr<uint8_t>::type TVarAllocRet;
+typedef TVirtAlloc::TVPtr<struct ParseState>::type TParseStatePtr;
+typedef TVirtAlloc::TVPtr<uint8_t>::type TVarAllocRet;
 TVarAllocRet VariableAllocVirt(Picoc *pc, TParseStatePtr Parser, int Size, int OnHeap);
 #else
 typedef struct ParseState *TParseStatePtr;
@@ -59,7 +53,7 @@ typedef struct ParseState *TParseStatePtr;
 #endif
 
 #ifdef USE_VIRTSTACK
-typedef CBaseVirtPtr TStackVoidPtr;
+typedef BaseVPtr TStackVoidPtr;
 #else
 typedef void *TStackVoidPtr;
 #endif
@@ -103,19 +97,19 @@ public:
         return static_cast<T *>(HeapAllocMem(globalPicoc, size));
     }
 #else
-    inline operator CVirtPtr<T, TVirtAlloc>(void)
+    inline operator VPtr<T, TVirtAlloc>(void)
     {
         if (varalloc)
-            return static_cast<CVirtPtr<T, TVirtAlloc> >(VariableAllocVirt(globalPicoc, ps, size, !stack));
+            return static_cast<VPtr<T, TVirtAlloc> >(VariableAllocVirt(globalPicoc, ps, size, !stack));
         if (stack)
         {
 #ifdef USE_VIRTSTACK
-            return (CVirtPtr<T, TVirtAlloc>)HeapAllocStack(globalPicoc, size);
+            return (VPtr<T, TVirtAlloc>)HeapAllocStack(globalPicoc, size);
 #else
-            return CVirtPtr<T, TVirtAlloc>::wrap((T *)HeapAllocStack(globalPicoc, size));
+            return VPtr<T, TVirtAlloc>::wrap((T *)HeapAllocStack(globalPicoc, size));
 #endif
         }
-        return CVirtPtr<T, TVirtAlloc>::alloc(size);
+        return TVirtAlloc::getInstance()->alloc<T>(size);
     }
 #endif
     ~CAllocProxy(void) { }
@@ -127,26 +121,26 @@ template <typename T> inline CAllocProxy<T> allocMemVariable(TParseStatePtr p, b
 { return CAllocProxy<T>(size, p, st, true); }
 
 #ifdef USE_VIRTMEM
-inline CBaseVirtPtr::TPtrNum getNumPtr(const CBaseVirtPtr &pwb) { return pwb.getRawNum(); }
-inline void setPtrFromNum(CBaseVirtPtr &pwb, CBaseVirtPtr::TPtrNum ip) { pwb.setRawNum(ip); }
+inline BaseVPtr::PtrNum getNumPtr(const BaseVPtr &pwb) { return pwb.getRawNum(); }
+inline void setPtrFromNum(BaseVPtr &pwb, BaseVPtr::PtrNum ip) { pwb.setRawNum(ip); }
 #endif
 inline intptr_t getNumPtr(const void *p) { return reinterpret_cast<intptr_t>(p); }
 template <typename T> inline void setPtrFromNum(T *&p, intptr_t ip) { p = reinterpret_cast<T *>(ip); }
 
 inline void deallocMem(void *ptr) { HeapFreeMem(globalPicoc, ptr); }
 #ifdef USE_VIRTMEM
-template <typename T> inline void deallocMem(CVirtPtr<T, TVirtAlloc> p) { p.free(p); }
+template <typename T> inline void deallocMem(VPtr<T, TVirtAlloc> p) { TVirtAlloc::getInstance()->free(p); }
 #endif
 inline int popStack(TStackVoidPtr ptr, int size) { return HeapPopStack(globalPicoc, ptr, size); }
 
 #if !defined(USE_VIRTSTACK) && defined(USE_VIRTMEM)
-template <typename T> inline int popStack(CVirtPtr<T, TVirtAlloc> &p, int size) { return HeapPopStack(globalPicoc, p.unwrap(), size); }
+template <typename T> inline int popStack(VPtr<T, TVirtAlloc> &p, int size) { return HeapPopStack(globalPicoc, p.unwrap(), size); }
 #endif
 
 #ifdef USE_VIRTMEM
-template <typename T> CVirtPtr<T, TVirtAlloc> ptrWrap(T *p) { return CVirtPtr<T, TVirtAlloc>::wrap(p); }
-template <typename T> T *ptrUnwrap(CVirtPtr<T, TVirtAlloc> p) { return p.unwrap(); }
-inline void *ptrUnwrap(CBaseVirtPtr p) { return p.unwrap(); }
+template <typename T> VPtr<T, TVirtAlloc> ptrWrap(T *p) { return VPtr<T, TVirtAlloc>::wrap(p); }
+template <typename T> T *ptrUnwrap(VPtr<T, TVirtAlloc> p) { return p.unwrap(); }
+inline void *ptrUnwrap(BaseVPtr p) { return p.unwrap(); }
 #else
 #define ptrWrap /* empty */
 #define ptrUnwrap /* empty */

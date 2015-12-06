@@ -95,7 +95,7 @@ void SerPrintStr(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Para
     ReturnValue->Val->Integer = 0;
     while (len)
     {
-        CVirtPtrLock<TAnyValueUCharPtr> l(str, len, true);
+        VPtrLock<TAnyValueUCharPtr> l(str, len, true);
         int written = 0;
         execSerialFuncAssign(Param[0]->Val->UnsignedCharacter, write, written, *l, l.getLockSize());
 
@@ -153,7 +153,7 @@ void SerReadBytes(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPtr Par
     ReturnValue->Val->UnsignedLongInteger = 0;
     while (n)
     {
-        CVirtPtrLock<TAnyValueCharPtr> l(str, n, false);
+        VPtrLock<TAnyValueCharPtr> l(str, n, false);
         unsigned long read = 0;
         execSerialFuncAssign(Param[0]->Val->UnsignedCharacter, readBytes, read, *l, l.getLockSize());
 
@@ -178,7 +178,7 @@ void SerReadBytesUntil(TParseStatePtr Parser, TValuePtr ReturnValue, TValuePtrPt
     ReturnValue->Val->UnsignedLongInteger = 0;
     while (n)
     {
-        CVirtPtrLock<TAnyValueCharPtr> l(str, n, false);
+        VPtrLock<TAnyValueCharPtr> l(str, n, false);
         unsigned long read = 0;
         execSerialFuncAssign(Param[0]->Val->UnsignedCharacter, readBytesUntil, read,
                 Param[1]->Val->UnsignedCharacter, *l, l.getLockSize());

@@ -49,40 +49,40 @@
 #define INTERACTIVE_PROMPT_LINE "     > "
 
 #ifdef USE_VIRTMEM
-typedef TVirtPtr<struct CleanupTokenNode>::type TCleanupNodePtr;
-typedef TVirtPtr<unsigned char>::type TLexBufPtr;
-typedef CBaseVirtPtr TLexVoidPtr;
-typedef TVirtPtr<char>::type TLexCharPtr;
-typedef TVirtPtr<unsigned char>::type TLexUnsignedCharPtr;
-typedef TVirtPtr<const char>::type TLexConstCharPtr;
-typedef TVirtPtr<TLexConstCharPtr>::type TLexConstCharPtrPtr;
-typedef TVirtPtr<struct Value>::type TValuePtr;
-typedef TVirtPtr<TValuePtr>::type TValuePtrPtr;
-typedef TVirtPtr<union AnyValue>::type TAnyValuePtr;
-typedef TVirtPtr<char>::type TRegStringPtr;
-typedef TVirtPtr<const char>::type TConstRegStringPtr;
-typedef TVirtPtr<TRegStringPtr>::type TRegStringPtrPtr;
-typedef TVirtPtr<struct ReservedWord>::type TReservedWordPtr;
-typedef TVirtPtr<char>::type TValueCharPtr;
-typedef CBaseVirtPtr TAnyValueVoidPtr;
-typedef TVirtPtr<int>::type TAnyValueIntPtr;
-typedef TVirtPtr<char>::type TAnyValueCharPtr;
-typedef TVirtPtr<unsigned char>::type TAnyValueUCharPtr;
-typedef TVirtPtr<char>::type TStdioCharPtr;
-typedef TVirtPtr<const char>::type TStdioConstCharPtr;
-typedef TVirtPtr<struct ValueType>::type TValueTypePtr;
-typedef TVirtPtr<TValueTypePtr>::type TValueTypePtrPtr;
-typedef TVirtPtr<struct TableEntry>::type TTableEntryPtr;
-typedef TVirtPtr<TTableEntryPtr>::type TTableEntryPtrPtr;
-typedef TVirtPtr<struct Table>::type TTablePtr;
-typedef TVirtPtr<char>::type TTableCharPtr;
-typedef TVirtPtr<struct IncludeLibrary>::type TIncludeLibraryPtr;
-typedef TVirtPtr<struct ParseState>::type TParseStatePtr;
-typedef TVirtPtr<struct ExpressionStack>::type TExpressionStackPtr;
-typedef TVirtPtr<TExpressionStackPtr>::type TExpressionStackPtrPtr;
-typedef TVirtPtr<struct TokenLine>::type TTokenLinePtr;
-typedef TVirtPtr<uint8_t>::type TVarAllocRet;
-typedef TVirtPtr<struct StackFrame>::type TStackFramePtr;
+typedef TVirtAlloc::TVPtr<struct CleanupTokenNode>::type TCleanupNodePtr;
+typedef TVirtAlloc::TVPtr<unsigned char>::type TLexBufPtr;
+typedef BaseVPtr TLexVoidPtr;
+typedef TVirtAlloc::TVPtr<char>::type TLexCharPtr;
+typedef TVirtAlloc::TVPtr<unsigned char>::type TLexUnsignedCharPtr;
+typedef TVirtAlloc::TVPtr<const char>::type TLexConstCharPtr;
+typedef TVirtAlloc::TVPtr<TLexConstCharPtr>::type TLexConstCharPtrPtr;
+typedef TVirtAlloc::TVPtr<struct Value>::type TValuePtr;
+typedef TVirtAlloc::TVPtr<TValuePtr>::type TValuePtrPtr;
+typedef TVirtAlloc::TVPtr<union AnyValue>::type TAnyValuePtr;
+typedef TVirtAlloc::TVPtr<char>::type TRegStringPtr;
+typedef TVirtAlloc::TVPtr<const char>::type TConstRegStringPtr;
+typedef TVirtAlloc::TVPtr<TRegStringPtr>::type TRegStringPtrPtr;
+typedef TVirtAlloc::TVPtr<struct ReservedWord>::type TReservedWordPtr;
+typedef TVirtAlloc::TVPtr<char>::type TValueCharPtr;
+typedef BaseVPtr TAnyValueVoidPtr;
+typedef TVirtAlloc::TVPtr<int>::type TAnyValueIntPtr;
+typedef TVirtAlloc::TVPtr<char>::type TAnyValueCharPtr;
+typedef TVirtAlloc::TVPtr<unsigned char>::type TAnyValueUCharPtr;
+typedef TVirtAlloc::TVPtr<char>::type TStdioCharPtr;
+typedef TVirtAlloc::TVPtr<const char>::type TStdioConstCharPtr;
+typedef TVirtAlloc::TVPtr<struct ValueType>::type TValueTypePtr;
+typedef TVirtAlloc::TVPtr<TValueTypePtr>::type TValueTypePtrPtr;
+typedef TVirtAlloc::TVPtr<struct TableEntry>::type TTableEntryPtr;
+typedef TVirtAlloc::TVPtr<TTableEntryPtr>::type TTableEntryPtrPtr;
+typedef TVirtAlloc::TVPtr<struct Table>::type TTablePtr;
+typedef TVirtAlloc::TVPtr<char>::type TTableCharPtr;
+typedef TVirtAlloc::TVPtr<struct IncludeLibrary>::type TIncludeLibraryPtr;
+typedef TVirtAlloc::TVPtr<struct ParseState>::type TParseStatePtr;
+typedef TVirtAlloc::TVPtr<struct ExpressionStack>::type TExpressionStackPtr;
+typedef TVirtAlloc::TVPtr<TExpressionStackPtr>::type TExpressionStackPtrPtr;
+typedef TVirtAlloc::TVPtr<struct TokenLine>::type TTokenLinePtr;
+typedef TVirtAlloc::TVPtr<uint8_t>::type TVarAllocRet;
+typedef TVirtAlloc::TVPtr<struct StackFrame>::type TStackFramePtr;
 
 #define WRAP_REGSTRINGS
 #define WRAP_ANYVALUE
@@ -122,12 +122,12 @@ typedef struct StackFrame *TStackFramePtr;
 #endif
 
 #if defined(USE_VIRTSTACK) && defined(USE_VIRTMEM)
-typedef CBaseVirtPtr TStackVoidPtr;
-typedef TVirtPtr<TStackVoidPtr>::type TStackVoidPtrPtr;
-typedef TVirtPtr<char>::type TStackCharPtr;
-typedef TVirtPtr<const char>::type TStackConstCharPtr;
-typedef TVirtPtr<TStackConstCharPtr>::type TStackConstCharPtrPtr;
-typedef TVirtPtr<unsigned char>::type TStackUnsignedCharPtr;
+typedef BaseVPtr TStackVoidPtr;
+typedef TVirtAlloc::TVPtr<TStackVoidPtr>::type TStackVoidPtrPtr;
+typedef TVirtAlloc::TVPtr<char>::type TStackCharPtr;
+typedef TVirtAlloc::TVPtr<const char>::type TStackConstCharPtr;
+typedef TVirtAlloc::TVPtr<TStackConstCharPtr>::type TStackConstCharPtrPtr;
+typedef TVirtAlloc::TVPtr<unsigned char>::type TStackUnsignedCharPtr;
 #else
 typedef void *TStackVoidPtr;
 typedef void **TStackVoidPtrPtr;
