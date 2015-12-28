@@ -8,7 +8,7 @@ Picoc *globalPicoc;
 
 #ifdef USE_VIRTMEM
 TVirtAlloc virtalloc;
-//TVirtAlloc virtalloc(true, 9, CSerialRam::SPEED_FULL);
+//TVirtAlloc virtalloc(true, 9, SerialRam::SPEED_FULL);
 #endif
 
 /* initialise everything */

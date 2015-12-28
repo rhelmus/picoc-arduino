@@ -13,7 +13,7 @@ SdFile sdFile;
 namespace {
 
 #ifdef USE_VIRTMEM
-#include <serial_alloc.h>
+#include <alloc/serial_alloc.h>
 
 template <typename VA> struct CSerialInputTrait
 {
