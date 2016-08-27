@@ -14,29 +14,29 @@ using namespace virtmem;
 
 #ifdef ARDUINO_HOST
 #if 0 // UNDONE
-#include "sd_alloc.h"
+#include "alloc/sd_alloc.h"
 
 typedef SDVAlloc TVirtAlloc;
 #elif 0
-#include "spiram_alloc.h"
+#include "alloc/spiram_alloc.h"
 
 typedef SPIRAMVAlloc TVirtAlloc;
 #elif 1
-#include "serial_alloc.h"
+#include "alloc/serial_alloc.h"
 
 typedef SerialVAlloc TVirtAlloc;
 #else
-#include "static_alloc.h"
+#include "alloc/static_alloc.h"
 
 typedef StaticVAllocP<1024*40> TVirtAlloc;
 #endif
 
 #else
 #if 1
-#include "static_alloc.h"
+#include "alloc/static_alloc.h"
 typedef StaticVAlloc TVirtAlloc;
 #else
-#include "stdio_alloc.h"
+#include "alloc/stdio_alloc.h"
 typedef StdioVAlloc TVirtAlloc;
 #endif
 
